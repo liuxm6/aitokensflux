@@ -1,0 +1,8 @@
+# GitHub Container Registry image override for this fork.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.github.yml up -d
+
+services:
+  new-api:
+    image: ghcr.io/liuxm6/aitokensflux:latest
