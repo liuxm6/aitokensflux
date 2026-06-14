@@ -135,3 +135,137 @@ For request structs that are parsed from client JSON and then re-marshaled to up
 ### Rule 7: Billing Expression System — Read `pkg/billingexpr/expr.md`
 
 When working on tiered/dynamic billing (expression-based pricing), you MUST read `pkg/billingexpr/expr.md` first. It documents the design philosophy, expression language (variables, functions, examples), full system architecture (editor → storage → pre-consume → settlement → log display), token normalization rules (`p`/`c` auto-exclusion), quota conversion, and expression versioning. All code changes to the billing expression system must follow the patterns described in that document.
+
+## Production Release Workflow
+
+Use the lightweight image release flow for production. Build everything locally, upload the image tarball, and let the server run the deployment in the background. Do not compile on the production server and do not commit production SSH credentials, IPs, passwords, or private handoff notes.
+
+### Current Production Shape
+- Docker Compose directory: `/opt/newapi`
+- Compose file: `/opt/newapi/docker-compose.yml`
+- Service/container: `new-api`
+- Data services: `new-api-redis`, `new-api-pg`
+- Release workspace on server: `/root/tokenflux-release`
+- Release scripts on server:
+  - `/root/tokenflux-release/deploy.sh`
+  - `/root/tokenflux-release/rollback.sh`
+  - `/root/tokenflux-release/release.env`
+  - `/root/tokenflux-release/release.log`
+- Published image tag pattern: `aitokensflux/new-api:<git-short-sha>-<YYYYMMDDHHMMSS>`
+- Runtime image is built from `scratch` with a locally compiled `linux/amd64` static binary. This keeps the production image around 100 MB instead of multi-GB builder images.
+
+### Local Build
+From the repository root:
+
+```bash
+cd web
+bun install --frozen-lockfile
+
+cd default
+DISABLE_ESLINT_PLUGIN=true VITE_REACT_APP_VERSION=$(cat ../../VERSION) bun run build
+
+cd ../classic
+VITE_REACT_APP_VERSION=$(cat ../../VERSION) bun run build
+
+cd ../customer
+VITE_REACT_APP_VERSION=$(cat ../../VERSION) bun run build
+
+cd ../..
+RELEASE=$(git rev-parse --short HEAD)-$(date +%Y%m%d%H%M%S)
+TAG=aitokensflux/new-api:$RELEASE
+OUTDIR=/tmp/tokenflux-release-$RELEASE
+
+mkdir -p "$OUTDIR/rootfs/etc/ssl/certs" \
+  "$OUTDIR/rootfs/usr/share/zoneinfo/Asia" \
+  "$OUTDIR/rootfs/licenses"
+
+cp /etc/ssl/cert.pem "$OUTDIR/rootfs/etc/ssl/certs/ca-certificates.crt"
+cp /usr/share/zoneinfo/Asia/Shanghai "$OUTDIR/rootfs/usr/share/zoneinfo/Asia/Shanghai"
+cp LICENSE NOTICE THIRD-PARTY-LICENSES.md "$OUTDIR/rootfs/licenses/"
+
+GO111MODULE=on \
+CGO_ENABLED=0 \
+GOOS=linux \
+GOARCH=amd64 \
+GOEXPERIMENT=greenteagc \
+go build -ldflags "-s -w -X 'github.com/QuantumNous/new-api/common.Version=$(cat VERSION)'" \
+  -o "$OUTDIR/rootfs/new-api" .
+```
+
+Create the small runtime image:
+
+```bash
+cat > "$OUTDIR/Dockerfile" <<'EOF'
+FROM scratch
+COPY rootfs/ /
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+ENV TZ=Asia/Shanghai
+EXPOSE 3000
+WORKDIR /data
+ENTRYPOINT ["/new-api"]
+EOF
+
+docker buildx build --platform linux/amd64 --load -t "$TAG" "$OUTDIR"
+docker save "$TAG" | gzip -1 > "$OUTDIR/new-api-image.tar.gz"
+```
+
+Smoke test before upload:
+
+```bash
+docker rm -f tokenflux-release-smoke 2>/dev/null || true
+docker run -d --rm \
+  --platform linux/amd64 \
+  --name tokenflux-release-smoke \
+  -p 127.0.0.1:13000:3000 \
+  -v "$OUTDIR/smoke-data:/data" \
+  -e TZ=Asia/Shanghai \
+  "$TAG"
+
+curl -fsS http://127.0.0.1:13000/api/status
+docker rm -f tokenflux-release-smoke
+```
+
+### Server Release
+Upload the tarball and release scripts into `/root/tokenflux-release`. Update `release.env` for the new `RELEASE`, `IMAGE_TAG`, `RELEASE_DIR`, and `IMAGE_TAR`.
+
+Run deployment in a background tmux session:
+
+```bash
+tmux kill-session -t tokenflux-release 2>/dev/null || true
+tmux new-session -d -s tokenflux-release 'cd /root/tokenflux-release && bash ./deploy.sh'
+```
+
+Watch progress:
+
+```bash
+tail -f /root/tokenflux-release/release.log
+```
+
+Validate after deployment:
+
+```bash
+curl -fsS http://127.0.0.1:3000/api/status
+docker ps --filter name=new-api
+docker images aitokensflux/new-api
+docker system df
+df -h /
+```
+
+Only recreate the application service:
+
+```bash
+cd /opt/newapi
+docker compose up -d --no-deps new-api
+```
+
+Do not run `docker compose down`, do not remove database volumes, and do not run `docker system prune -a --volumes` on production.
+
+### Rollback
+If the deployment fails or the site is unhealthy:
+
+```bash
+cd /root/tokenflux-release
+bash ./rollback.sh
+```
+
+After the new version is confirmed healthy, old `aitokensflux/new-api:*` images can be removed manually to free disk space. Keep the current image and avoid deleting volumes.
