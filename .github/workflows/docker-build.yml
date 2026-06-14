@@ -64,12 +64,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
@@ -77,16 +71,45 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (labels)
-        id: meta
+      - name: Extract GHCR metadata (labels)
+        id: meta_ghcr
         uses: docker/metadata-action@v5
         with:
-          images: |
-            calciumion/new-api
-            ghcr.io/${{ env.GHCR_REPOSITORY }}
+          images: ghcr.io/${{ env.GHCR_REPOSITORY }}
 
-      - name: Build & push
-        id: build
+      - name: Build & push GHCR
+        id: build_ghcr
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: ${{ matrix.platform }}
+          push: true
+          tags: |
+            ghcr.io/${{ env.GHCR_REPOSITORY }}:${{ env.TAG }}-${{ matrix.arch }}
+            ghcr.io/${{ env.GHCR_REPOSITORY }}:latest-${{ matrix.arch }}
+          labels: ${{ steps.meta_ghcr.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: mode=max
+          sbom: true
+
+      - name: Log in to Docker Hub
+        if: ${{ vars.PUBLISH_DOCKERHUB == 'true' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract Docker Hub metadata (labels)
+        if: ${{ vars.PUBLISH_DOCKERHUB == 'true' }}
+        id: meta_dockerhub
+        uses: docker/metadata-action@v5
+        with:
+          images: calciumion/new-api
+
+      - name: Build & push Docker Hub
+        if: ${{ vars.PUBLISH_DOCKERHUB == 'true' }}
+        id: build_dockerhub
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -95,9 +118,7 @@ jobs:
           tags: |
             calciumion/new-api:${{ env.TAG }}-${{ matrix.arch }}
             calciumion/new-api:latest-${{ matrix.arch }}
-            ghcr.io/${{ env.GHCR_REPOSITORY }}:${{ env.TAG }}-${{ matrix.arch }}
-            ghcr.io/${{ env.GHCR_REPOSITORY }}:latest-${{ matrix.arch }}
-          labels: ${{ steps.meta.outputs.labels }}
+          labels: ${{ steps.meta_dockerhub.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: mode=max
@@ -106,18 +127,26 @@ jobs:
       - name: Install cosign
         uses: sigstore/cosign-installer@v3
 
-      - name: Sign image with cosign
+      - name: Sign GHCR image with cosign
         run: |
-          cosign sign --yes calciumion/new-api@${{ steps.build.outputs.digest }}
-          cosign sign --yes ghcr.io/${{ env.GHCR_REPOSITORY }}@${{ steps.build.outputs.digest }}
+          cosign sign --yes ghcr.io/${{ env.GHCR_REPOSITORY }}@${{ steps.build_ghcr.outputs.digest }}
+
+      - name: Sign Docker Hub image with cosign
+        if: ${{ vars.PUBLISH_DOCKERHUB == 'true' }}
+        run: |
+          cosign sign --yes calciumion/new-api@${{ steps.build_dockerhub.outputs.digest }}
 
       - name: Image summary
         run: |
           echo "### Docker Image Digest (${{ matrix.arch }})" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "calciumion/new-api:${TAG}-${{ matrix.arch }}" >> $GITHUB_STEP_SUMMARY
           echo "ghcr.io/${{ env.GHCR_REPOSITORY }}:${TAG}-${{ matrix.arch }}" >> $GITHUB_STEP_SUMMARY
-          echo "${{ steps.build.outputs.digest }}" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.build_ghcr.outputs.digest }}" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ vars.PUBLISH_DOCKERHUB }}" = "true" ]; then
+            echo "---" >> $GITHUB_STEP_SUMMARY
+            echo "calciumion/new-api:${TAG}-${{ matrix.arch }}" >> $GITHUB_STEP_SUMMARY
+            echo "${{ steps.build_dockerhub.outputs.digest }}" >> $GITHUB_STEP_SUMMARY
+          fi
           echo '```' >> $GITHUB_STEP_SUMMARY
 
   create_manifests:
@@ -136,26 +165,6 @@ jobs:
 
       - name: Normalize GHCR repository
         run: echo "GHCR_REPOSITORY=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Create & push manifest (version)
-        run: |
-          docker buildx imagetools create \
-            -t calciumion/new-api:${TAG} \
-            calciumion/new-api:${TAG}-amd64 \
-            calciumion/new-api:${TAG}-arm64
-
-      - name: Create & push manifest (latest)
-        run: |
-          docker buildx imagetools create \
-            -t calciumion/new-api:latest \
-            calciumion/new-api:latest-amd64 \
-            calciumion/new-api:latest-arm64
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -178,11 +187,36 @@ jobs:
             ghcr.io/${GHCR_REPOSITORY}:latest-amd64 \
             ghcr.io/${GHCR_REPOSITORY}:latest-arm64
 
+      - name: Log in to Docker Hub
+        if: ${{ vars.PUBLISH_DOCKERHUB == 'true' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Create & push manifest (Docker Hub - version)
+        if: ${{ vars.PUBLISH_DOCKERHUB == 'true' }}
+        run: |
+          docker buildx imagetools create \
+            -t calciumion/new-api:${TAG} \
+            calciumion/new-api:${TAG}-amd64 \
+            calciumion/new-api:${TAG}-arm64
+
+      - name: Create & push manifest (Docker Hub - latest)
+        if: ${{ vars.PUBLISH_DOCKERHUB == 'true' }}
+        run: |
+          docker buildx imagetools create \
+            -t calciumion/new-api:latest \
+            calciumion/new-api:latest-amd64 \
+            calciumion/new-api:latest-arm64
+
       - name: Manifest summary
         run: |
           echo "### Multi-arch Manifest" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          docker buildx imagetools inspect calciumion/new-api:${TAG} >> $GITHUB_STEP_SUMMARY
-          echo "---" >> $GITHUB_STEP_SUMMARY
           docker buildx imagetools inspect ghcr.io/${GHCR_REPOSITORY}:${TAG} >> $GITHUB_STEP_SUMMARY
+          if [ "${{ vars.PUBLISH_DOCKERHUB }}" = "true" ]; then
+            echo "---" >> $GITHUB_STEP_SUMMARY
+            docker buildx imagetools inspect calciumion/new-api:${TAG} >> $GITHUB_STEP_SUMMARY
+          fi
           echo '```' >> $GITHUB_STEP_SUMMARY
