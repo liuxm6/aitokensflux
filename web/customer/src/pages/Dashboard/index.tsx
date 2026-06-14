@@ -88,6 +88,19 @@ export function createDashboardPage({
       };
     }, [user?.id]);
 
+    useEffect(() => {
+      if (loading || window.location.hash !== "#dashboard-wallet") return;
+
+      const timer = window.setTimeout(() => {
+        document.getElementById("dashboard-wallet")?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }, 80);
+
+      return () => window.clearTimeout(timer);
+    }, [loading]);
+
     const planMap = mapPlansById(plans);
     const activeSubscriptionRecords =
       getActiveSubscriptionRecords(subscriptions);
@@ -120,33 +133,35 @@ export function createDashboardPage({
           <NoCurrentPlanCard />
         )}
 
-        <Panel className="dashboard-wallet-panel">
-          <div className="wallet-panel-head">
-            <div className="wallet-line standalone">
-              <span>
-                <T id="Wallet balance" />{" "}
-                <b className="mono">{formatQuotaMoney(balance, status)}</b>
-              </span>
-              <span className="bar">|</span>
-              <span className="mono">{formatQuotaRate(status)}</span>
-              <span className="bar">|</span>
-              <span>
-                <T id="Today used" />{" "}
-                <span className="mono">
-                  {formatQuotaMoney(logStats?.quota ?? 0, status)}
+        <div id="dashboard-wallet">
+          <Panel className="dashboard-wallet-panel">
+            <div className="wallet-panel-head">
+              <div className="wallet-line standalone">
+                <span>
+                  <T id="Wallet balance" />{" "}
+                  <b className="mono">{formatQuotaMoney(balance, status)}</b>
                 </span>
-              </span>
+                <span className="bar">|</span>
+                <span className="mono">{formatQuotaRate(status)}</span>
+                <span className="bar">|</span>
+                <span>
+                  <T id="Today used" />{" "}
+                  <span className="mono">
+                    {formatQuotaMoney(logStats?.quota ?? 0, status)}
+                  </span>
+                </span>
+              </div>
+              <button
+                className="btn btn-flux btn-sm"
+                type="button"
+                onClick={() => setTopupDialogOpen(true)}
+              >
+                <CircleDollarSign size={15} />
+                <T id="Top up now" />
+              </button>
             </div>
-            <button
-              className="btn btn-flux btn-sm"
-              type="button"
-              onClick={() => setTopupDialogOpen(true)}
-            >
-              <CircleDollarSign size={15} />
-              <T id="Top up now" />
-            </button>
-          </div>
-        </Panel>
+          </Panel>
+        </div>
         {topupDialogOpen ? (
           <TopupDialog onClose={() => setTopupDialogOpen(false)} />
         ) : null}
