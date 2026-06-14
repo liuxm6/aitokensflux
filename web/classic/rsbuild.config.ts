@@ -20,6 +20,11 @@ export default defineConfig(({ envMode }) => {
   const proxyServerUrl =
     clientServerUrl ||
     'http://localhost:3000'
+  const adminBasePath =
+    process.env.VITE_ADMIN_BASE_PATH ||
+    env.rawPublicVars.VITE_ADMIN_BASE_PATH ||
+    '/admin'
+  const adminAssetPrefix = `${adminBasePath.replace(/\/+$/, '')}/`
   const isProd = envMode === 'production'
   const devProxy = Object.fromEntries(
     (['/api', '/mj', '/pg'] as const).map((key) => [
@@ -38,6 +43,7 @@ export default defineConfig(({ envMode }) => {
         'import.meta.env.VITE_REACT_APP_SERVER_URL': JSON.stringify(
           clientServerUrl,
         ),
+        'import.meta.env.VITE_ADMIN_BASE_PATH': JSON.stringify(adminBasePath),
       },
     },
     resolve: {
@@ -53,6 +59,7 @@ export default defineConfig(({ envMode }) => {
       template: './index.html',
     },
     server: {
+      base: adminAssetPrefix,
       host: '0.0.0.0',
       strictPort: true,
       proxy: devProxy,
@@ -60,6 +67,7 @@ export default defineConfig(({ envMode }) => {
     output: {
       minify: isProd,
       target: 'web',
+      assetPrefix: adminAssetPrefix,
       distPath: {
         root: 'dist',
       },

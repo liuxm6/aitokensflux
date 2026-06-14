@@ -15,6 +15,7 @@ type verificationValue struct {
 
 const (
 	EmailVerificationPurpose = "v"
+	EmailLoginPurpose        = "l"
 	PasswordResetPurpose     = "r"
 )
 

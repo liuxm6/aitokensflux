@@ -69,7 +69,7 @@ export function UserAuthForm({
   const { t } = useTranslation()
   const [isLoading, setIsLoading] = useState(false)
   const [wechatCode, setWeChatCode] = useState('')
-  const [agreedToLegal, setAgreedToLegal] = useState(false)
+  const [agreedToLegal, setAgreedToLegal] = useState(true)
   const [passkeySupported, setPasskeySupported] = useState(false)
   const [isPasskeyLoading, setIsPasskeyLoading] = useState(false)
   const [isWeChatDialogOpen, setIsWeChatDialogOpen] = useState(false)
@@ -114,9 +114,7 @@ export function UserAuthForm({
     passkeyLoginEnabled || hasWeChatLogin || hasOAuthLogin
 
   useEffect(() => {
-    if (requiresLegalConsent) {
-      setAgreedToLegal(false)
-    } else {
+    if (!requiresLegalConsent) {
       setAgreedToLegal(true)
     }
   }, [requiresLegalConsent])

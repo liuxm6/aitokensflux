@@ -16,11 +16,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
+import i18next from 'i18next'
 import { api } from '@/lib/api'
 import type { LegalDocumentResponse } from './types'
 
 export async function getUserAgreement() {
-  const res = await api.get<LegalDocumentResponse>('/api/user-agreement')
+  const res = await api.get<LegalDocumentResponse>('/api/user-agreement', {
+    params: { lang: i18next.language },
+  })
   return res.data
 }
 

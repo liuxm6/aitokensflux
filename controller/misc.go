@@ -47,6 +47,12 @@ func GetStatus(c *gin.Context) {
 
 	passkeySetting := system_setting.GetPasskeySettings()
 	legalSetting := system_setting.GetLegalSettings()
+	quotaForInviter := 0
+	quotaForInvitee := 0
+	if operation_setting.IsPaymentComplianceConfirmed() {
+		quotaForInviter = common.QuotaForInviter
+		quotaForInvitee = common.QuotaForInvitee
+	}
 
 	data := gin.H{
 		"version":                     common.Version,
@@ -72,6 +78,8 @@ func GetStatus(c *gin.Context) {
 		"turnstile_site_key":          common.TurnstileSiteKey,
 		"docs_link":                   operation_setting.GetGeneralSetting().DocsLink,
 		"quota_per_unit":              common.QuotaPerUnit,
+		"quota_for_inviter":           quotaForInviter,
+		"quota_for_invitee":           quotaForInvitee,
 		// 兼容旧前端：保留 display_in_currency，同时提供新的 quota_display_type
 		"display_in_currency":           operation_setting.IsCurrencyDisplay(),
 		"quota_display_type":            operation_setting.GetQuotaDisplayType(),
@@ -117,7 +125,7 @@ func GetStatus(c *gin.Context) {
 		"passkey_user_verification":   passkeySetting.UserVerification,
 		"passkey_attachment":          passkeySetting.AttachmentPreference,
 		"setup":                       constant.Setup,
-		"user_agreement_enabled":      legalSetting.UserAgreement != "",
+		"user_agreement_enabled":      system_setting.GetUserAgreementContent() != "",
 		"privacy_policy_enabled":      legalSetting.PrivacyPolicy != "",
 		"checkin_enabled":             operation_setting.GetCheckinSetting().Enabled,
 	}
@@ -195,7 +203,10 @@ func GetUserAgreement(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
-		"data":    system_setting.GetLegalSettings().UserAgreement,
+		"data": system_setting.GetUserAgreementContent(
+			c.Query("lang"),
+			c.GetHeader("Accept-Language"),
+		),
 	})
 	return
 }
@@ -231,8 +242,28 @@ func GetHomePageContent(c *gin.Context) {
 	return
 }
 
+func normalizeEmailVerificationPurpose(purpose string) string {
+	normalized := strings.ToLower(strings.TrimSpace(purpose))
+	switch normalized {
+	case "", common.EmailVerificationPurpose, "verify", "verification", "email_verification", "register", "signup":
+		return common.EmailVerificationPurpose
+	case common.EmailLoginPurpose, "login", "email_login", "email-code-login", "email_code_login":
+		return common.EmailLoginPurpose
+	default:
+		return ""
+	}
+}
+
 func SendEmailVerification(c *gin.Context) {
 	email := c.Query("email")
+	purpose := normalizeEmailVerificationPurpose(c.Query("purpose"))
+	if purpose == "" {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "无效的验证码用途",
+		})
+		return
+	}
 	if err := common.Validate.Var(email, "required,email"); err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -277,19 +308,31 @@ func SendEmailVerification(c *gin.Context) {
 		}
 	}
 
-	if model.IsEmailAlreadyTaken(email) {
+	emailTaken := model.IsEmailAlreadyTaken(email)
+	if purpose == common.EmailVerificationPurpose && emailTaken {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"message": "邮箱地址已被占用",
 		})
 		return
 	}
+	if purpose == common.EmailLoginPurpose && !emailTaken {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "该邮箱尚未注册",
+		})
+		return
+	}
 	code := common.GenerateVerificationCode(6)
-	common.RegisterVerificationCodeWithKey(email, code, common.EmailVerificationPurpose)
+	common.RegisterVerificationCodeWithKey(email, code, purpose)
 	subject := fmt.Sprintf("%s邮箱验证邮件", common.SystemName)
-	content := fmt.Sprintf("<p>您好，你正在进行%s邮箱验证。</p>"+
+	action := "邮箱验证"
+	if purpose == common.EmailLoginPurpose {
+		action = "邮箱验证码登录"
+	}
+	content := fmt.Sprintf("<p>您好，你正在进行%s%s。</p>"+
 		"<p>您的验证码为: <strong>%s</strong></p>"+
-		"<p>验证码 %d 分钟内有效，如果不是本人操作，请忽略。</p>", common.SystemName, code, common.VerificationValidMinutes)
+		"<p>验证码 %d 分钟内有效，如果不是本人操作，请忽略。</p>", common.SystemName, action, code, common.VerificationValidMinutes)
 	err := common.SendEmail(subject, email, content)
 	if err != nil {
 		common.ApiError(c, err)

@@ -2,7 +2,9 @@ package router
 
 import (
 	"embed"
+	"net"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/QuantumNous/new-api/common"
@@ -15,32 +17,131 @@ import (
 
 // ThemeAssets holds the embedded frontend assets for both themes.
 type ThemeAssets struct {
-	DefaultBuildFS   embed.FS
-	DefaultIndexPage []byte
-	ClassicBuildFS   embed.FS
-	ClassicIndexPage []byte
+	DefaultBuildFS    embed.FS
+	DefaultIndexPage  []byte
+	ClassicBuildFS    embed.FS
+	ClassicIndexPage  []byte
+	CustomerBuildFS   embed.FS
+	CustomerIndexPage []byte
 }
 
 func SetWebRouter(router *gin.Engine, assets ThemeAssets) {
 	defaultFS := common.EmbedFolder(assets.DefaultBuildFS, "web/default/dist")
 	classicFS := common.EmbedFolder(assets.ClassicBuildFS, "web/classic/dist")
-	themeFS := common.NewThemeAwareFS(defaultFS, classicFS)
+	customerFS := common.EmbedFolder(assets.CustomerBuildFS, "web/customer/dist")
+	adminFS := common.NewThemeAwareFS(defaultFS, classicFS)
 
 	router.Use(gzip.Gzip(gzip.DefaultCompression))
 	router.Use(middleware.GlobalWebRateLimit())
 	router.Use(middleware.Cache())
-	router.Use(static.Serve("/", themeFS))
+	router.Use(restrictAdminWebHosts())
+	router.Use(redirectAdminRootToDashboard())
+	router.Use(static.Serve("/admin", adminFS))
+	router.Use(static.Serve("/", customerFS))
 	router.NoRoute(func(c *gin.Context) {
 		c.Set(middleware.RouteTagKey, "web")
-		if strings.HasPrefix(c.Request.RequestURI, "/v1") || strings.HasPrefix(c.Request.RequestURI, "/api") || strings.HasPrefix(c.Request.RequestURI, "/assets") {
+		path := c.Request.URL.Path
+		if shouldReturnRelayNotFound(path) {
 			controller.RelayNotFound(c)
 			return
 		}
 		c.Header("Cache-Control", "no-cache")
-		if common.GetTheme() == "classic" {
+		if isAdminWebPath(path) && common.GetTheme() == "classic" {
 			c.Data(http.StatusOK, "text/html; charset=utf-8", assets.ClassicIndexPage)
-		} else {
-			c.Data(http.StatusOK, "text/html; charset=utf-8", assets.DefaultIndexPage)
+			return
 		}
+		if isAdminWebPath(path) {
+			c.Data(http.StatusOK, "text/html; charset=utf-8", assets.DefaultIndexPage)
+			return
+		}
+		c.Data(http.StatusOK, "text/html; charset=utf-8", assets.CustomerIndexPage)
 	})
+}
+
+func restrictAdminWebHosts() gin.HandlerFunc {
+	allowedHosts := parseAdminWebHosts(os.Getenv("ADMIN_WEB_HOSTS"))
+	return func(c *gin.Context) {
+		if len(allowedHosts) == 0 || !isAdminWebPath(c.Request.URL.Path) {
+			c.Next()
+			return
+		}
+		if _, ok := allowedHosts[normalizeRequestHost(c.Request.Host)]; ok {
+			c.Next()
+			return
+		}
+		c.AbortWithStatus(http.StatusNotFound)
+	}
+}
+
+func parseAdminWebHosts(raw string) map[string]struct{} {
+	hosts := map[string]struct{}{}
+	for _, item := range strings.Split(raw, ",") {
+		host := normalizeRequestHost(strings.TrimSpace(item))
+		if host == "" {
+			continue
+		}
+		hosts[host] = struct{}{}
+	}
+	return hosts
+}
+
+func normalizeRequestHost(host string) string {
+	host = strings.TrimSpace(strings.ToLower(host))
+	if host == "" {
+		return ""
+	}
+	if strings.Contains(host, "://") {
+		return ""
+	}
+	if h, _, err := net.SplitHostPort(host); err == nil {
+		return strings.Trim(strings.ToLower(h), "[]")
+	}
+	if idx := strings.LastIndex(host, ":"); idx > -1 && strings.Count(host, ":") == 1 {
+		return host[:idx]
+	}
+	return strings.Trim(host, "[]")
+}
+
+func redirectAdminRootToDashboard() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		path := c.Request.URL.Path
+		if path != "/admin" && path != "/admin/" {
+			c.Next()
+			return
+		}
+		c.Header("Cache-Control", "no-cache")
+		c.Redirect(http.StatusFound, getAdminDashboardPath())
+		c.Abort()
+	}
+}
+
+func getAdminDashboardPath() string {
+	if common.GetTheme() == "classic" {
+		return "/admin/console"
+	}
+	return "/admin/dashboard/overview"
+}
+
+func isAdminWebPath(path string) bool {
+	return path == "/admin" || strings.HasPrefix(path, "/admin/")
+}
+
+func shouldReturnRelayNotFound(path string) bool {
+	apiPrefixes := []string{
+		"/api",
+		"/v1",
+		"/v1beta",
+		"/mj",
+		"/pg",
+		"/assets",
+		"/static",
+		"/admin/assets",
+		"/admin/static",
+	}
+	for _, prefix := range apiPrefixes {
+		if path == prefix || strings.HasPrefix(path, prefix+"/") {
+			return true
+		}
+	}
+	return false
 }

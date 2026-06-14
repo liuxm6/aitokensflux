@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"unicode"
 
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/dto"
@@ -28,6 +29,25 @@ import (
 type LoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+}
+
+type EmailCodeLoginRequest struct {
+	Email            string `json:"email"`
+	VerificationCode string `json:"verification_code"`
+	Code             string `json:"code"`
+}
+
+func isValidRegisterUsername(username string) bool {
+	if username == "" {
+		return false
+	}
+	for _, char := range username {
+		if char == '_' || char == '-' || unicode.IsLetter(char) || unicode.IsNumber(char) {
+			continue
+		}
+		return false
+	}
+	return true
 }
 
 func Login(c *gin.Context) {
@@ -90,6 +110,62 @@ func Login(c *gin.Context) {
 	setupLogin(&user, c)
 }
 
+func EmailCodeLogin(c *gin.Context) {
+	var req EmailCodeLoginRequest
+	if err := common.DecodeJson(c.Request.Body, &req); err != nil {
+		common.ApiErrorI18n(c, i18n.MsgInvalidParams)
+		return
+	}
+	email := strings.TrimSpace(req.Email)
+	code := strings.TrimSpace(req.VerificationCode)
+	if code == "" {
+		code = strings.TrimSpace(req.Code)
+	}
+	if err := common.Validate.Var(email, "required,email,max=50"); err != nil {
+		common.ApiErrorI18n(c, i18n.MsgInvalidParams)
+		return
+	}
+	if code == "" {
+		common.ApiErrorI18n(c, i18n.MsgInvalidParams)
+		return
+	}
+	if !common.VerifyCodeWithKey(email, code, common.EmailLoginPurpose) {
+		common.ApiErrorI18n(c, i18n.MsgUserVerificationCodeError)
+		return
+	}
+	common.DeleteKey(email, common.EmailLoginPurpose)
+
+	user := model.User{Email: email}
+	if err := user.FillUserByEmail(); err != nil {
+		common.ApiErrorI18n(c, i18n.MsgUserUsernameOrPasswordError)
+		return
+	}
+	if user.Id == 0 || user.Status != common.UserStatusEnabled {
+		common.ApiErrorI18n(c, i18n.MsgUserUsernameOrPasswordError)
+		return
+	}
+
+	if model.IsTwoFAEnabled(user.Id) {
+		session := sessions.Default(c)
+		session.Set("pending_username", user.Username)
+		session.Set("pending_user_id", user.Id)
+		if err := session.Save(); err != nil {
+			common.ApiErrorI18n(c, i18n.MsgUserSessionSaveFailed)
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"message": i18n.T(c, i18n.MsgUserRequire2FA),
+			"success": true,
+			"data": map[string]interface{}{
+				"require_2fa": true,
+			},
+		})
+		return
+	}
+
+	setupLogin(&user, c)
+}
+
 // setup session & cookies and then return user info
 func setupLogin(user *model.User, c *gin.Context) {
 	model.UpdateUserLastLoginAt(user.Id)
@@ -111,6 +187,7 @@ func setupLogin(user *model.User, c *gin.Context) {
 			"id":           user.Id,
 			"username":     user.Username,
 			"display_name": user.DisplayName,
+			"email":        user.Email,
 			"role":         user.Role,
 			"status":       user.Status,
 			"group":        user.Group,
@@ -145,9 +222,23 @@ func Register(c *gin.Context) {
 		return
 	}
 	var user model.User
-	err := json.NewDecoder(c.Request.Body).Decode(&user)
+	err := common.DecodeJson(c.Request.Body, &user)
 	if err != nil {
 		common.ApiErrorI18n(c, i18n.MsgInvalidParams)
+		return
+	}
+	user.Username = strings.TrimSpace(user.Username)
+	user.Email = strings.TrimSpace(user.Email)
+	if err := common.Validate.Var(user.Username, "required,max=20"); err != nil {
+		common.ApiErrorI18n(c, i18n.MsgUserInputInvalid, map[string]any{"Error": err.Error()})
+		return
+	}
+	if !isValidRegisterUsername(user.Username) {
+		common.ApiErrorI18n(c, i18n.MsgUserInputInvalid, map[string]any{"Error": "username may only contain letters, numbers, underscores, or hyphens"})
+		return
+	}
+	if err := common.Validate.Var(user.Email, "omitempty,email,max=50"); err != nil {
+		common.ApiErrorI18n(c, i18n.MsgUserInputInvalid, map[string]any{"Error": err.Error()})
 		return
 	}
 	if err := common.Validate.Struct(&user); err != nil {
@@ -183,7 +274,7 @@ func Register(c *gin.Context) {
 		InviterId:   inviterId,
 		Role:        common.RoleCommonUser, // 明确设置角色为普通用户
 	}
-	if common.EmailVerificationEnabled {
+	if user.Email != "" {
 		cleanUser.Email = user.Email
 	}
 	if err := cleanUser.Insert(inviterId); err != nil {

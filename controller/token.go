@@ -147,6 +147,15 @@ func GetTokenUsage(c *gin.Context) {
 		expiredAt = 0
 	}
 
+	var walletQuota int
+	var walletUsedQuota int
+	if user, err := model.GetUserById(token.UserId, false); err == nil {
+		walletQuota = user.Quota
+		walletUsedQuota = user.UsedQuota
+	} else {
+		common.SysError("failed to get token owner by id: " + err.Error())
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"code":    true,
 		"message": "ok",
@@ -156,6 +165,10 @@ func GetTokenUsage(c *gin.Context) {
 			"total_granted":        token.RemainQuota + token.UsedQuota,
 			"total_used":           token.UsedQuota,
 			"total_available":      token.RemainQuota,
+			"wallet_quota":         walletQuota,
+			"wallet_used_quota":    walletUsedQuota,
+			"user_quota":           walletQuota,
+			"user_used_quota":      walletUsedQuota,
 			"unlimited_quota":      token.UnlimitedQuota,
 			"model_limits":         token.GetModelLimitsMap(),
 			"model_limits_enabled": token.ModelLimitsEnabled,

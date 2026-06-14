@@ -27,6 +27,7 @@ import {
 } from '../constants/playground.constants';
 import { TABLE_COMPACT_MODES_KEY } from '../constants';
 import { MOBILE_BREAKPOINT } from '../hooks/common/useIsMobile';
+import { withAdminBasePath } from './adminPath';
 
 const HTMLToastContent = ({ htmlContent }) => {
   return <div dangerouslySetInnerHTML={{ __html: htmlContent }} />;
@@ -128,7 +129,7 @@ export function showError(error) {
           // 清除用户状态
           localStorage.removeItem('user');
           // toast.error('错误：未登录或登录已过期，请重新登录！', showErrorOptions);
-          window.location.href = '/login?expired=true';
+          window.location.href = withAdminBasePath('/login?expired=true');
           break;
         case 429:
           Toast.error('错误：请求次数过多，请稍后再试！');

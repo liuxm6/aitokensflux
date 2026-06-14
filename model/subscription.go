@@ -1081,6 +1081,98 @@ func maybeResetUserSubscriptionWithPlanTx(tx *gorm.DB, sub *UserSubscription, pl
 	return tx.Save(sub).Error
 }
 
+func syncUserSubscriptionResetTimeWithPlanTx(tx *gorm.DB, sub *UserSubscription, plan *SubscriptionPlan, now int64) error {
+	if tx == nil || sub == nil || plan == nil {
+		return errors.New("invalid reset sync args")
+	}
+	if NormalizeResetPeriod(plan.QuotaResetPeriod) == SubscriptionResetNever {
+		if sub.NextResetTime == 0 {
+			return nil
+		}
+		return tx.Model(&UserSubscription{}).
+			Where("id = ?", sub.Id).
+			Updates(map[string]interface{}{
+				"next_reset_time": int64(0),
+				"updated_at":      common.GetTimestamp(),
+			}).Error
+	}
+	if sub.NextResetTime > 0 && sub.NextResetTime <= now {
+		return maybeResetUserSubscriptionWithPlanTx(tx, sub, plan, now)
+	}
+	baseUnix := sub.LastResetTime
+	if baseUnix <= 0 {
+		baseUnix = sub.StartTime
+	}
+	if baseUnix <= 0 {
+		baseUnix = now
+	}
+	next := calcNextResetTime(time.Unix(baseUnix, 0), plan, sub.EndTime)
+	if next > 0 && next <= now {
+		return maybeResetUserSubscriptionWithPlanTx(tx, sub, plan, now)
+	}
+	updates := map[string]interface{}{}
+	if sub.NextResetTime != next {
+		updates["next_reset_time"] = next
+	}
+	if sub.LastResetTime <= 0 && next > 0 {
+		updates["last_reset_time"] = baseUnix
+	}
+	if len(updates) == 0 {
+		return nil
+	}
+	updates["updated_at"] = common.GetTimestamp()
+	return tx.Model(&UserSubscription{}).Where("id = ?", sub.Id).Updates(updates).Error
+}
+
+// SyncActiveUserSubscriptionResetTimesForUser syncs reset schedules for existing subscriptions
+// after their plan reset configuration changes.
+func SyncActiveUserSubscriptionResetTimesForUser(userId int) error {
+	if userId <= 0 {
+		return errors.New("invalid userId")
+	}
+	now := GetDBTimestamp()
+	return DB.Transaction(func(tx *gorm.DB) error {
+		var subs []UserSubscription
+		if err := tx.Set("gorm:query_option", "FOR UPDATE").
+			Where("user_id = ? AND status = ? AND end_time > ?", userId, "active", now).
+			Find(&subs).Error; err != nil {
+			return err
+		}
+		for _, candidate := range subs {
+			sub := candidate
+			plan, err := getSubscriptionPlanByIdTx(tx, sub.PlanId)
+			if err != nil {
+				return err
+			}
+			if err := syncUserSubscriptionResetTimeWithPlanTx(tx, &sub, plan, now); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
+// SyncActiveUserSubscriptionResetTimesForPlanTx syncs active subscriptions when a plan reset setting is updated.
+func SyncActiveUserSubscriptionResetTimesForPlanTx(tx *gorm.DB, plan *SubscriptionPlan) error {
+	if tx == nil || plan == nil || plan.Id <= 0 {
+		return errors.New("invalid plan reset sync args")
+	}
+	now := GetDBTimestamp()
+	var subs []UserSubscription
+	if err := tx.Set("gorm:query_option", "FOR UPDATE").
+		Where("plan_id = ? AND status = ? AND end_time > ?", plan.Id, "active", now).
+		Find(&subs).Error; err != nil {
+		return err
+	}
+	for _, candidate := range subs {
+		sub := candidate
+		if err := syncUserSubscriptionResetTimeWithPlanTx(tx, &sub, plan, now); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // PreConsumeUserSubscription pre-consumes from any active subscription total quota.
 func PreConsumeUserSubscription(requestId string, userId int, modelName string, quotaType int, amount int64) (*SubscriptionPreConsumeResult, error) {
 	if userId <= 0 {

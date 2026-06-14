@@ -1,0 +1,1 @@
+export { createLegalPage } from "../UserAgreement";

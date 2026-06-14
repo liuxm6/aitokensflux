@@ -33,6 +33,7 @@ import { saveAffiliateCode } from '@/features/auth/lib/storage'
 import { GeneralError } from '@/features/errors/general-error'
 import { NotFoundError } from '@/features/errors/not-found-error'
 import { getSetupStatus } from '@/features/setup/api'
+import { withAdminBasePath } from '@/lib/admin-base-path'
 
 function RootComponent() {
   // Load system configuration (logo, system name, etc.) from backend
@@ -117,7 +118,7 @@ export const Route = createRootRouteWithContext<{
       })
 
       if (status?.success && status.data && !status.data.status) {
-        throw redirect({ to: '/setup' })
+        throw redirect({ href: withAdminBasePath('/setup'), replace: true })
       }
       setupStatusChecked = true
       setSetupStatusCache(true)

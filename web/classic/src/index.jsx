@@ -56,12 +56,14 @@ function SemiLocaleWrapper({ children }) {
 
 // initialization
 
+const adminBasePath = import.meta.env.VITE_ADMIN_BASE_PATH || '/admin';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <StatusProvider>
       <UserProvider>
         <BrowserRouter
+          basename={adminBasePath}
           future={{
             v7_startTransition: true,
             v7_relativeSplatPath: true,

@@ -47,6 +47,12 @@ var classicBuildFS embed.FS
 //go:embed web/classic/dist/index.html
 var classicIndexPage []byte
 
+//go:embed web/customer/dist
+var customerBuildFS embed.FS
+
+//go:embed web/customer/dist/index.html
+var customerIndexPage []byte
+
 func main() {
 	startTime := time.Now()
 
@@ -191,10 +197,12 @@ func main() {
 
 	// 设置路由
 	router.SetRouter(server, router.ThemeAssets{
-		DefaultBuildFS:   buildFS,
-		DefaultIndexPage: indexPage,
-		ClassicBuildFS:   classicBuildFS,
-		ClassicIndexPage: classicIndexPage,
+		DefaultBuildFS:    buildFS,
+		DefaultIndexPage:  indexPage,
+		ClassicBuildFS:    classicBuildFS,
+		ClassicIndexPage:  classicIndexPage,
+		CustomerBuildFS:   customerBuildFS,
+		CustomerIndexPage: customerIndexPage,
 	})
 	var port = os.Getenv("PORT")
 	if port == "" {

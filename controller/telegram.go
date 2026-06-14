@@ -106,6 +106,9 @@ func checkTelegramAuthorization(params map[string][]string, token string) bool {
 			hash = v[0]
 			continue
 		}
+		if k == "turnstile" {
+			continue
+		}
 		strs = append(strs, k+"="+v[0])
 	}
 	sort.Strings(strs)

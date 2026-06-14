@@ -19,6 +19,7 @@ For commercial licensing, please contact support@quantumnous.com
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { SetupWizard } from '@/features/setup'
 import { getSetupStatus } from '@/features/setup/api'
+import { withAdminBasePath } from '@/lib/admin-base-path'
 
 export const Route = createFileRoute('/setup/')({
   beforeLoad: async () => {
@@ -31,7 +32,7 @@ export const Route = createFileRoute('/setup/')({
     })
 
     if (status?.success && status.data?.status) {
-      throw redirect({ to: '/' })
+      throw redirect({ href: withAdminBasePath('/'), replace: true })
     }
   },
   component: SetupWizard,

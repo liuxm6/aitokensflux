@@ -12,6 +12,11 @@ export default defineConfig(({ envMode }) => {
     process.env.VITE_REACT_APP_SERVER_URL ||
     env.rawPublicVars.VITE_REACT_APP_SERVER_URL ||
     'http://localhost:3000'
+  const adminBasePath =
+    process.env.VITE_ADMIN_BASE_PATH ||
+    env.rawPublicVars.VITE_ADMIN_BASE_PATH ||
+    '/admin'
+  const adminAssetPrefix = `${adminBasePath.replace(/\/+$/, '')}/`
 
   const isProd = envMode === 'production'
   const devProxy = Object.fromEntries(
@@ -54,6 +59,9 @@ export default defineConfig(({ envMode }) => {
       entry: {
         index: './src/main.tsx',
       },
+      define: {
+        'import.meta.env.VITE_ADMIN_BASE_PATH': JSON.stringify(adminBasePath),
+      },
     },
     resolve: {
       alias: {
@@ -64,6 +72,7 @@ export default defineConfig(({ envMode }) => {
       template: './index.html',
     },
     server: {
+      base: adminAssetPrefix,
       host: '0.0.0.0',
       strictPort: true,
       proxy: devProxy,
@@ -72,6 +81,7 @@ export default defineConfig(({ envMode }) => {
       // Production optimizations
       minify: isProd,
       target: 'web',
+      assetPrefix: adminAssetPrefix,
       distPath: {
         root: 'dist',
       },

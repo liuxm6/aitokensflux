@@ -18,6 +18,11 @@ type SubscriptionPlanDTO struct {
 	Plan model.SubscriptionPlan `json:"plan"`
 }
 
+type UserSubscriptionDTO struct {
+	Subscription *model.UserSubscription `json:"subscription"`
+	Plan         *model.SubscriptionPlan `json:"plan,omitempty"`
+}
+
 type BillingPreferenceRequest struct {
 	BillingPreference string `json:"billing_preference"`
 }
@@ -49,10 +54,35 @@ func GetSubscriptionPlans(c *gin.Context) {
 	common.ApiSuccess(c, result)
 }
 
+func buildUserSubscriptionDTOs(subscriptions []model.SubscriptionSummary) []UserSubscriptionDTO {
+	result := make([]UserSubscriptionDTO, 0, len(subscriptions))
+	planMap := make(map[int]*model.SubscriptionPlan)
+	for _, summary := range subscriptions {
+		item := UserSubscriptionDTO{
+			Subscription: summary.Subscription,
+		}
+		if summary.Subscription != nil && summary.Subscription.PlanId > 0 {
+			plan, ok := planMap[summary.Subscription.PlanId]
+			if !ok {
+				if p, err := model.GetSubscriptionPlanById(summary.Subscription.PlanId); err == nil && p != nil {
+					plan = p
+				}
+				planMap[summary.Subscription.PlanId] = plan
+			}
+			item.Plan = plan
+		}
+		result = append(result, item)
+	}
+	return result
+}
+
 func GetSubscriptionSelf(c *gin.Context) {
 	userId := c.GetInt("id")
 	settingMap, _ := model.GetUserSetting(userId, false)
 	pref := common.NormalizeBillingPreference(settingMap.BillingPreference)
+	if err := model.SyncActiveUserSubscriptionResetTimesForUser(userId); err != nil {
+		common.SysLog("sync subscription reset times failed: " + err.Error())
+	}
 
 	// Get all subscriptions (including expired)
 	allSubscriptions, err := model.GetAllUserSubscriptions(userId)
@@ -68,8 +98,8 @@ func GetSubscriptionSelf(c *gin.Context) {
 
 	common.ApiSuccess(c, gin.H{
 		"billing_preference": pref,
-		"subscriptions":      activeSubscriptions, // all active subscriptions
-		"all_subscriptions":  allSubscriptions,    // all subscriptions including expired
+		"subscriptions":      buildUserSubscriptionDTOs(activeSubscriptions), // all active subscriptions
+		"all_subscriptions":  buildUserSubscriptionDTOs(allSubscriptions),    // all subscriptions including expired
 	})
 }
 
@@ -288,6 +318,9 @@ func AdminUpdateSubscriptionPlan(c *gin.Context) {
 			updateMap["allow_balance_pay"] = *req.Plan.AllowBalancePay
 		}
 		if err := tx.Model(&model.SubscriptionPlan{}).Where("id = ?", id).Updates(updateMap).Error; err != nil {
+			return err
+		}
+		if err := model.SyncActiveUserSubscriptionResetTimesForPlanTx(tx, &req.Plan); err != nil {
 			return err
 		}
 		return nil

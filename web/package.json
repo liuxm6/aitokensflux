@@ -3,7 +3,8 @@
   "private": true,
   "workspaces": [
     "default",
-    "classic"
+    "classic",
+    "customer"
   ],
   "catalog": {
     "@lobehub/icons": "^5.10.0",

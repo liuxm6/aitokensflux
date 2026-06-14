@@ -10,6 +10,9 @@ build
 logs
 web/default/dist
 web/classic/dist
+web/customer/dist
+web/customer/node_modules
+web/outputs_temp
 web/node_modules
 web/dist
 .env
@@ -36,3 +39,4 @@ data/
 token_estimator_test.go
 skills-lock.json
 .playwright-mcp
+docs/session-handoff-*.md
