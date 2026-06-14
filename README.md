@@ -1,6 +1,10 @@
 <div align="center">
 
-<img src="./aitokensflux-logo/svg/lockup-horizontal-flux-light.svg" alt="Ai Tokens Flux" width="460" />
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./aitokensflux-logo/svg/lockup-horizontal-flux-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="./aitokensflux-logo/svg/lockup-horizontal-flux-light.svg">
+  <img src="./aitokensflux-logo/svg/lockup-horizontal-flux-light.svg" alt="Ai Tokens Flux" width="460">
+</picture>
 
 # Ai Tokens Flux
 
