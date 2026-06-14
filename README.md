@@ -1,5 +1,15 @@
 <div align="center">
 
+<img src="./aitokensflux-logo/svg/lockup-horizontal-flux-light.svg" alt="Ai Tokens Flux" width="460" />
+
+# Ai Tokens Flux
+
+AI token quota and gateway management platform
+
+<sub>Upstream project information is retained below.</sub>
+
+---
+
 ![new-api](/web/default/public/logo.png)
 
 # New API
