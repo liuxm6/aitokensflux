@@ -1,5 +1,6 @@
 import {
   ArrowRight,
+  ArrowRightLeft,
   Check,
   Copy,
   KeyRound,
@@ -35,7 +36,10 @@ import {
 } from "../../helpers/server-address";
 import { localizeKey } from "../../i18n/localization";
 import { apiRequest, buildQueryFromValues } from "../../services/api";
-import { fetchCustomerStatus } from "../../services/customer-api";
+import {
+  fetchCustomerStatus,
+  fetchUserModels,
+} from "../../services/customer-api";
 import type {
   ApiKeyCreateForm,
   ApiKeyExpiryMode,
@@ -44,6 +48,39 @@ import type {
   Language,
   PageData,
 } from "../../types";
+
+const CC_SWITCH_APP_CONFIGS = {
+  claude: {
+    label: "Claude",
+    defaultName: "My Claude",
+    defaultModel: "claude-sonnet-4.6",
+    modelFields: [
+      { key: "model", labelId: "Primary Model", required: true },
+      { key: "haikuModel", labelId: "Haiku Model", required: false },
+      { key: "sonnetModel", labelId: "Sonnet Model", required: false },
+      { key: "opusModel", labelId: "Opus Model", required: false },
+    ],
+  },
+  codex: {
+    label: "Codex",
+    defaultName: "My Codex",
+    defaultModel: "gpt-5.5",
+    modelFields: [{ key: "model", labelId: "Primary Model", required: true }],
+  },
+  gemini: {
+    label: "Gemini",
+    defaultName: "My Gemini",
+    defaultModel: "gemini-2.5-pro",
+    modelFields: [{ key: "model", labelId: "Primary Model", required: true }],
+  },
+} as const;
+
+type CCSwitchApp = keyof typeof CC_SWITCH_APP_CONFIGS;
+
+type CCSwitchDialogState = {
+  token: CustomerToken;
+  apiKey: string;
+} | null;
 
 export function ApiKeysPage() {
   const { requestConfirm } = useContext(ConfirmActionContext);
@@ -63,6 +100,19 @@ export function ApiKeysPage() {
   );
   const [createSubmitting, setCreateSubmitting] = useState(false);
   const [createMessage, setCreateMessage] = useState("");
+  const [ccSwitchDialog, setCcSwitchDialog] =
+    useState<CCSwitchDialogState>(null);
+  const [ccSwitchApp, setCcSwitchApp] = useState<CCSwitchApp>("claude");
+  const [ccSwitchName, setCcSwitchName] = useState<string>(
+    CC_SWITCH_APP_CONFIGS.claude.defaultName,
+  );
+  const [ccSwitchModels, setCcSwitchModels] = useState<Record<string, string>>({
+    model: CC_SWITCH_APP_CONFIGS.claude.defaultModel,
+  });
+  const [ccSwitchModelOptions, setCcSwitchModelOptions] = useState<string[]>(
+    [],
+  );
+  const [ccSwitchModelsLoading, setCcSwitchModelsLoading] = useState(false);
   useToastMessage(tokenMessage);
   useToastMessage(createMessage);
   const gatewayOrigin = getConfiguredServerAddress(status);
@@ -246,7 +296,7 @@ export function ApiKeysPage() {
     });
   };
 
-  const copyToken = async (token: CustomerToken) => {
+  const readTokenKey = async (token: CustomerToken) => {
     setTokenMessage(localizeKey(language, "Reading key..."));
     const response = await apiRequest<{ key: string }>(
       `/api/token/${token.id}/key`,
@@ -256,10 +306,72 @@ export function ApiKeysPage() {
       setTokenMessage(
         response.message || localizeKey(language, "Failed to read key"),
       );
+      return null;
+    }
+    return formatApiKey(response.data.key);
+  };
+
+  const copyToken = async (token: CustomerToken) => {
+    const apiKey = await readTokenKey(token);
+    if (!apiKey) return;
+    await navigator.clipboard?.writeText(apiKey);
+    setTokenMessage(localizeKey(language, "Key copied"));
+  };
+
+  const loadCcSwitchModels = async () => {
+    if (ccSwitchModelsLoading || ccSwitchModelOptions.length > 0) return;
+    setCcSwitchModelsLoading(true);
+    const response = await fetchUserModels();
+    setCcSwitchModelsLoading(false);
+    if (response.success && Array.isArray(response.data)) {
+      setCcSwitchModelOptions(response.data);
       return;
     }
-    await navigator.clipboard?.writeText(formatApiKey(response.data.key));
-    setTokenMessage(localizeKey(language, "Key copied"));
+    setTokenMessage(
+      response.message || localizeKey(language, "Failed to load models"),
+    );
+  };
+
+  const openCcSwitchDialog = async (token: CustomerToken) => {
+    const apiKey = await readTokenKey(token);
+    if (!apiKey) return;
+
+    const app = "claude";
+    const config = CC_SWITCH_APP_CONFIGS[app];
+    setCcSwitchApp(app);
+    setCcSwitchName(config.defaultName);
+    setCcSwitchModels({ model: config.defaultModel });
+    setCcSwitchDialog({ token, apiKey });
+    setTokenMessage("");
+    void loadCcSwitchModels();
+  };
+
+  const handleCcSwitchAppChange = (app: CCSwitchApp) => {
+    const config = CC_SWITCH_APP_CONFIGS[app];
+    setCcSwitchApp(app);
+    setCcSwitchName(config.defaultName);
+    setCcSwitchModels({ model: config.defaultModel });
+  };
+
+  const openCcSwitch = () => {
+    if (!ccSwitchDialog) return;
+    if (!ccSwitchModels.model?.trim()) {
+      setTokenMessage(localizeKey(language, "Please select a primary model"));
+      return;
+    }
+
+    const url = buildCcSwitchUrl({
+      app: ccSwitchApp,
+      name:
+        ccSwitchName.trim() || CC_SWITCH_APP_CONFIGS[ccSwitchApp].defaultName,
+      models: ccSwitchModels,
+      apiKey: ccSwitchDialog.apiKey,
+      serverAddress: gatewayOrigin,
+      openaiBaseUrl: openaiGatewayUrl,
+    });
+    window.open(url, "_blank");
+    setCcSwitchDialog(null);
+    setTokenMessage(localizeKey(language, "Opening CC Switch..."));
   };
 
   const copyBaseUrl = async () => {
@@ -391,24 +503,34 @@ export function ApiKeysPage() {
                   >
                     <Copy size={16} />
                   </button>
-                  <button
-                    className="btn btn-soft btn-sm key-action"
-                    type="button"
-                    onClick={() => void toggleTokenStatus(token)}
-                  >
-                    {token.status === 1 ? (
-                      <T id="Disable" />
-                    ) : (
-                      <T id="Enable" />
-                    )}
-                  </button>
-                  <button
-                    className="btn btn-ghost btn-sm key-action"
-                    type="button"
-                    onClick={() => void deleteToken(token)}
-                  >
-                    <T id="Delete" />
-                  </button>
+                  <div className="key-row-actions">
+                    <button
+                      className="btn btn-ghost btn-sm key-action"
+                      type="button"
+                      onClick={() => void openCcSwitchDialog(token)}
+                    >
+                      <ArrowRightLeft size={15} />
+                      CC Switch
+                    </button>
+                    <button
+                      className="btn btn-soft btn-sm key-action"
+                      type="button"
+                      onClick={() => void toggleTokenStatus(token)}
+                    >
+                      {token.status === 1 ? (
+                        <T id="Disable" />
+                      ) : (
+                        <T id="Enable" />
+                      )}
+                    </button>
+                    <button
+                      className="btn btn-ghost btn-sm key-action"
+                      type="button"
+                      onClick={() => void deleteToken(token)}
+                    >
+                      <T id="Delete" />
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -466,6 +588,20 @@ export function ApiKeysPage() {
         onChange={setCreateForm}
         onClose={closeCreateDialog}
         onSubmit={createToken}
+      />
+      <CCSwitchImportDialog
+        app={ccSwitchApp}
+        modelOptions={ccSwitchModelOptions}
+        models={ccSwitchModels}
+        modelsLoading={ccSwitchModelsLoading}
+        name={ccSwitchName}
+        open={Boolean(ccSwitchDialog)}
+        tokenName={ccSwitchDialog?.token.name || ""}
+        onAppChange={handleCcSwitchAppChange}
+        onChangeModels={setCcSwitchModels}
+        onChangeName={setCcSwitchName}
+        onClose={() => setCcSwitchDialog(null)}
+        onSubmit={openCcSwitch}
       />
     </CustomerShell>
   );
@@ -658,6 +794,182 @@ function ApiKeyCreateDialog({
       </form>
     </div>
   );
+}
+
+function CCSwitchImportDialog({
+  app,
+  name,
+  models,
+  modelOptions,
+  modelsLoading,
+  open,
+  tokenName,
+  onAppChange,
+  onChangeName,
+  onChangeModels,
+  onClose,
+  onSubmit,
+}: {
+  app: CCSwitchApp;
+  name: string;
+  models: Record<string, string>;
+  modelOptions: string[];
+  modelsLoading: boolean;
+  open: boolean;
+  tokenName: string;
+  onAppChange: (app: CCSwitchApp) => void;
+  onChangeName: (name: string) => void;
+  onChangeModels: (models: Record<string, string>) => void;
+  onClose: () => void;
+  onSubmit: () => void;
+}) {
+  const { language } = useContext(LanguageContext);
+  if (!open) return null;
+
+  const currentConfig = CC_SWITCH_APP_CONFIGS[app];
+  const modelListId = `cc-switch-models-${app}`;
+
+  const updateModel = (key: string, value: string) => {
+    onChangeModels({ ...models, [key]: value });
+  };
+
+  return (
+    <div className="purchase-dialog cc-switch-dialog" role="dialog" aria-modal>
+      <button
+        className="purchase-backdrop as-button"
+        type="button"
+        aria-label={localizeKey(language, "Close")}
+        onClick={onClose}
+      />
+      <div className="purchase-panel cc-switch-panel">
+        <button
+          className="purchase-close"
+          type="button"
+          aria-label={localizeKey(language, "Close")}
+          onClick={onClose}
+        >
+          <X size={20} />
+        </button>
+        <div className="purchase-head key-create-head">
+          <span className="purchase-kicker">CC Switch</span>
+          <h2>
+            <T id="Import to CC Switch" />
+          </h2>
+          {tokenName ? <p>{tokenName}</p> : null}
+        </div>
+
+        <div className="key-create-form">
+          <label className="key-create-field">
+            <span>
+              <T id="Application" />
+            </span>
+            <select
+              className="console-select"
+              value={app}
+              onChange={(event) =>
+                onAppChange(event.target.value as CCSwitchApp)
+              }
+            >
+              {(
+                Object.entries(CC_SWITCH_APP_CONFIGS) as [
+                  CCSwitchApp,
+                  (typeof CC_SWITCH_APP_CONFIGS)[CCSwitchApp],
+                ][]
+              ).map(([value, config]) => (
+                <option key={value} value={value}>
+                  {config.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="key-create-field">
+            <span>
+              <T id="Name" />
+            </span>
+            <input
+              className="console-input"
+              value={name}
+              placeholder={currentConfig.defaultName}
+              onChange={(event) => onChangeName(event.target.value)}
+            />
+          </label>
+
+          <datalist id={modelListId}>
+            {modelOptions.map((model) => (
+              <option key={model} value={model} />
+            ))}
+          </datalist>
+
+          {currentConfig.modelFields.map((field) => (
+            <label className="key-create-field" key={field.key}>
+              <span>
+                {localizeKey(language, field.labelId)}
+                {field.required ? <b className="required-dot">*</b> : null}
+              </span>
+              <input
+                className="console-input"
+                list={modelListId}
+                value={models[field.key] || ""}
+                placeholder={localizeKey(
+                  language,
+                  "Select or enter model name",
+                )}
+                onChange={(event) => updateModel(field.key, event.target.value)}
+              />
+            </label>
+          ))}
+
+          {modelsLoading ? (
+            <p className="cc-switch-hint">
+              <T id="Loading models..." />
+            </p>
+          ) : null}
+
+          <div className="key-create-actions">
+            <button className="btn btn-ghost" type="button" onClick={onClose}>
+              <T id="Cancel" />
+            </button>
+            <button className="btn btn-flux" type="button" onClick={onSubmit}>
+              <ArrowRightLeft size={16} />
+              <T id="Open CC Switch" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function buildCcSwitchUrl({
+  app,
+  name,
+  models,
+  apiKey,
+  serverAddress,
+  openaiBaseUrl,
+}: {
+  app: CCSwitchApp;
+  name: string;
+  models: Record<string, string>;
+  apiKey: string;
+  serverAddress: string;
+  openaiBaseUrl: string;
+}) {
+  const endpoint = app === "codex" ? openaiBaseUrl : serverAddress;
+  const params = new URLSearchParams();
+  params.set("resource", "provider");
+  params.set("app", app);
+  params.set("name", name);
+  params.set("endpoint", endpoint);
+  params.set("apiKey", apiKey);
+  for (const [key, value] of Object.entries(models)) {
+    const trimmed = value.trim();
+    if (trimmed) params.set(key, trimmed);
+  }
+  params.set("homepage", serverAddress);
+  params.set("enabled", "true");
+  return `ccswitch://v1/import?${params.toString()}`;
 }
 
 function formatApiKey(key: string) {

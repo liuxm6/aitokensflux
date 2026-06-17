@@ -26,6 +26,10 @@ export async function fetchCustomerStatus() {
   return apiRequest<CustomerStatus>("/api/status", { method: "GET" });
 }
 
+export async function fetchUserModels() {
+  return apiRequest<string[]>("/api/user/models", { method: "GET" });
+}
+
 export async function connectATFSwitch(
   app: string,
   client = "atf-switch",

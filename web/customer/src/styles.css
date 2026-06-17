@@ -4891,7 +4891,7 @@ h3 {
 .key-row {
   display: grid;
   min-height: 60px;
-  grid-template-columns: 96px 58px minmax(0, 1fr) 150px 34px auto auto;
+  grid-template-columns: 96px 58px minmax(0, 1fr) 150px 34px auto;
   align-items: center;
   gap: 8px;
   padding: 0 17px;
@@ -4959,6 +4959,13 @@ h3 {
 
 .key-action {
   white-space: nowrap;
+}
+
+.key-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
 }
 
 .inline-copy {
@@ -5077,6 +5084,31 @@ h3 {
 
 .key-create-actions .btn-flux:disabled svg {
   animation: purchase-spin 1s linear infinite;
+}
+
+.cc-switch-panel {
+  width: min(100%, 500px);
+}
+
+.cc-switch-dialog .purchase-head p {
+  max-width: calc(100% - 44px);
+  overflow: hidden;
+  color: #98a2b3;
+  font-size: 13px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.required-dot {
+  margin-left: 3px;
+  color: #ef4444;
+}
+
+.cc-switch-hint {
+  margin: -3px 0 0;
+  color: #98a2b3;
+  font-size: 13px;
 }
 
 .purchase-dialog {
@@ -8552,8 +8584,13 @@ h3 {
   }
 
   .key-action,
+  .key-row-actions,
   .inline-copy {
     justify-self: start;
+  }
+
+  .key-row-actions {
+    justify-content: flex-start;
   }
 
   .invite-hero {

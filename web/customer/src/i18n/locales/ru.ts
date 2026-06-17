@@ -64,11 +64,12 @@ const customerRuTranslations = {
   "Change password": "Изменить пароль",
   "Change email": "Изменить email",
   "Contact us": "Связаться с нами",
-  "Sign in / Register": "Войти / зарегистрироваться",
+  "Sign in / Register": "Войти",
   "The unified AI model gateway that makes every call count.":
     "Единый шлюз AI-моделей, где каждый запрос приносит больше пользы.",
   Resources: "Ресурсы",
   Features: "Возможности",
+  Docs: "Настройка",
   keys: "ключи",
   Company: "Компания",
   Terms: "Условия",
@@ -81,7 +82,7 @@ const customerRuTranslations = {
   "A stable AI coding solution": "Стабильное решение для AI-разработки",
   "Open dashboard": "Открыть панель",
   "Start now": "Начать сейчас",
-  "Setup guide": "Руководство по настройке",
+  "Setup guide": "Настройка",
   "Claude Code · Codex · Windows / macOS / Linux":
     "Claude Code · Codex · Windows / macOS / Linux",
   "Follow these steps to install and configure {{tool}} on {{os}}.":
@@ -117,7 +118,7 @@ const customerRuTranslations = {
     "Подключитесь за 5 минут и начните экономить уже сегодня.",
   "Sign up for free trial credits, follow the guide once, and your Claude Code runs on aitokensflux.":
     "Зарегистрируйтесь, получите пробные кредиты, пройдите руководство один раз, и ваш Claude Code будет работать через aitokensflux.",
-  "Read docs": "Читать документацию",
+  "Read docs": "Инструкция",
   "Will aitokensflux change my existing tools?":
     "Изменит ли aitokensflux мои текущие инструменты?",
   "No. It only reroutes at the request layer. Your Claude Code, Codex and VS Code workflows stay intact.":
@@ -613,6 +614,9 @@ const customerRuTranslations = {
   "Request failed": "Запрос не выполнен",
   "Request timed out. Please try again.":
     "Время ожидания запроса истекло. Повторите попытку.",
+  "Failed to load models": "Не удалось загрузить модели",
+  "Loading models...": "Загрузка моделей...",
+  "Opening CC Switch...": "Открываем CC Switch...",
 } satisfies Record<string, string>;
 
 export const ruTranslations: Record<string, string> = {
