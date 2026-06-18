@@ -223,6 +223,32 @@ type PriceRow = {
 };
 
 const RATIO_TO_USD_PER_M = 2;
+const FEATURED_PRICING_LIMIT = 4;
+
+const FEATURED_MODEL_SLOTS: Record<PricingProvider, RegExp[][]> = {
+  anthropic: [
+    [/^claude-fable-5$/i],
+    [
+      /^claude-opus-4-5(?:-|$)/i,
+      /^claude-opus-4-1(?:-|$)/i,
+      /^claude-opus-4-8$/i,
+      /^claude-opus-4(?:-|$)/i,
+    ],
+    [
+      /^claude-sonnet-4-6$/i,
+      /^claude-sonnet-4-5(?:-|$)/i,
+      /^claude-sonnet-4(?:-|$)/i,
+      /^claude-3-7-sonnet/i,
+    ],
+    [/^claude-haiku-4-5(?:-|$)/i, /^claude-3-5-haiku/i],
+  ],
+  openai: [
+    [/^gpt-5\.5$/i, /^gpt-5\.4$/i, /^gpt-5(?:-|$)/i],
+    [/^gpt-5\.4-mini$/i, /^gpt-.*mini$/i, /^o4-mini$/i],
+    [/codex/i],
+    [/^gpt-4\.1$/i, /^gpt-4\.1-mini$/i],
+  ],
+};
 
 function classifyProvider(
   modelName: string,
@@ -281,6 +307,48 @@ function TokenPrice({ value }: { value: number | null }) {
   );
 }
 
+function pickFeaturedPriceRows(
+  provider: PricingProvider,
+  rows: PriceRow[],
+): PriceRow[] {
+  const picked: PriceRow[] = [];
+  const used = new Set<string>();
+  const sortedRows = [...rows].sort(comparePriceRows);
+
+  for (const slot of FEATURED_MODEL_SLOTS[provider]) {
+    const row = findFeaturedRow(slot, sortedRows, used);
+    if (!row) continue;
+    picked.push(row);
+    used.add(row.name);
+    if (picked.length >= FEATURED_PRICING_LIMIT) return picked;
+  }
+
+  for (const row of sortedRows) {
+    if (used.has(row.name)) continue;
+    picked.push(row);
+    if (picked.length >= FEATURED_PRICING_LIMIT) break;
+  }
+  return picked;
+}
+
+function findFeaturedRow(
+  slot: RegExp[],
+  rows: PriceRow[],
+  used: Set<string>,
+): PriceRow | null {
+  for (const pattern of slot) {
+    const match = rows.find(
+      (row) => !used.has(row.name) && pattern.test(row.name),
+    );
+    if (match) return match;
+  }
+  return null;
+}
+
+function comparePriceRows(a: PriceRow, b: PriceRow) {
+  return (b.input ?? -1) - (a.input ?? -1) || a.name.localeCompare(b.name);
+}
+
 const DEV_SAMPLE_PRICING: ModelPricingData = {
   vendors: [
     { id: 1, name: "Anthropic" },
@@ -324,9 +392,9 @@ function groupPricing(
     grouped[provider].push(toPriceRow(model));
   }
   for (const provider of ["anthropic", "openai"] as PricingProvider[]) {
-    grouped[provider].sort(
-      (a, b) =>
-        (b.input ?? -1) - (a.input ?? -1) || a.name.localeCompare(b.name),
+    grouped[provider] = pickFeaturedPriceRows(
+      provider,
+      grouped[provider].sort(comparePriceRows),
     );
   }
   return grouped;
