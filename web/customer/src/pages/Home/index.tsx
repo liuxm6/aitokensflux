@@ -223,6 +223,7 @@ type PriceRow = {
 };
 
 const RATIO_TO_USD_PER_M = 2;
+const PRICING_PROVIDER_ORDER: PricingProvider[] = ["openai", "anthropic"];
 
 function classifyProvider(
   modelName: string,
@@ -327,7 +328,7 @@ function groupPricing(
     if (!provider) continue;
     grouped[provider].push(toPriceRow(model));
   }
-  for (const provider of ["anthropic", "openai"] as PricingProvider[]) {
+  for (const provider of PRICING_PROVIDER_ORDER) {
     grouped[provider] = grouped[provider].sort(comparePriceRows);
   }
   return grouped;
@@ -338,7 +339,7 @@ function ModelPricingSection() {
     PricingProvider,
     PriceRow[]
   > | null>(null);
-  const [tab, setTab] = useState<PricingProvider>("anthropic");
+  const [tab, setTab] = useState<PricingProvider>("openai");
 
   useEffect(() => {
     let mounted = true;
@@ -361,7 +362,7 @@ function ModelPricingSection() {
 
   const providers = useMemo(
     () =>
-      (["anthropic", "openai"] as PricingProvider[]).filter(
+      PRICING_PROVIDER_ORDER.filter(
         (provider) => (grouped?.[provider]?.length ?? 0) > 0,
       ),
     [grouped],
