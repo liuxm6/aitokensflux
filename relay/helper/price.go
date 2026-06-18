@@ -61,6 +61,14 @@ func HandleGroupRatio(ctx *gin.Context, relayInfo *relaycommon.RelayInfo) types.
 		groupRatioInfo.GroupRatio = ratio_setting.GetGroupRatio(relayInfo.UsingGroup)
 	}
 
+	if relayInfo.ChannelMeta != nil {
+		if channelRatio, ok := ratio_setting.GetChannelRatio(relayInfo.ChannelId); ok {
+			groupRatioInfo.GroupSpecialRatio = channelRatio
+			groupRatioInfo.GroupRatio = channelRatio
+			groupRatioInfo.HasSpecialRatio = true
+		}
+	}
+
 	return groupRatioInfo
 }
 

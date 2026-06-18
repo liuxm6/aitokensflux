@@ -10,10 +10,33 @@ import (
 	relaycommon "github.com/QuantumNous/new-api/relay/common"
 	"github.com/QuantumNous/new-api/setting/billing_setting"
 	"github.com/QuantumNous/new-api/setting/config"
+	"github.com/QuantumNous/new-api/setting/ratio_setting"
 	"github.com/QuantumNous/new-api/types"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 )
+
+func TestHandleGroupRatioUsesChannelOverride(t *testing.T) {
+	require.NoError(t, ratio_setting.UpdateChannelRatioByJSONString(`{"3":1}`))
+	t.Cleanup(func() {
+		require.NoError(t, ratio_setting.UpdateChannelRatioByJSONString(`{}`))
+	})
+
+	recorder := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(recorder)
+	info := &relaycommon.RelayInfo{
+		UserGroup:  "default",
+		UsingGroup: "default",
+		ChannelMeta: &relaycommon.ChannelMeta{
+			ChannelId: 3,
+		},
+	}
+
+	groupRatioInfo := HandleGroupRatio(ctx, info)
+	require.Equal(t, 1.0, groupRatioInfo.GroupRatio)
+	require.Equal(t, 1.0, groupRatioInfo.GroupSpecialRatio)
+	require.True(t, groupRatioInfo.HasSpecialRatio)
+}
 
 func TestModelPriceHelperTieredUsesPreloadedRequestInput(t *testing.T) {
 	gin.SetMode(gin.TestMode)
