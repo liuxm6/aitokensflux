@@ -64,9 +64,15 @@ export function isDynamicPricingModel(model: PricingModel): boolean {
   return model.billing_mode === 'tiered_expr' && Boolean(model.billing_expr)
 }
 
-export function getDynamicDisplayGroupRatio(model: PricingModel): number {
+export function getDynamicDisplayGroupRatio(
+  model: PricingModel,
+  selectedGroup?: string
+): number {
   const groups = Array.isArray(model.enable_groups) ? model.enable_groups : []
   const ratios = model.group_ratio || {}
+  if (selectedGroup && ratios[selectedGroup] !== undefined) {
+    return ratios[selectedGroup]
+  }
   if (groups.length === 0) return 1
 
   let minRatio = Number.POSITIVE_INFINITY

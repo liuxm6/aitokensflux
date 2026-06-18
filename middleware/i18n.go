@@ -19,7 +19,7 @@ func I18n() gin.HandlerFunc {
 }
 
 // detectLanguage determines the language preference for the request
-// Priority: 1. User setting (if logged in) -> 2. Accept-Language header -> 3. Default language
+// Priority: 1. User setting (if logged in) -> 2. UI language cookie -> 3. edge country header -> 4. Accept-Language header -> 5. Default language
 func detectLanguage(c *gin.Context) string {
 	// 1. Try to get language from user setting (set by auth middleware)
 	if userSetting, ok := common.GetContextKeyType[dto.UserSetting](c, constant.ContextKeyUserSetting); ok {
@@ -28,7 +28,23 @@ func detectLanguage(c *gin.Context) string {
 		}
 	}
 
-	// 2. Parse Accept-Language header
+	// 2. Try frontend language cookie set by the web entrypoint.
+	if cookieLang, err := c.Cookie(common.InterfaceLanguageCookieName); err == nil {
+		lang := i18n.ParseAcceptLanguage(cookieLang)
+		if i18n.IsSupported(lang) {
+			return lang
+		}
+	}
+
+	// 3. Try edge-provided country header, such as Cloudflare CF-IPCountry.
+	if countryLang := common.InterfaceLanguageFromCountryCode(common.EdgeCountryCodeFromHeaders(c.GetHeader)); countryLang != "" {
+		lang := i18n.ParseAcceptLanguage(countryLang)
+		if i18n.IsSupported(lang) {
+			return lang
+		}
+	}
+
+	// 4. Parse Accept-Language header
 	acceptLang := c.GetHeader("Accept-Language")
 	if acceptLang != "" {
 		lang := i18n.ParseAcceptLanguage(acceptLang)
@@ -37,7 +53,7 @@ func detectLanguage(c *gin.Context) string {
 		}
 	}
 
-	// 3. Return default language
+	// 5. Return default language
 	return i18n.DefaultLang
 }
 

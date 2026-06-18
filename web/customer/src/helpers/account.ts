@@ -1,7 +1,7 @@
 import type { CustomerUser } from "../types";
 
 const USER_STORAGE_KEY = "customer-user";
-export const SUPPORT_EMAIL = "support@aitokensflux.com";
+export const SUPPORT_EMAIL = "mr.liuxm6@gmail.com";
 
 export function buildSupportMailto(subject?: string, body?: string) {
   const params = new URLSearchParams();

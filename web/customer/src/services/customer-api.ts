@@ -1,10 +1,13 @@
 import { apiRequest, buildQueryFromValues } from "./api";
 import type {
+  ApiResponse,
   CustomerLogStats,
   CustomerStatus,
   ATFSwitchConnectData,
   CustomerUser,
+  ModelPricingData,
   PageData,
+  PricingModel,
   SelfSubscriptionData,
   SubscriptionPaymentData,
   SubscriptionPaymentResponse,
@@ -180,6 +183,12 @@ export async function fetchPublicPlans() {
   return apiRequest<SubscriptionPlanRecord[]>("/api/subscription/plans", {
     method: "GET",
   });
+}
+
+export async function fetchModelPricing() {
+  return apiRequest<PricingModel[]>("/api/pricing/public", {
+    method: "GET",
+  }) as Promise<ApiResponse<PricingModel[]> & ModelPricingData>;
 }
 
 export async function fetchSelfSubscription() {

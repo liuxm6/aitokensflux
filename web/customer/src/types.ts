@@ -218,6 +218,31 @@ export type SubscriptionPlanRecord = {
   plan: SubscriptionPlan;
 };
 
+export type PricingModel = {
+  model_name: string;
+  quota_type: number;
+  model_ratio: number;
+  model_price: number;
+  completion_ratio: number;
+  cache_ratio?: number;
+  owner_by?: string;
+  vendor_id?: number;
+  enable_groups?: string[];
+};
+
+export type PricingVendor = {
+  id: number;
+  name: string;
+  icon?: string;
+  description?: string;
+};
+
+export type ModelPricingData = {
+  data?: PricingModel[];
+  vendors?: PricingVendor[];
+  group_ratio?: Record<string, number>;
+};
+
 export type CustomerSubscription = {
   id: number;
   user_id: number;

@@ -51,6 +51,7 @@ export interface PricingColumnsOptions {
   priceRate?: number
   usdExchangeRate?: number
   showRechargePrice?: boolean
+  selectedGroup?: string
 }
 
 function renderLimitedTags(
@@ -83,6 +84,41 @@ function renderLimitedGroupBadges(
   )
 }
 
+function renderGroupRatioLabel(
+  model: PricingModel,
+  selectedGroup?: string
+): React.ReactNode {
+  const vendorName = String(model.vendor_name || '').toLowerCase()
+  if (vendorName.includes('openai')) {
+    return (
+      <span className='text-muted-foreground/70 text-[12px] font-medium ml-2'>
+        ×0.5
+      </span>
+    )
+  }
+
+  if (vendorName.includes('anthropic')) {
+    return (
+      <span className='text-muted-foreground/70 text-[12px] font-medium ml-2'>
+        ×1.0
+      </span>
+    )
+  }
+
+  const hasRatioData =
+    model.group_ratio && Object.keys(model.group_ratio).length > 0
+  if (!hasRatioData) {
+    return null
+  }
+
+  const ratioFromGroup = getDynamicDisplayGroupRatio(model, selectedGroup)
+  return (
+    <span className='text-muted-foreground/70 text-[12px] font-medium ml-2'>
+      ×{ratioFromGroup}
+    </span>
+  )
+}
+
 export function usePricingColumns(
   options: PricingColumnsOptions = {}
 ): ColumnDef<PricingModel>[] {
@@ -92,6 +128,7 @@ export function usePricingColumns(
     priceRate = 1,
     usdExchangeRate = 1,
     showRechargePrice = false,
+    selectedGroup,
   } = options
 
   const tokenUnitLabel = tokenUnit === 'K' ? '1K' : '1M'
@@ -156,7 +193,10 @@ export function usePricingColumns(
           showRechargePrice,
           priceRate,
           usdExchangeRate,
-          groupRatioMultiplier: getDynamicDisplayGroupRatio(model),
+          groupRatioMultiplier: getDynamicDisplayGroupRatio(
+            model,
+            selectedGroup
+          ),
         })
 
         if (dynamicSummary) {
@@ -218,7 +258,8 @@ export function usePricingColumns(
               tokenUnit,
               showRechargePrice,
               priceRate,
-              usdExchangeRate
+              usdExchangeRate,
+              selectedGroup
             )
           )
           const outputPrice = stripTrailingZeros(
@@ -228,7 +269,8 @@ export function usePricingColumns(
               tokenUnit,
               showRechargePrice,
               priceRate,
-              usdExchangeRate
+              usdExchangeRate,
+              selectedGroup
             )
           )
 
@@ -238,6 +280,7 @@ export function usePricingColumns(
                 {inputPrice}
                 <span className='text-muted-foreground/40 mx-1'>/</span>
                 {outputPrice}
+                {renderGroupRatioLabel(model, selectedGroup)}
               </span>
               <div className='text-muted-foreground/50 text-[10px]'>
                 / {tokenUnitLabel} tokens
@@ -251,13 +294,17 @@ export function usePricingColumns(
             model,
             showRechargePrice,
             priceRate,
-            usdExchangeRate
+            usdExchangeRate,
+            selectedGroup
           )
         )
 
         return (
           <div className='min-w-[100px]'>
-            <span className='font-mono text-sm tabular-nums'>{price}</span>
+            <span className='font-mono text-sm tabular-nums'>
+              {price}
+              {renderGroupRatioLabel(model, selectedGroup)}
+            </span>
             <div className='text-muted-foreground/50 text-[10px]'>
               / {t('request')}
             </div>
@@ -280,7 +327,10 @@ export function usePricingColumns(
           showRechargePrice,
           priceRate,
           usdExchangeRate,
-          groupRatioMultiplier: getDynamicDisplayGroupRatio(model),
+          groupRatioMultiplier: getDynamicDisplayGroupRatio(
+            model,
+            selectedGroup
+          ),
         })
 
         if (dynamicSummary) {
@@ -324,7 +374,8 @@ export function usePricingColumns(
             tokenUnit,
             showRechargePrice,
             priceRate,
-            usdExchangeRate
+            usdExchangeRate,
+            selectedGroup
           )
         )
 

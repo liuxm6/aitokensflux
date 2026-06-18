@@ -52,6 +52,12 @@ web/             — Frontend themes container
 - Usage: `useTranslation()` hook, call `t('English key')` in components
 - CLI tools: `bun run i18n:sync` (from `web/default/`)
 
+## Production Release
+
+Follow `docs/production-release.md` for the standard production release process, including clean-worktree builds, frontend compilation, backend `linux/amd64` packaging, scratch Docker image creation, upload, deployment, validation, and rollback.
+
+Never commit production SSH hosts, IPs, passwords, private keys, or private handoff notes. Do not compile on the production server. Do not run `docker compose down`, remove database volumes, or run `docker system prune -a --volumes` in production.
+
 ## Rules
 
 ### Rule 1: JSON Package — Use `common/json.go`

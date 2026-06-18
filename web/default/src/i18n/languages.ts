@@ -26,6 +26,9 @@ export const INTERFACE_LANGUAGE_OPTIONS = [
   { code: 'vi', label: 'Tiếng Việt' },
 ] as const
 
+export const INTERFACE_LANGUAGE_COOKIE_NAME = 'i18next'
+export const INTERFACE_LANGUAGE_COOKIE_MAX_AGE_DAYS = 30
+
 export type InterfaceLanguageCode =
   (typeof INTERFACE_LANGUAGE_OPTIONS)[number]['code']
 

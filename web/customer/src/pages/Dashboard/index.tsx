@@ -10,6 +10,7 @@ import {
   CustomerShell,
 } from "../../components/layout/CustomerShell";
 import { Panel } from "../../components/common/ui/Panel";
+import { SupportChannelGrid } from "../../components/support/SupportChannels";
 import { AuthContext } from "../../context/Auth";
 import { LanguageContext, T } from "../../context/Language";
 import {
@@ -165,6 +166,19 @@ export function createDashboardPage({
         {topupDialogOpen ? (
           <TopupDialog onClose={() => setTopupDialogOpen(false)} />
         ) : null}
+
+        <SectionLabel id="Support & community" />
+        <Panel className="dashboard-support-panel">
+          <div className="dashboard-support-head">
+            <strong>
+              <T id="Choose the support channel that works for you." />
+            </strong>
+            <span>
+              <T id="Support groups are best for real-time help. Email is best for account, order, and security issues." />
+            </span>
+          </div>
+          <SupportChannelGrid />
+        </Panel>
 
         <SectionLabel id="Setup tutorials" />
         <Panel className="tutorial-panel">

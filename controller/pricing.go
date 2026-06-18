@@ -1,6 +1,10 @@
 package controller
 
 import (
+	"net/http"
+	"sync"
+	"time"
+
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/model"
 	"github.com/QuantumNous/new-api/service"
@@ -8,6 +12,35 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
+
+const (
+	pricingResponseVersion = "a42d372ccf0b5dd13ecf71203521f9d2"
+	publicPricingCacheTTL  = time.Minute
+)
+
+type publicPricingResponse struct {
+	Success        bool                  `json:"success"`
+	Data           []publicPricingModel  `json:"data"`
+	Vendors        []model.PricingVendor `json:"vendors"`
+	PricingVersion string                `json:"pricing_version"`
+}
+
+type publicPricingModel struct {
+	ModelName       string   `json:"model_name"`
+	VendorID        int      `json:"vendor_id,omitempty"`
+	QuotaType       int      `json:"quota_type"`
+	ModelRatio      float64  `json:"model_ratio"`
+	ModelPrice      float64  `json:"model_price"`
+	OwnerBy         string   `json:"owner_by,omitempty"`
+	CompletionRatio float64  `json:"completion_ratio"`
+	CacheRatio      *float64 `json:"cache_ratio,omitempty"`
+}
+
+var publicPricingCache = struct {
+	sync.RWMutex
+	body      []byte
+	expiresAt time.Time
+}{}
 
 func filterPricingByUsableGroups(pricing []model.Pricing, usableGroup map[string]string) []model.Pricing {
 	if len(pricing) == 0 {
@@ -72,8 +105,66 @@ func GetPricing(c *gin.Context) {
 		"usable_group":       usableGroup,
 		"supported_endpoint": model.GetSupportedEndpointMap(),
 		"auto_groups":        service.GetUserAutoGroup(group),
-		"pricing_version":    "a42d372ccf0b5dd13ecf71203521f9d2",
+		"pricing_version":    pricingResponseVersion,
 	})
+}
+
+func GetPublicPricing(c *gin.Context) {
+	now := time.Now()
+	if body, ok := getCachedPublicPricing(now); ok {
+		c.Header("X-Cache", "HIT")
+		c.Data(http.StatusOK, "application/json; charset=utf-8", body)
+		return
+	}
+
+	body, err := common.Marshal(publicPricingResponse{
+		Success:        true,
+		Data:           toPublicPricingModels(model.GetPricing()),
+		Vendors:        model.GetVendors(),
+		PricingVersion: pricingResponseVersion,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	publicPricingCache.Lock()
+	publicPricingCache.body = body
+	publicPricingCache.expiresAt = now.Add(publicPricingCacheTTL)
+	publicPricingCache.Unlock()
+
+	c.Header("X-Cache", "MISS")
+	c.Data(http.StatusOK, "application/json; charset=utf-8", body)
+}
+
+func getCachedPublicPricing(now time.Time) ([]byte, bool) {
+	publicPricingCache.RLock()
+	defer publicPricingCache.RUnlock()
+
+	if len(publicPricingCache.body) == 0 || !now.Before(publicPricingCache.expiresAt) {
+		return nil, false
+	}
+	return publicPricingCache.body, true
+}
+
+func toPublicPricingModels(pricing []model.Pricing) []publicPricingModel {
+	items := make([]publicPricingModel, 0, len(pricing))
+	for _, item := range pricing {
+		items = append(items, publicPricingModel{
+			ModelName:       item.ModelName,
+			VendorID:        item.VendorID,
+			QuotaType:       item.QuotaType,
+			ModelRatio:      item.ModelRatio,
+			ModelPrice:      item.ModelPrice,
+			OwnerBy:         item.OwnerBy,
+			CompletionRatio: item.CompletionRatio,
+			CacheRatio:      item.CacheRatio,
+		})
+	}
+	return items
 }
 
 func ResetModelRatio(c *gin.Context) {

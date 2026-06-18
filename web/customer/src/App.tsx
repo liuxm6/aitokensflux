@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { protectedPages } from "./constants/navigation";
 import { AuthContext } from "./context/Auth";
 import { ConfirmActionContext } from "./context/ConfirmAction";
@@ -38,6 +38,12 @@ import {
   isRussian,
   isTraditionalChinese,
 } from "./i18n/localization";
+import {
+  CUSTOMER_LANGUAGE_SOURCE_MANUAL,
+  CUSTOMER_LANGUAGE_SOURCE_STORAGE_KEY,
+  CUSTOMER_LANGUAGE_STORAGE_KEY,
+  detectCustomerLanguage,
+} from "./i18n/languages";
 import { getPageKey, navigateTo } from "./helpers/navigation";
 import { getConfiguredServerAddress } from "./helpers/server-address";
 import type {
@@ -81,22 +87,16 @@ const NotFoundPage = createNotFoundPage({ MarketingHeader });
 const SettingsPage = createSettingsPage({ AccountActionDialog });
 
 function App() {
-  const [language, setLanguage] = useState<Language>(() => {
-    const stored = window.localStorage.getItem("customer-lang");
-    if (
-      stored === "en" ||
-      stored === "ru" ||
-      stored === "zh-TW" ||
-      stored === "zh"
-    ) {
-      return stored;
-    }
-    const browserLanguage = navigator.language.toLowerCase();
-    if (browserLanguage.startsWith("ru")) return "ru";
-    if (browserLanguage.startsWith("en")) return "en";
-    if (browserLanguage.startsWith("zh-tw")) return "zh-TW";
-    return "zh";
-  });
+  const [language, setLanguageState] = useState<Language>(
+    detectCustomerLanguage,
+  );
+  const setLanguage = useCallback((nextLanguage: Language) => {
+    window.localStorage.setItem(
+      CUSTOMER_LANGUAGE_SOURCE_STORAGE_KEY,
+      CUSTOMER_LANGUAGE_SOURCE_MANUAL,
+    );
+    setLanguageState(nextLanguage);
+  }, []);
   const [translationVersion, setTranslationVersion] = useState(0);
   const [user, setCurrentUser] = useState<CustomerUser | null>(() =>
     readStoredUser(),
@@ -139,7 +139,7 @@ function App() {
   }, [user?.id]);
 
   useEffect(() => {
-    window.localStorage.setItem("customer-lang", language);
+    window.localStorage.setItem(CUSTOMER_LANGUAGE_STORAGE_KEY, language);
     document.documentElement.lang = isRussian(language)
       ? "ru"
       : isEnglish(language)

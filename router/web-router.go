@@ -46,6 +46,7 @@ func SetWebRouter(router *gin.Engine, assets ThemeAssets) {
 			return
 		}
 		c.Header("Cache-Control", "no-cache")
+		applyEdgeInterfaceLanguage(c)
 		if isAdminWebPath(path) && common.GetTheme() == "classic" {
 			c.Data(http.StatusOK, "text/html; charset=utf-8", assets.ClassicIndexPage)
 			return
@@ -56,6 +57,68 @@ func SetWebRouter(router *gin.Engine, assets ThemeAssets) {
 		}
 		c.Data(http.StatusOK, "text/html; charset=utf-8", assets.CustomerIndexPage)
 	})
+}
+
+func applyEdgeInterfaceLanguage(c *gin.Context) {
+	addVaryHeader(c, common.EdgeCountryHeaderNames()...)
+
+	lang := interfaceLanguageFromCookie(c)
+	if lang == "" {
+		lang = common.InterfaceLanguageFromCountryCode(common.EdgeCountryCodeFromHeaders(c.GetHeader))
+		if lang != "" {
+			http.SetCookie(c.Writer, &http.Cookie{
+				Name:     common.InterfaceLanguageCookieName,
+				Value:    lang,
+				Path:     "/",
+				MaxAge:   common.InterfaceLanguageCookieMaxAge,
+				SameSite: http.SameSiteLaxMode,
+			})
+		}
+	}
+	if lang != "" {
+		c.Header("Content-Language", lang)
+	}
+}
+
+func interfaceLanguageFromCookie(c *gin.Context) string {
+	value, err := c.Cookie(common.InterfaceLanguageCookieName)
+	if err != nil {
+		return ""
+	}
+	return common.NormalizeInterfaceLanguage(value)
+}
+
+func addVaryHeader(c *gin.Context, values ...string) {
+	existing := c.Writer.Header().Get("Vary")
+	if strings.TrimSpace(existing) == "*" {
+		return
+	}
+
+	parts := make([]string, 0, len(values)+1)
+	seen := map[string]struct{}{}
+	for _, item := range strings.Split(existing, ",") {
+		item = strings.TrimSpace(item)
+		if item == "" {
+			continue
+		}
+		seen[strings.ToLower(item)] = struct{}{}
+		parts = append(parts, item)
+	}
+	for _, value := range values {
+		value = strings.TrimSpace(value)
+		if value == "" {
+			continue
+		}
+		key := strings.ToLower(value)
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
+		parts = append(parts, value)
+	}
+	if len(parts) > 0 {
+		c.Header("Vary", strings.Join(parts, ", "))
+	}
 }
 
 func restrictAdminWebHosts() gin.HandlerFunc {

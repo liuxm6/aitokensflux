@@ -19,6 +19,10 @@ For commercial licensing, please contact support@quantumnous.com
 import i18n from 'i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
+import {
+  INTERFACE_LANGUAGE_COOKIE_MAX_AGE_DAYS,
+  INTERFACE_LANGUAGE_COOKIE_NAME,
+} from './languages'
 import en from './locales/en.json'
 import fr from './locales/fr.json'
 import ja from './locales/ja.json'
@@ -49,8 +53,14 @@ i18n
       escapeValue: false, // not needed for react as it escapes by default
     },
     detection: {
-      order: ['localStorage', 'navigator'],
-      caches: ['localStorage'],
+      order: ['localStorage', 'cookie', 'navigator'],
+      caches: ['localStorage', 'cookie'],
+      lookupCookie: INTERFACE_LANGUAGE_COOKIE_NAME,
+      cookieMinutes: 60 * 24 * INTERFACE_LANGUAGE_COOKIE_MAX_AGE_DAYS,
+      cookieOptions: {
+        path: '/',
+        sameSite: 'lax',
+      },
     },
   })
 

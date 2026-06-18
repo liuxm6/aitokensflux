@@ -6,7 +6,7 @@ import { Brand } from "../common/Brand";
 import { LanguageButton } from "./LanguageButton";
 import { AuthContext } from "../../context/Auth";
 import { LanguageContext, T } from "../../context/Language";
-import { getUserLabel } from "../../helpers/account";
+import { buildSupportMailto, getUserLabel } from "../../helpers/account";
 import { localizeKey } from "../../i18n/localization";
 import type { AccountDialogMode, CustomerUser } from "../../types";
 
@@ -125,7 +125,7 @@ export function MarketingHeader({ minimal = false }: { minimal?: boolean }) {
                     </button>
                     <a
                       className="account-menu-item"
-                      href="mailto:support@aitokensflux.com"
+                      href={buildSupportMailto("aitokensflux support")}
                       onClick={() => setMenuOpen(false)}
                     >
                       <Mail size={17} />

@@ -6,6 +6,13 @@ const defaultRuTranslations = defaultRuLocale.translation as Record<
 >;
 
 const customerRuTranslations = {
+  "Model pricing": "Цены на модели",
+  "Pay only for the tokens you use":
+    "Платите только за использованные токены",
+  Input: "Ввод",
+  Output: "Вывод",
+  "Cache read": "Чтение из кэша",
+  "per request": "за запрос",
   Referrals: "Реферальные бонусы",
   "Custom period": "Пользовательский период",
   "Daily reset": "Ежедневный сброс",
@@ -617,6 +624,27 @@ const customerRuTranslations = {
   "Failed to load models": "Не удалось загрузить модели",
   "Loading models...": "Загрузка моделей...",
   "Opening CC Switch...": "Открываем CC Switch...",
+  "Chinese support for top-ups, setup, and account issues":
+    "Поддержка на китайском по пополнениям, настройке и аккаунтам",
+  "Choose the support channel that works for you.":
+    "Выберите удобный канал поддержки.",
+  "Community discussion and usage experience":
+    "Обсуждения сообщества и опыт использования",
+  "Email support for accounts, orders, and security":
+    "Поддержка по email для аккаунтов, заказов и безопасности",
+  Gmail: "Gmail",
+  "mr.liuxm6@gmail.com": "mr.liuxm6@gmail.com",
+  "Product updates and public announcements":
+    "Новости продукта и публичные объявления",
+  "QQ group: 826073513": "Группа QQ: 826073513",
+  "QQ support group": "Группа поддержки QQ",
+  "Real-time notices and international support":
+    "Оперативные уведомления и международная поддержка",
+  "Support & community": "Поддержка и сообщество",
+  "Support groups are best for real-time help. Email is best for account, order, and security issues.":
+    "Группы поддержки подходят для быстрой помощи. Email лучше использовать для вопросов аккаунта, заказов и безопасности.",
+  "Telegram support group": "Группа поддержки Telegram",
+  X: "X",
 } satisfies Record<string, string>;
 
 export const ruTranslations: Record<string, string> = {

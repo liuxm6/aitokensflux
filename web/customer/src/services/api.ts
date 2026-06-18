@@ -1,23 +1,11 @@
 import { translateLocale } from "../i18n/locales";
+import { detectCustomerLanguage } from "../i18n/languages";
 import type { ApiResponse } from "../types";
-import type { Language } from "../types";
 
 const API_REQUEST_TIMEOUT_MS = 8000;
 
-function getCurrentLanguage(): Language {
-  const language =
-    window.localStorage.getItem("customer-lang") || navigator.language;
-  if (language === "zh-TW" || language.toLowerCase().startsWith("zh-tw")) {
-    return "zh-TW";
-  }
-  const normalizedLanguage = language.toLowerCase();
-  if (normalizedLanguage.startsWith("zh")) return "zh";
-  if (normalizedLanguage.startsWith("ru")) return "ru";
-  return "en";
-}
-
 function getNetworkErrorMessage(error: unknown) {
-  const language = getCurrentLanguage();
+  const language = detectCustomerLanguage();
   if (error instanceof DOMException && error.name === "AbortError") {
     return translateLocale(language, "Request timed out. Please try again.");
   }
@@ -56,7 +44,7 @@ export async function apiRequest<T>(
         message:
           data.message ||
           response.statusText ||
-          translateLocale(getCurrentLanguage(), "Request failed"),
+          translateLocale(detectCustomerLanguage(), "Request failed"),
         status: response.status,
       };
     }
