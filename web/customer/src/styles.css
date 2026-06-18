@@ -1260,7 +1260,8 @@ h3 {
   flex-shrink: 0;
 }
 
-.mp-tab-logo.claude {
+.mp-tab-logo.claude,
+.mp-tab-logo.anthropic {
   color: #d97757;
 }
 
@@ -1270,6 +1271,24 @@ h3 {
 
 .mp-tab.active .mp-tab-logo.openai {
   color: #fff;
+}
+
+.mp-tab-mood {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 22px;
+  margin-left: -2px;
+  border-radius: 999px;
+  background: rgb(11 12 14 / 6%);
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.mp-tab.active .mp-tab-mood {
+  background: rgb(255 255 255 / 16%);
 }
 
 .mp-tab-rate {
@@ -1292,15 +1311,20 @@ h3 {
 
 .mp-table-wrap {
   max-width: 840px;
+  height: min(430px, calc(100vh - 260px));
+  min-height: 330px;
   margin: 0 auto;
   padding: 8px;
-  overflow-x: auto;
+  overflow: auto;
+  overscroll-behavior: contain;
   border: 1px solid rgb(11 12 14 / 8%);
   border-radius: 20px;
   background:
     linear-gradient(180deg, rgb(255 255 255 / 96%), rgb(250 251 249 / 96%)),
     var(--surface);
   box-shadow: 0 18px 50px rgb(16 18 20 / 7%);
+  scrollbar-gutter: stable both-edges;
+  -webkit-overflow-scrolling: touch;
 }
 
 .mp-table {
@@ -1319,8 +1343,12 @@ h3 {
 }
 
 .mp-table th {
+  position: sticky;
+  z-index: 2;
+  top: 0;
   padding-top: 5px;
   padding-bottom: 8px;
+  background: rgb(250 251 249 / 98%);
   color: var(--muted-2);
   font-weight: 760;
   font-size: 12px;
@@ -1539,6 +1567,14 @@ h3 {
   margin: 9px 0 0;
   color: var(--muted);
   font-size: 14px;
+}
+
+.home-features {
+  padding-bottom: 34px;
+}
+
+.model-pricing-section {
+  padding-top: 30px;
 }
 
 .showcase {
@@ -8241,6 +8277,63 @@ h3 {
 
   .section {
     padding: 60px 0;
+  }
+
+  .home-features {
+    padding-bottom: 24px;
+  }
+
+  .model-pricing-section {
+    padding-top: 22px;
+  }
+
+  .model-pricing-section .h-sec {
+    font-size: 30px;
+  }
+
+  .mp-tabs {
+    max-width: calc(100vw - 32px);
+    margin-top: 20px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+  }
+
+  .mp-tab {
+    flex-shrink: 0;
+    padding: 0 10px;
+    font-size: 13px;
+  }
+
+  .mp-tab-mood {
+    width: 22px;
+    height: 20px;
+    font-size: 12px;
+  }
+
+  .mp-table-wrap {
+    width: calc(100vw - 32px);
+    height: min(380px, 58vh);
+    min-height: 280px;
+    padding: 6px;
+    border-radius: 16px;
+  }
+
+  .mp-table {
+    min-width: 560px;
+    border-spacing: 0 6px;
+    font-size: 13px;
+  }
+
+  .mp-table th,
+  .mp-table td {
+    padding: 10px 12px;
+  }
+
+  .mp-table td.mp-col-model {
+    max-width: 210px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 13.5px;
   }
 
   .legal-page {

@@ -303,9 +303,19 @@ const DEV_SAMPLE_PRICING: ModelPricingData = {
 
 const PROVIDER_META: Record<
   PricingProvider,
-  { label: string; multiplier: string; Logo: ComponentType<{ className?: string }> }
+  {
+    label: string;
+    multiplier: string;
+    mood?: string;
+    Logo: ComponentType<{ className?: string }>;
+  }
 > = {
-  anthropic: { label: "Anthropic", multiplier: "1.0x", Logo: ClaudeLogo },
+  anthropic: {
+    label: "Anthropic",
+    multiplier: "1.0x",
+    mood: "👎",
+    Logo: ClaudeLogo,
+  },
   openai: { label: "OpenAI", multiplier: "0.6x", Logo: OpenAILogo },
 };
 
@@ -393,7 +403,7 @@ function ModelPricingSection() {
 
         <div className="mp-tabs" role="tablist">
           {providers.map((provider) => {
-            const { label, multiplier, Logo } = PROVIDER_META[provider];
+            const { label, multiplier, mood, Logo } = PROVIDER_META[provider];
             return (
               <button
                 key={provider}
@@ -405,6 +415,11 @@ function ModelPricingSection() {
               >
                 <Logo className={`mp-tab-logo ${provider}`} />
                 <span>{label}</span>
+                {mood ? (
+                  <span className="mp-tab-mood" aria-hidden="true">
+                    {mood}
+                  </span>
+                ) : null}
                 <span className="mp-tab-rate">{multiplier}</span>
               </button>
             );
@@ -566,7 +581,7 @@ export function createHomePage({
             </div>
           </section>
 
-          <section className="section" id="features">
+          <section className="section home-features" id="features">
             <div className="wrap">
               <div className="center">
                 <Pill>
