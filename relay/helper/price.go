@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/QuantumNous/new-api/common"
+	"github.com/QuantumNous/new-api/constant"
 	"github.com/QuantumNous/new-api/logger"
 	"github.com/QuantumNous/new-api/model"
 	"github.com/QuantumNous/new-api/pkg/billingexpr"
@@ -35,6 +36,16 @@ func modelPriceNotConfiguredError(modelName string, userId int) error {
 // https://docs.claude.com/en/docs/build-with-claude/prompt-caching#1-hour-cache-duration
 const claudeCacheCreation1hMultiplier = 6 / 3.75
 
+func getPriceChannelID(ctx *gin.Context, relayInfo *relaycommon.RelayInfo) int {
+	if relayInfo != nil && relayInfo.ChannelMeta != nil {
+		return relayInfo.ChannelId
+	}
+	if ctx == nil {
+		return 0
+	}
+	return common.GetContextKeyInt(ctx, constant.ContextKeyChannelId)
+}
+
 // HandleGroupRatio checks for "auto_group" in the context and updates the group ratio and relayInfo.UsingGroup if present
 func HandleGroupRatio(ctx *gin.Context, relayInfo *relaycommon.RelayInfo) types.GroupRatioInfo {
 	groupRatioInfo := types.GroupRatioInfo{
@@ -61,12 +72,10 @@ func HandleGroupRatio(ctx *gin.Context, relayInfo *relaycommon.RelayInfo) types.
 		groupRatioInfo.GroupRatio = ratio_setting.GetGroupRatio(relayInfo.UsingGroup)
 	}
 
-	if relayInfo.ChannelMeta != nil {
-		if channelRatio, ok := ratio_setting.GetChannelRatio(relayInfo.ChannelId); ok {
-			groupRatioInfo.GroupSpecialRatio = channelRatio
-			groupRatioInfo.GroupRatio = channelRatio
-			groupRatioInfo.HasSpecialRatio = true
-		}
+	if channelRatio, ok := ratio_setting.GetChannelRatio(getPriceChannelID(ctx, relayInfo)); ok {
+		groupRatioInfo.GroupSpecialRatio = channelRatio
+		groupRatioInfo.GroupRatio = channelRatio
+		groupRatioInfo.HasSpecialRatio = true
 	}
 
 	return groupRatioInfo

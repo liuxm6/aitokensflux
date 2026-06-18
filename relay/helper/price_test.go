@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/QuantumNous/new-api/common"
+	"github.com/QuantumNous/new-api/constant"
 	"github.com/QuantumNous/new-api/pkg/billingexpr"
 	relaycommon "github.com/QuantumNous/new-api/relay/common"
 	"github.com/QuantumNous/new-api/setting/billing_setting"
@@ -30,6 +31,26 @@ func TestHandleGroupRatioUsesChannelOverride(t *testing.T) {
 		ChannelMeta: &relaycommon.ChannelMeta{
 			ChannelId: 3,
 		},
+	}
+
+	groupRatioInfo := HandleGroupRatio(ctx, info)
+	require.Equal(t, 1.0, groupRatioInfo.GroupRatio)
+	require.Equal(t, 1.0, groupRatioInfo.GroupSpecialRatio)
+	require.True(t, groupRatioInfo.HasSpecialRatio)
+}
+
+func TestHandleGroupRatioUsesChannelOverrideWithoutChannelMeta(t *testing.T) {
+	require.NoError(t, ratio_setting.UpdateChannelRatioByJSONString(`{"3":1}`))
+	t.Cleanup(func() {
+		require.NoError(t, ratio_setting.UpdateChannelRatioByJSONString(`{}`))
+	})
+
+	recorder := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(recorder)
+	common.SetContextKey(ctx, constant.ContextKeyChannelId, 3)
+	info := &relaycommon.RelayInfo{
+		UserGroup:  "default",
+		UsingGroup: "default",
 	}
 
 	groupRatioInfo := HandleGroupRatio(ctx, info)
