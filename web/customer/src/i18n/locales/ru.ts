@@ -612,7 +612,10 @@ const customerRuTranslations = {
   "{{title}} is not configured": "{{title}} не настроено",
   Copy: "Копировать",
   "Copy key": "Скопировать ключ",
+  "CNY and USD are settled 1:1.": "CNY и USD рассчитываются 1:1.",
   "Customer navigation": "Навигация клиента",
+  "Enter a quota limit for this key.":
+    "Введите лимит квоты для этого ключа.",
   "Close navigation": "Закрыть навигацию",
   "Network request failed. Please check the backend service.":
     "Сетевой запрос не удался. Проверьте серверную службу.",

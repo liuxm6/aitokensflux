@@ -649,7 +649,9 @@ export const enTranslations = {
   "{{title}} is not configured": "{{title}} is not configured",
   Copy: "Copy",
   "Copy key": "Copy key",
+  "CNY and USD are settled 1:1.": "CNY and USD are settled 1:1.",
   "Customer navigation": "Customer navigation",
+  "Enter a quota limit for this key.": "Enter a quota limit for this key.",
   "Close navigation": "Close navigation",
   "Network request failed. Please check the backend service.":
     "Network request failed. Please check the backend service.",

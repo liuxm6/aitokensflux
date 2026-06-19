@@ -7,7 +7,6 @@ import { useToastMessage } from "../../context/Toast";
 import {
   formatCurrencyAmount,
   formatQuotaMoney,
-  formatQuotaRate,
 } from "../../helpers/format";
 import { navigateTo } from "../../helpers/navigation";
 import {
@@ -423,7 +422,9 @@ export function TopupDialog({ onClose }: { onClose: () => void }) {
                   <T id="Balance" />
                 </span>
                 <b className="mono">{paygLeft}</b>
-                <small className="mono">{formatQuotaRate(status)}</small>
+              </div>
+              <div className="topup-settlement-notice">
+                <T id="CNY and USD are settled 1:1." />
               </div>
 
               {complianceBlocked ? (

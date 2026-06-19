@@ -621,7 +621,9 @@ export const zhTranslations = {
   "{{title}} is not configured": "管理员未设置{{title}}内容",
   Copy: "复制",
   "Copy key": "复制密钥",
+  "CNY and USD are settled 1:1.": "人民币与美元按 1:1 结算。",
   "Customer navigation": "客户导航",
+  "Enter a quota limit for this key.": "请输入这个密钥的额度限制。",
   "Close navigation": "关闭导航",
   "Network request failed. Please check the backend service.":
     "网络请求失败，请检查后端服务",

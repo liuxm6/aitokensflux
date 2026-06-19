@@ -621,7 +621,9 @@ export const zhTWTranslations = {
   "{{title}} is not configured": "管理員未設置{{title}}內容",
   Copy: "複製",
   "Copy key": "複製密鑰",
+  "CNY and USD are settled 1:1.": "人民幣與美元按 1:1 結算。",
   "Customer navigation": "客戶導航",
+  "Enter a quota limit for this key.": "請輸入這個密鑰的額度限制。",
   "Close navigation": "關閉導航",
   "Network request failed. Please check the backend service.":
     "網絡請求失敗，請檢查後端服務",

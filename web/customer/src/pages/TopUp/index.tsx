@@ -14,7 +14,6 @@ import {
   formatCurrencyAmount,
   formatDateTime,
   formatQuotaMoney,
-  formatQuotaRate,
   normalizePageItems,
 } from "../../helpers/format";
 import {
@@ -264,7 +263,6 @@ export function TopupPage() {
             />
             <span className="balance-pill">
               <T id="PAYG left" /> <b className="mono">{paygLeft}</b>
-              <span className="mono"> · {formatQuotaRate(status)}</span>
             </span>
           </div>
           <button

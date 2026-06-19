@@ -1,7 +1,5 @@
 import {
-  formatCompactNumber,
   formatCurrencyAmount,
-  formatQuotaRate,
   formatQuotaTokens,
   getQuotaPerUnit,
 } from "./format";
@@ -146,16 +144,6 @@ function getPlanVisualTint(index: number) {
   if (index % 3 === 1) return "tint-mint";
   if (index % 3 === 2) return "tint-cream";
   return "";
-}
-
-export function getPlanRate(
-  plan?: SubscriptionPlan,
-  status?: CustomerStatus | null,
-) {
-  if (plan?.total_amount && plan.price_amount > 0) {
-    return `1 USD = ${formatCompactNumber(plan.total_amount / plan.price_amount)} tokens`;
-  }
-  return formatQuotaRate(status);
 }
 
 function formatDurationSeconds(seconds?: number | null) {
@@ -312,7 +300,7 @@ function subscriptionPlanToPricePlan(
       ? `Original ${formatCurrencyAmount(codingPreset.originalPrice, plan.currency)}`
       : undefined,
     hideDescription: Boolean(codingPreset),
-    rate: getPlanRate(plan, status),
+    rate: "",
     ctaZh: codingPreset?.ctaZh ?? "立即购买",
     ctaEn: codingPreset?.ctaEn ?? "Buy now",
     tint: codingPreset?.tone ?? getPlanVisualTint(index),

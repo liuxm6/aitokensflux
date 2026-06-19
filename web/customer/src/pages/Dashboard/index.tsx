@@ -15,7 +15,6 @@ import { AuthContext } from "../../context/Auth";
 import { LanguageContext, T } from "../../context/Language";
 import {
   formatQuotaMoney,
-  formatQuotaRate,
   formatQuotaTokens,
   formatSubscriptionResetDisplayTime,
   formatTimestamp,
@@ -26,7 +25,6 @@ import {
 import {
   formatPlanResetPeriod,
   formatSubscriptionPeriod,
-  getPlanRate,
 } from "../../helpers/plans";
 import { localizeText, localizeKey } from "../../i18n/localization";
 import {
@@ -142,14 +140,14 @@ export function createDashboardPage({
                   <T id="Wallet balance" />{" "}
                   <b className="mono">{formatQuotaMoney(balance, status)}</b>
                 </span>
-                <span className="bar">|</span>
-                <span className="mono">{formatQuotaRate(status)}</span>
-                <span className="bar">|</span>
                 <span>
                   <T id="Today used" />{" "}
                   <span className="mono">
                     {formatQuotaMoney(logStats?.quota ?? 0, status)}
                   </span>
+                </span>
+                <span className="wallet-settlement-note">
+                  <T id="CNY and USD are settled 1:1." />
                 </span>
               </div>
               <button
@@ -277,7 +275,6 @@ function ActiveSubscriptionItem({
             labelId="Valid until"
             value={formatTimestamp(subscription.end_time)}
           />
-          <PlanFact labelId="Rate" value={getPlanRate(plan, status)} />
           <PlanFact labelId="Plan quota" value={quotaLabel} />
         </div>
         {showBuyAction ? (

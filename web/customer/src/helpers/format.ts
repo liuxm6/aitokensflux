@@ -39,10 +39,6 @@ export function formatCurrencyAmount(amount?: number, currency?: string) {
   }
 }
 
-export function formatQuotaRate(status?: CustomerStatus | null) {
-  return `1 USD = ${formatCompactNumber(getQuotaPerUnit(status))} tokens`;
-}
-
 export function formatQuotaMoney(
   quota?: number | null,
   status?: CustomerStatus | null,

@@ -3577,7 +3577,7 @@ h3 {
 .plan-facts {
   display: grid;
   flex: 1;
-  grid-template-columns: minmax(180px, 1.4fr) repeat(3, minmax(120px, 1fr));
+  grid-template-columns: minmax(180px, 1.4fr) repeat(2, minmax(140px, 1fr));
   gap: 24px;
 }
 
@@ -3632,6 +3632,19 @@ h3 {
 .plan-detail-line .bar,
 .wallet-line .bar {
   color: #d3d8df;
+}
+
+.wallet-settlement-note {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  padding: 4px 10px;
+  border: 1px solid #9be6b2;
+  border-radius: 8px;
+  background: #ecfdf3;
+  color: #027a48;
+  font-weight: 900;
+  line-height: 1.25;
 }
 
 .wallet-line {
@@ -5835,7 +5848,7 @@ h3 {
 }
 
 .topup-dialog-balance {
-  grid-template-columns: auto auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: 8px;
   min-width: 0;
@@ -5852,6 +5865,22 @@ h3 {
   text-align: right;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.topup-settlement-notice {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 12px;
+  border: 1px solid #9be6b2;
+  border-radius: 12px;
+  background: #ecfdf3;
+  color: #027a48;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.4;
+  text-align: center;
 }
 
 .topup-form-grid.single {
@@ -9106,6 +9135,12 @@ h3 {
   .wallet-line,
   .subscription-meta {
     gap: 8px 10px;
+  }
+
+  .wallet-settlement-note {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
   }
 
   .plan-detail-line .bar,

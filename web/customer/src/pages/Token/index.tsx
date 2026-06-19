@@ -20,7 +20,6 @@ import { ConfirmActionContext } from "../../context/ConfirmAction";
 import { LanguageContext, T } from "../../context/Language";
 import { useToastMessage } from "../../context/Toast";
 import {
-  formatQuotaRate,
   formatQuotaTokens,
   formatTimestamp,
   getApiKeyExpiryTimestamp,
@@ -765,10 +764,7 @@ function ApiKeyCreateDialog({
                 values={{ quota: quotaPreview }}
               />
             ) : (
-              <T
-                id="Conversion: {{rate}}"
-                values={{ rate: formatQuotaRate(status) }}
-              />
+              <T id="Enter a quota limit for this key." />
             )}
           </div>
 
