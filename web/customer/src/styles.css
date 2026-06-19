@@ -5883,6 +5883,22 @@ h3 {
   text-align: center;
 }
 
+.purchase-settlement-notice {
+  display: flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 12px;
+  border: 1px solid #9be6b2;
+  border-radius: 12px;
+  background: #ecfdf3;
+  color: #027a48;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.35;
+  text-align: center;
+}
+
 .topup-form-grid.single {
   grid-template-columns: 1fr;
 }

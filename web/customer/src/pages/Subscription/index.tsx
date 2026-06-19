@@ -2,7 +2,6 @@ import {
   Calendar,
   Check,
   CircleDollarSign,
-  Gauge,
   LoaderCircle,
   Play,
   X,
@@ -17,7 +16,7 @@ import { PriceCard } from "../../components/topup/PriceCard";
 import { AuthContext } from "../../context/Auth";
 import { LanguageContext, T } from "../../context/Language";
 import { useToastMessage } from "../../context/Toast";
-import { formatQuotaTokens } from "../../helpers/format";
+import { formatQuotaMoney } from "../../helpers/format";
 import { navigateTo } from "../../helpers/navigation";
 import {
   getEpayMethods,
@@ -186,6 +185,7 @@ function StripeWordmark() {
 
 function PlanPurchaseDialog({
   plan,
+  status,
   topupInfo,
   userQuota,
   purchaseCount,
@@ -195,6 +195,7 @@ function PlanPurchaseDialog({
   onPay,
 }: {
   plan: CustomerPricePlan;
+  status: CustomerStatus | null;
   topupInfo: TopupInfo | null;
   userQuota: number;
   purchaseCount: number;
@@ -289,15 +290,6 @@ function PlanPurchaseDialog({
               </strong>
             </div>
           ) : null}
-          <div className="plan-purchase-row">
-            <span>
-              <T id="Quota" />
-            </span>
-            <strong>
-              <Gauge size={14} />
-              {localizeText(language, plan.quotaLabelZh, plan.quotaLabelEn)}
-            </strong>
-          </div>
           {plan.upgradeGroup ? (
             <div className="plan-purchase-row">
               <span>
@@ -313,6 +305,9 @@ function PlanPurchaseDialog({
             </span>
             <b>{plan.price}</b>
           </div>
+        </div>
+        <div className="purchase-settlement-notice">
+          <T id="CNY and USD are settled 1:1." />
         </div>
 
         {purchaseLimitReached ? (
@@ -331,15 +326,15 @@ function PlanPurchaseDialog({
           <div className="balance-payment-box">
             <div>
               <span>
-                <T id="Required" />
+                <T id="Amount due" />
               </span>
-              <strong>{formatQuotaTokens(balanceCost)}</strong>
+              <strong>{formatQuotaMoney(balanceCost, status)}</strong>
             </div>
             <div>
               <span>
                 <T id="Available" />
               </span>
-              <strong>{formatQuotaTokens(availableQuota)}</strong>
+              <strong>{formatQuotaMoney(availableQuota, status)}</strong>
             </div>
             {!allowBalancePay ? (
               <p>
@@ -855,6 +850,7 @@ export function createSubscribePage({
         {selectedPurchasePlan ? (
           <PlanPurchaseDialog
             plan={selectedPurchasePlan}
+            status={status}
             topupInfo={topupInfo}
             userQuota={Number(user?.quota || 0)}
             purchaseCount={getPlanPurchaseCount(selectedPurchasePlan.planId)}
