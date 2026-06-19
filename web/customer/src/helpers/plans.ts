@@ -1,6 +1,6 @@
 import {
   formatCurrencyAmount,
-  formatQuotaTokens,
+  formatQuotaMoney,
   getQuotaPerUnit,
 } from "./format";
 import type {
@@ -194,10 +194,13 @@ export function formatSubscriptionPeriod(plan?: SubscriptionPlan) {
   };
 }
 
-function formatPlanQuota(plan: SubscriptionPlan) {
+function formatPlanQuota(
+  plan: SubscriptionPlan,
+  status?: CustomerStatus | null,
+) {
   const total = Number(plan.total_amount ?? 0);
   if (total > 0) {
-    const label = formatQuotaTokens(total);
+    const label = formatQuotaMoney(total, status);
     return { zh: label, en: label };
   }
   return { zh: "不限额度", en: "Unlimited" };
@@ -240,8 +243,8 @@ function getPlanSummary(
     return { zh: plan.subtitle.trim(), en: plan.subtitle.trim() };
   }
   return {
-    zh: `包含 ${quota.zh}`,
-    en: `Includes ${quota.en}`,
+    zh: `到账金额 ${quota.zh}`,
+    en: `Received amount ${quota.en}`,
   };
 }
 
@@ -253,7 +256,7 @@ function subscriptionPlanToPricePlan(
   const plan = record.plan;
   const codingPreset = getCodingPlanPreset(plan.title || "");
   const period = formatSubscriptionPeriod(plan);
-  const quotaLabel = formatPlanQuota(plan);
+  const quotaLabel = formatPlanQuota(plan, status);
   const resetLabel = formatPlanResetPeriod(plan);
   const paymentLabel = formatPlanPaymentLabel(plan);
   const summary = getPlanSummary(plan, quotaLabel);
@@ -323,14 +326,14 @@ function subscriptionPlanToPricePlan(
     maxPurchasePerUser: maxPurchase,
     upgradeGroup,
     featuresZh: codingPreset?.featuresZh ?? [
-      `额度 ${quotaLabel.zh}`,
+      `到账金额 ${quotaLabel.zh}`,
       `周期 ${period.zh}`,
       resetLabel.zh,
       paymentLabel.zh,
       ...extraFeaturesZh,
     ],
     featuresEn: codingPreset?.featuresEn ?? [
-      `Quota ${quotaLabel.en}`,
+      `Received amount ${quotaLabel.en}`,
       `Period ${period.en}`,
       resetLabel.en,
       paymentLabel.en,

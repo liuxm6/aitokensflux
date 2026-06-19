@@ -15,7 +15,6 @@ import { AuthContext } from "../../context/Auth";
 import { LanguageContext, T } from "../../context/Language";
 import {
   formatQuotaMoney,
-  formatQuotaTokens,
   formatSubscriptionResetDisplayTime,
   formatTimestamp,
   getActiveSubscriptionRecords,
@@ -253,7 +252,9 @@ function ActiveSubscriptionItem({
   const period = plan ? formatSubscriptionPeriod(plan) : null;
   const reset = plan ? formatPlanResetPeriod(plan) : null;
   const quotaLabel =
-    total > 0 ? formatQuotaTokens(total) : localizeKey(language, "Unlimited");
+    total > 0
+      ? formatQuotaMoney(total, status)
+      : localizeKey(language, "Unlimited");
   const remainingLabel =
     total > 0
       ? formatQuotaMoney(remaining, status)
@@ -275,7 +276,7 @@ function ActiveSubscriptionItem({
             labelId="Valid until"
             value={formatTimestamp(subscription.end_time)}
           />
-          <PlanFact labelId="Plan quota" value={quotaLabel} />
+          <PlanFact labelId="Received amount" value={quotaLabel} />
         </div>
         {showBuyAction ? (
           <AppLink className="btn btn-flux btn-sm" href="/subscribe">

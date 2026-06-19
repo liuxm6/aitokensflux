@@ -631,6 +631,7 @@ export const zhTWTranslations = {
   "Primary navigation": "主導航",
   "Request failed": "請求失敗",
   "Request timed out. Please try again.": "請求超時，請稍後重試",
+  "Received amount": "到賬金額",
   "Chinese support for top-ups, setup, and account issues":
     "中文售後、充值與接入問題",
   "Email support for accounts, orders, and security":

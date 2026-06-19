@@ -624,6 +624,7 @@ const customerRuTranslations = {
   "Request failed": "Запрос не выполнен",
   "Request timed out. Please try again.":
     "Время ожидания запроса истекло. Повторите попытку.",
+  "Received amount": "Сумма зачисления",
   "Failed to load models": "Не удалось загрузить модели",
   "Loading models...": "Загрузка моделей...",
   "Opening CC Switch...": "Открываем CC Switch...",

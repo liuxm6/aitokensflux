@@ -36,6 +36,11 @@ export function PriceCard({
   const priceLabel = plan.priceZh
     ? localizeText(language, plan.priceZh, plan.priceEn ?? plan.priceZh)
     : plan.price;
+  const receivedAmount = localizeText(
+    language,
+    plan.quotaLabelZh,
+    plan.quotaLabelEn,
+  );
   const promoZh = plan.promoZh?.trim();
   const promoEn = plan.promoEn?.trim() || promoZh;
   const promoLabel =
@@ -63,6 +68,10 @@ export function PriceCard({
         {plan.hideSuffix ? null : (
           <small>/{localizeText(language, plan.suffixZh, plan.suffixEn)}</small>
         )}
+      </div>
+      <div className="price-received">
+        <span>{localizeKey(language, "Received amount")}</span>
+        <b>{receivedAmount}</b>
       </div>
       {showMeta ? (
         <div className="price-meta">

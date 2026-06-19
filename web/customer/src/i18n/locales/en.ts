@@ -660,6 +660,7 @@ export const enTranslations = {
   "Request failed": "Request failed",
   "Request timed out. Please try again.":
     "Request timed out. Please try again.",
+  "Received amount": "Received amount",
   "Chinese support for top-ups, setup, and account issues":
     "Chinese support for top-ups, setup, and account issues",
   "Email support for accounts, orders, and security":

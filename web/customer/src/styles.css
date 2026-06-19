@@ -1853,6 +1853,33 @@ h3 {
   font-weight: 700;
 }
 
+.price-received {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 9px 10px;
+  border: 1px solid #c9f2d6;
+  border-radius: 10px;
+  background: #f0fdf4;
+  color: #027a48;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.price-received span {
+  color: #079455;
+  font-weight: 800;
+}
+
+.price-received b {
+  color: #027a48;
+  font-size: 16px;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
 .price-meta {
   display: flex;
   align-items: center;

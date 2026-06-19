@@ -305,6 +305,14 @@ function PlanPurchaseDialog({
             </span>
             <b>{plan.price}</b>
           </div>
+          <div className="plan-purchase-row received">
+            <span>
+              <T id="Received amount" />
+            </span>
+            <strong>
+              {localizeText(language, plan.quotaLabelZh, plan.quotaLabelEn)}
+            </strong>
+          </div>
         </div>
         <div className="purchase-settlement-notice">
           <T id="CNY and USD are settled 1:1." />
