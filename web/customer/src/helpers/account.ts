@@ -2,6 +2,7 @@ import type { CustomerUser } from "../types";
 
 const USER_STORAGE_KEY = "customer-user";
 export const SUPPORT_EMAIL = "mr.liuxm6@gmail.com";
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function buildSupportMailto(subject?: string, body?: string) {
   const params = new URLSearchParams();
@@ -35,6 +36,22 @@ export function persistUser(user: CustomerUser | null) {
   }
 }
 
+export function isEmailAddress(value?: string | null) {
+  const email = value?.trim() ?? "";
+  return email.length > 0 && email.length <= 50 && EMAIL_PATTERN.test(email);
+}
+
+export function getBoundEmail(user: CustomerUser | null) {
+  const email = user?.email?.trim() ?? "";
+  return isEmailAddress(email) ? email : "";
+}
+
 export function getUserLabel(user: CustomerUser | null) {
-  return user?.email || user?.display_name || user?.username || "Account";
+  return (
+    getBoundEmail(user) || user?.display_name || user?.username || "Account"
+  );
+}
+
+export function getAccountIdentifier(user: CustomerUser | null) {
+  return getBoundEmail(user) || getUserLabel(user);
 }

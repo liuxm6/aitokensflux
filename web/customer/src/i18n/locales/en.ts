@@ -67,6 +67,7 @@ export const enTranslations = {
   "Balance payment": "Balance payment",
   "bash / zsh": "bash / zsh",
   Billing: "Billing",
+  Bind: "Bind",
   "Buy now": "Buy now",
   "Buy plan": "Buy plan",
   "Calculating...": "Calculating...",
@@ -500,6 +501,7 @@ export const enTranslations = {
   "New password": "New password",
   "New password must be different": "New password must be different",
   "No account? Register": "No account? Register",
+  "Not bound": "Not bound",
   "No code required": "No code required",
   "Other sign-in options": "Other sign-in options",
   "Passkey is not available in this environment":

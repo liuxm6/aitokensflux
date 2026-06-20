@@ -12,7 +12,8 @@ import { LanguageContext } from "../../context/Language";
 import {
   SUPPORT_EMAIL,
   buildSupportMailto,
-  getUserLabel,
+  getAccountIdentifier,
+  getBoundEmail,
 } from "../../helpers/account";
 import { localizeKey } from "../../i18n/localization";
 import { languageOptions } from "../../i18n/languages";
@@ -37,7 +38,8 @@ export function createSettingsPage({
     const [dialogMode, setDialogMode] = useState<AccountDialogMode | null>(
       null,
     );
-    const userLabel = getUserLabel(user);
+    const boundEmail = getBoundEmail(user);
+    const accountIdentifier = getAccountIdentifier(user);
     const currentLanguage =
       languageOptions.find((item) => item.value === language) ??
       languageOptions[0];
@@ -49,11 +51,10 @@ export function createSettingsPage({
       setLanguage(languageOptions[nextIndex % languageOptions.length].value);
     };
     const openReceiptEmail = () => {
-      const account = user?.email || userLabel;
       window.location.href = buildSupportMailto(
         localizeKey(language, "API receipt request"),
         localizeKey(language, "Account: {{account}}\nBilling month:\nNotes:", {
-          account,
+          account: accountIdentifier,
         }),
       );
     };
@@ -61,7 +62,7 @@ export function createSettingsPage({
       window.location.href = buildSupportMailto(
         localizeKey(language, "Customer support"),
         localizeKey(language, "Account: {{account}}\nIssue:", {
-          account: user?.email || userLabel,
+          account: accountIdentifier,
         }),
       );
     };
@@ -71,11 +72,11 @@ export function createSettingsPage({
         <ConsolePageTitle id="Account security" />
         <Panel className="settings-list">
           <SettingsRow
-            actionId="Edit"
+            actionId={boundEmail ? "Edit" : "Bind"}
             icon={Mail}
             labelId="Email"
             onAction={() => setDialogMode("email")}
-            value={user?.email || userLabel}
+            value={boundEmail || localizeKey(language, "Not bound")}
           />
           <SettingsRow
             actionId="Edit"

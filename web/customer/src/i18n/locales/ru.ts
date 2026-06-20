@@ -21,6 +21,7 @@ const customerRuTranslations = {
   "No automatic reset": "Без автоматического сброса",
   "Balance / online payment": "Баланс / онлайн-оплата",
   "Balance payment": "Оплата балансом",
+  Bind: "Привязать",
   "Online payment": "Онлайн-оплата",
   "Payment needs configuration": "Требуется настройка оплаты",
   "Buy now": "Купить сейчас",
@@ -517,6 +518,7 @@ const customerRuTranslations = {
   and: "и",
   "Already have an account? Sign in": "Уже есть аккаунт? Войти",
   "No account? Register": "Нет аккаунта? Зарегистрироваться",
+  "Not bound": "Не привязано",
   "Enter a valid email": "Введите корректный email",
   "Enter a valid email, up to 50 characters":
     "Введите корректный email до 50 символов",

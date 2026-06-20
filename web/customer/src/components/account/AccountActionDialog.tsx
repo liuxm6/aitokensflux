@@ -11,6 +11,7 @@ import Turnstile from "react-turnstile";
 import { AuthInput } from "../auth/AuthInput";
 import { LanguageContext } from "../../context/Language";
 import { useToastMessage } from "../../context/Toast";
+import { getBoundEmail } from "../../helpers/account";
 import { localizeCopy } from "../../i18n/localization";
 import { apiRequest, buildQuery } from "../../services/api";
 import type {
@@ -47,6 +48,7 @@ export function AccountActionDialog({
 }) {
   const { language } = useContext(LanguageContext);
   const isEmailMode = mode === "email";
+  const currentEmail = getBoundEmail(user);
   const closeTimerRef = useRef<number | null>(null);
   const [status, setStatus] = useState<CustomerStatus | null>(null);
   const [statusLoaded, setStatusLoaded] = useState(!isEmailMode);
@@ -129,6 +131,7 @@ export function AccountActionDialog({
       ? "After verification, email sign-in uses the new address."
       : "Enter your current password and set a new one.",
     currentEmail: "Current email",
+    notBound: "Not bound",
     currentPassword: "Current password",
     currentPasswordPlaceholder: "Enter current password",
     newPassword: "New password",
@@ -220,7 +223,7 @@ export function AccountActionDialog({
       setMessage({ type: "error", text: copy.emailRule });
       return;
     }
-    if (user.email && email === user.email) {
+    if (currentEmail && email === currentEmail) {
       setMessage({ type: "error", text: copy.sameEmail });
       return;
     }
@@ -260,7 +263,7 @@ export function AccountActionDialog({
       setMessage({ type: "error", text: copy.emailRule });
       return;
     }
-    if (user.email && email === user.email) {
+    if (currentEmail && email === currentEmail) {
       setMessage({ type: "error", text: copy.sameEmail });
       return;
     }
@@ -312,7 +315,7 @@ export function AccountActionDialog({
         </div>
         <div className="account-readonly">
           <span>{copy.currentEmail}</span>
-          <strong>{user.email || user.username}</strong>
+          <strong>{currentEmail || copy.notBound}</strong>
         </div>
         {isEmailMode ? (
           <form className="account-dialog-form" onSubmit={handleEmailSubmit}>
