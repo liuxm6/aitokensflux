@@ -63,6 +63,9 @@ export const enTranslations = {
   Back: "Back",
   "Back home": "Back home",
   "Back to sign in": "Back to sign in",
+  "Confirm reset": "Confirm reset",
+  "Confirm this password reset request to generate a new password for your account.":
+    "Confirm this password reset request to generate a new password for your account.",
   Balance: "Balance",
   "Balance payment": "Balance payment",
   "bash / zsh": "bash / zsh",
@@ -493,6 +496,8 @@ export const enTranslations = {
   "Get code": "Get code",
   "I have read and agree to": "I have read and agree to",
   "Invite code (optional)": "Invite code (optional)",
+  "Invalid reset link. Please request a new password reset email.":
+    "Invalid reset link. Please request a new password reset email.",
   "Loading site security settings. Try again shortly.":
     "Loading site security settings. Try again shortly.",
   "New email": "New email",
@@ -510,6 +515,9 @@ export const enTranslations = {
   "Password login is disabled": "Password login is disabled",
   "Password must be 8-20 characters": "Password must be 8-20 characters",
   "Password registration is disabled": "Password registration is disabled",
+  "Password copied": "Password copied",
+  "Password reset successfully. Save the new password below before signing in.":
+    "Password reset successfully. Save the new password below before signing in.",
   "Passwords do not match": "Passwords do not match",
   "Please agree to the legal terms first":
     "Please agree to the legal terms first",
@@ -534,6 +542,7 @@ export const enTranslations = {
   "Verify and sign in": "Verify and sign in",
   "WeChat QR code is not configured": "WeChat QR code is not configured",
   "WeChat sign in": "WeChat sign in",
+  "Waiting for reset link...": "Waiting for reset link...",
   "Account: {{account}}\nBilling month:\nNotes:":
     "Account: {{account}}\nBilling month:\nNotes:",
   "Account: {{account}}\nIssue:": "Account: {{account}}\nIssue:",
@@ -661,8 +670,11 @@ export const enTranslations = {
   "Open navigation": "Open navigation",
   "Primary navigation": "Primary navigation",
   "Request failed": "Request failed",
+  "Request a new reset email": "Request a new reset email",
   "Request timed out. Please try again.":
     "Request timed out. Please try again.",
+  "Reset password": "Reset password",
+  "Resetting password...": "Resetting password...",
   "Received amount": "Received amount",
   "Chinese support for top-ups, setup, and account issues":
     "Chinese support for top-ups, setup, and account issues",

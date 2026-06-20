@@ -965,6 +965,8 @@ export function AuthPage({
       <div className="auth-turnstile">
         <Turnstile
           sitekey={status.turnstile_site_key}
+          appearance="interaction-only"
+          size="flexible"
           onVerify={setTurnstileToken}
           onExpire={() => setTurnstileToken("")}
           onError={() => setTurnstileToken("")}

@@ -16,6 +16,7 @@ import {
 } from "react";
 import { AppLink } from "../../components/common/AppLink";
 import { EmptyState } from "../../components/common/EmptyState";
+import { FathersDayGifts, FathersDayGiftEntry } from "../../components/common/FathersDayGifts";
 import { Pill } from "../../components/common/Pill";
 import { Footer } from "../../components/layout/Footer";
 import { SupportChannelGrid } from "../../components/support/SupportChannels";
@@ -531,6 +532,8 @@ export function createHomePage({
 
     return (
       <>
+        <FathersDayGifts />
+        <FathersDayGiftEntry />
         <MarketingHeader minimal />
         <main>
           <section className="hero-mesh home-hero">

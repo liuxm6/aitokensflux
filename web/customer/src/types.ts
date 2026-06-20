@@ -14,10 +14,12 @@ export type PageKey =
   | "settings"
   | "atfSwitchConnect"
   | "subscribe"
+  | "fathersDay"
   | "setup"
   | "signin"
   | "signup"
   | "oauthCallback"
+  | "resetPassword"
   | "userAgreement"
   | "privacyPolicy"
   | "notFound";

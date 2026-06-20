@@ -25,7 +25,7 @@ import {
   parseCreemProducts,
 } from "../../helpers/payments";
 import { localizeKey } from "../../i18n/localization";
-import { PurchaseProgressDialog } from "../../pages/Subscription";
+import { PurchaseProgressDialog } from "./PurchaseProgressDialog";
 import {
   calculateTopupAmount,
   fetchCustomerSelf,

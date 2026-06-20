@@ -14,10 +14,12 @@ import { TopupDialog } from "./components/topup/TopupDialog";
 import { createHomePage } from "./pages/Home";
 import { AuthPage } from "./pages/Auth";
 import { createDashboardPage } from "./pages/Dashboard";
+import { createFathersDayPage } from "./pages/FathersDay";
 import { InvitePage } from "./pages/Invite";
 import { UsagePage } from "./pages/Log";
 import { createNotFoundPage } from "./pages/NotFound";
 import { OAuthCallbackPage } from "./pages/OAuth";
+import { ResetPasswordPage } from "./pages/ResetPassword";
 import { ATFSwitchConnectPage } from "./pages/ATFSwitchConnect";
 import { createSettingsPage } from "./pages/Setting";
 import { createSetupPage } from "./pages/Setup";
@@ -70,6 +72,7 @@ function isConnectRoute(page: PageKey) {
 }
 
 const SubscribePage = createSubscribePage({ MarketingHeader, TopupDialog });
+const FathersDayPage = createFathersDayPage({ MarketingHeader, TopupDialog });
 const DashboardPage = createDashboardPage({ TopupDialog });
 const SetupPage = createSetupPage({
   MarketingHeader,
@@ -262,6 +265,8 @@ function App() {
         return <ATFSwitchConnectPage />;
       case "subscribe":
         return <SubscribePage />;
+      case "fathersDay":
+        return <FathersDayPage />;
       case "setup":
         return <HomePage />;
       case "signin":
@@ -269,6 +274,8 @@ function App() {
         return <HomePage />;
       case "oauthCallback":
         return <OAuthCallbackPage />;
+      case "resetPassword":
+        return <ResetPasswordPage />;
       case "userAgreement":
         return <LegalPage type="userAgreement" />;
       case "privacyPolicy":

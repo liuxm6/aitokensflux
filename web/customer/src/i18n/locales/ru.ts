@@ -473,6 +473,18 @@ const customerRuTranslations = {
   "OAuth sign in failed": "Вход через OAuth не удался",
   "Sign-in callback": "Callback входа",
   "Back to sign in": "Вернуться ко входу",
+  "Confirm reset": "Подтвердить сброс",
+  "Confirm this password reset request to generate a new password for your account.":
+    "Подтвердите запрос сброса пароля, чтобы создать новый пароль для аккаунта.",
+  "Invalid reset link. Please request a new password reset email.":
+    "Недействительная ссылка сброса. Запросите новое письмо для сброса пароля.",
+  "Password copied": "Пароль скопирован",
+  "Password reset successfully. Save the new password below before signing in.":
+    "Пароль успешно сброшен. Сохраните новый пароль ниже перед входом.",
+  "Request a new reset email": "Запросить новое письмо для сброса",
+  "Reset password": "Сбросить пароль",
+  "Resetting password...": "Сбрасываем пароль...",
+  "Waiting for reset link...": "Ожидание ссылки сброса...",
   "User Agreement": "Пользовательское соглашение",
   "Privacy Policy": "Политика конфиденциальности",
   "Open external link": "Открыть внешнюю ссылку",

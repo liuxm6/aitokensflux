@@ -7947,9 +7947,14 @@ h3 {
 }
 
 .auth-turnstile {
-  display: grid;
-  min-height: 62px;
-  place-items: center;
+  display: flex;
+  min-height: 0;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.auth-turnstile > div {
+  max-width: 100%;
 }
 
 .provider-dot {
@@ -9679,5 +9684,240 @@ h3 {
   .usage-page-size,
   .usage-page-nav {
     justify-content: center;
+  }
+}
+
+/* ── Father's Day falling gift boxes ─────────────────────────────────────── */
+.fathers-day-gifts {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.fathers-day-gifts .fdg-item {
+  position: absolute;
+  top: 0;
+  line-height: 1;
+  user-select: none;
+  opacity: 0;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.12));
+  animation-name: fdg-fall, fdg-sway;
+  animation-timing-function: linear, ease-in-out;
+  animation-iteration-count: infinite, infinite;
+  /* animation-duration / delay are set inline per item and apply to both the
+     fall and the sway, giving one gentle sway per fall. */
+}
+
+@keyframes fdg-fall {
+  0% {
+    transform: translateY(-12vh) rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: var(--fdg-opacity, 1);
+  }
+  92% {
+    opacity: var(--fdg-opacity, 1);
+  }
+  100% {
+    transform: translateY(112vh) rotate(var(--fdg-spin, 180deg));
+    opacity: 0;
+  }
+}
+
+@keyframes fdg-sway {
+  0%,
+  100% {
+    margin-left: 0;
+  }
+  50% {
+    margin-left: var(--fdg-drift, 0);
+  }
+}
+
+/* Fixed gift entry hanging from the top center — a clickable link. */
+.fdg-entry {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 55;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Inner wrapper carries the pendulum swing so it doesn't fight the parent's
+   horizontal centering transform. */
+.fdg-entry-swing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform-origin: top center;
+  animation: fdg-entry-swing 3.4s ease-in-out infinite;
+}
+
+.fdg-entry-cord {
+  width: 2px;
+  height: 60px;
+  border-radius: 2px;
+  background: linear-gradient(to bottom, transparent, var(--line, #d9d4c7));
+}
+
+.fdg-entry-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 82px;
+  height: 82px;
+  margin-top: -2px;
+  font-size: 2.9rem;
+  line-height: 1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 35%,
+    #fff4f0 0%,
+    #ffe2d4 55%,
+    #ffcdb6 100%
+  );
+  box-shadow:
+    0 8px 22px rgba(217, 119, 87, 0.38),
+    0 0 0 5px rgba(255, 255, 255, 0.65);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.fdg-entry:hover .fdg-entry-badge {
+  transform: scale(1.08);
+  box-shadow:
+    0 12px 28px rgba(217, 119, 87, 0.48),
+    0 0 0 5px rgba(255, 255, 255, 0.8);
+}
+
+@keyframes fdg-entry-swing {
+  0%,
+  100% {
+    transform: rotate(-7deg);
+  }
+  50% {
+    transform: rotate(7deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fathers-day-gifts {
+    display: none;
+  }
+  /* Keep the entry usable, just stop it swinging. */
+  .fdg-entry-swing {
+    animation: none;
+  }
+}
+
+/* ── Father's Day letter page ────────────────────────────────────────────── */
+.fathers-day-page {
+  padding-top: 48px;
+}
+
+.fathers-day-letter {
+  position: relative;
+  margin: 0 auto;
+  padding: clamp(28px, 5vw, 56px) clamp(22px, 5vw, 60px);
+  border: 1px solid rgba(217, 119, 87, 0.18);
+  border-radius: 22px;
+  background:
+    radial-gradient(
+      120% 90% at 50% 0%,
+      rgba(255, 244, 240, 0.9) 0%,
+      rgba(255, 255, 255, 0.6) 60%,
+      transparent 100%
+    ),
+    #fffdfb;
+  box-shadow: 0 24px 60px -32px rgba(217, 119, 87, 0.45);
+  text-align: center;
+}
+
+.fathers-day-letter-mark {
+  font-size: 2.6rem;
+  line-height: 1;
+}
+
+.fathers-day-eyebrow {
+  margin-top: 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #d97757;
+}
+
+.fathers-day-title {
+  margin: 6px 0 4px;
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.fathers-day-body {
+  max-width: 40rem;
+  margin: 22px auto 0;
+  text-align: left;
+}
+
+.fathers-day-body p {
+  margin: 0 0 18px;
+  font-size: 1.04rem;
+  line-height: 2;
+  color: var(--ink, #2c2a27);
+  text-indent: 2em;
+}
+
+.fathers-day-closing {
+  margin-top: 26px !important;
+  font-weight: 600;
+  color: #b85c3c;
+  text-indent: 0 !important;
+}
+
+.fathers-day-signoff {
+  margin: 24px 0 0;
+  text-align: right;
+  font-size: 0.98rem;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  color: #b85c3c;
+}
+
+.fathers-day-sign {
+  margin-top: 8px;
+  font-size: 1.4rem;
+}
+
+.fathers-day-offer {
+  margin-top: clamp(40px, 7vw, 72px);
+}
+
+.fathers-day-plan {
+  max-width: 360px;
+  margin: 28px auto 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .fathers-day-letter {
+    animation: fdg-letter-in 0.6s ease both;
+  }
+}
+
+@keyframes fdg-letter-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

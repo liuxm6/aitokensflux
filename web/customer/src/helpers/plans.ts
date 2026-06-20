@@ -10,6 +10,8 @@ import type {
   SubscriptionPlanRecord,
 } from "../types";
 
+const MAX_VISIBLE_SUBSCRIPTION_PLANS = 4;
+
 type CodingPlanPreset = {
   variant: NonNullable<CustomerPricePlan["variant"]>;
   rank: number;
@@ -355,5 +357,19 @@ export function recordsToPricePlans(
     )
     .sort((a, b) => getCodingPlanRank(a) - getCodingPlanRank(b));
   const variants = new Set(codingPlans.map((plan) => plan.variant));
-  return variants.size >= 4 ? codingPlans : plans;
+  const displayPlans = variants.size >= 4 ? codingPlans : plans;
+  return displayPlans.slice(0, MAX_VISIBLE_SUBSCRIPTION_PLANS);
+}
+
+/**
+ * Convert a single plan record to its UI shape, bypassing the visible-plans
+ * filtering/slicing in recordsToPricePlans. Use when a page must feature one
+ * specific plan by id (e.g. the pinned Father's Day plan), which may not be
+ * among the "AI coding" plans that recordsToPricePlans surfaces.
+ */
+export function recordToPricePlan(
+  record: SubscriptionPlanRecord,
+  status?: CustomerStatus | null,
+) {
+  return subscriptionPlanToPricePlan(record, 0, status);
 }

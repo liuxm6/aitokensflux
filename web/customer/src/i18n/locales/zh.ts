@@ -1,4 +1,5 @@
 export const zhTranslations = {
+  "Father's Day gift": "父亲节礼包",
   "Model pricing": "模型价格",
   "Pay only for the tokens you use": "只为你用掉的 Token 付费",
   "Cache read": "缓存读取",
@@ -62,6 +63,9 @@ export const zhTranslations = {
   Back: "返回",
   "Back home": "回到首页",
   "Back to sign in": "返回登录",
+  "Confirm reset": "确认重置",
+  "Confirm this password reset request to generate a new password for your account.":
+    "确认本次密码重置请求，为你的账号生成一个新密码。",
   Balance: "当前余额",
   "Balance payment": "余额支付",
   "bash / zsh": "bash / zsh",
@@ -469,6 +473,8 @@ export const zhTranslations = {
   "Get code": "获取验证码",
   "I have read and agree to": "我已阅读并同意",
   "Invite code (optional)": "邀请码（可选）",
+  "Invalid reset link. Please request a new password reset email.":
+    "重置链接无效，请重新申请密码重置邮件。",
   "Loading site security settings. Try again shortly.":
     "正在加载站点安全设置，请稍后重试。",
   "New email": "新邮箱",
@@ -484,6 +490,9 @@ export const zhTranslations = {
   "Password login is disabled": "密码登录已关闭",
   "Password must be 8-20 characters": "密码需为 8-20 个字符",
   "Password registration is disabled": "密码注册已关闭",
+  "Password copied": "密码已复制",
+  "Password reset successfully. Save the new password below before signing in.":
+    "密码已重置。登录前请先保存下面的新密码。",
   "Passwords do not match": "两次输入的密码不一致",
   "Please agree to the legal terms first": "请先同意相关协议",
   Register: "注册",
@@ -506,6 +515,7 @@ export const zhTranslations = {
   "Verify and sign in": "验证并登录",
   "WeChat QR code is not configured": "未配置微信二维码",
   "WeChat sign in": "微信登录",
+  "Waiting for reset link...": "等待重置链接...",
   "Account: {{account}}\nBilling month:\nNotes:":
     "账号：{{account}}\n申请月份：\n备注：",
   "Account: {{account}}\nIssue:": "账号：{{account}}\n问题描述：",
@@ -633,7 +643,10 @@ export const zhTranslations = {
   "Open navigation": "打开导航",
   "Primary navigation": "主导航",
   "Request failed": "请求失败",
+  "Request a new reset email": "重新申请重置邮件",
   "Request timed out. Please try again.": "请求超时，请稍后重试",
+  "Reset password": "重置密码",
+  "Resetting password...": "正在重置密码...",
   "Received amount": "到账金额",
   "Chinese support for top-ups, setup, and account issues":
     "中文售后、充值与接入问题",
