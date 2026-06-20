@@ -7859,6 +7859,12 @@ h3 {
   color: #181717;
 }
 
+.linuxdo-mark {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 auto;
+}
+
 .google-dot {
   display: grid;
   width: 19px;
@@ -7968,10 +7974,6 @@ h3 {
 
 .provider-dot.discord {
   background: #5865f2;
-}
-
-.provider-dot.linuxdo {
-  background: #e95420;
 }
 
 .provider-dot.custom {
