@@ -501,6 +501,7 @@ export const zhTranslations = {
   "Two-factor verification": "两步验证",
   "Use backup code": "使用备用码",
   "Use verification code": "使用验证码",
+  Username: "用户名",
   "Verification code": "验证码",
   "Verify and sign in": "验证并登录",
   "WeChat QR code is not configured": "未配置微信二维码",

@@ -1,4 +1,4 @@
-import { FileText, Globe2, Lock, LogOut, Mail } from "lucide-react";
+import { FileText, Globe2, Lock, LogOut, Mail, UserRound } from "lucide-react";
 import type { ComponentType } from "react";
 import { useContext, useState } from "react";
 import { SectionLabel } from "../../components/common/SectionLabel";
@@ -71,6 +71,11 @@ export function createSettingsPage({
       <CustomerShell crumbId="Settings" page="settings">
         <ConsolePageTitle id="Account security" />
         <Panel className="settings-list">
+          <SettingsRow
+            icon={UserRound}
+            labelId="Username"
+            value={user?.username || "-"}
+          />
           <SettingsRow
             actionId={boundEmail ? "Edit" : "Bind"}
             icon={Mail}

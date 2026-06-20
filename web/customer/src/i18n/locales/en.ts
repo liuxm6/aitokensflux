@@ -529,6 +529,7 @@ export const enTranslations = {
   "Two-factor verification": "Two-factor verification",
   "Use backup code": "Use backup code",
   "Use verification code": "Use verification code",
+  Username: "Username",
   "Verification code": "Verification code",
   "Verify and sign in": "Verify and sign in",
   "WeChat QR code is not configured": "WeChat QR code is not configured",

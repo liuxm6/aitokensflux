@@ -7,8 +7,7 @@ const defaultRuTranslations = defaultRuLocale.translation as Record<
 
 const customerRuTranslations = {
   "Model pricing": "Цены на модели",
-  "Pay only for the tokens you use":
-    "Платите только за использованные токены",
+  "Pay only for the tokens you use": "Платите только за использованные токены",
   Input: "Ввод",
   Output: "Вывод",
   "Cache read": "Чтение из кэша",
@@ -558,6 +557,7 @@ const customerRuTranslations = {
   "Verify and sign in": "Подтвердить и войти",
   "Use verification code": "Использовать код подтверждения",
   "Use backup code": "Использовать резервный код",
+  Username: "Имя пользователя",
   "Back to password sign in": "Вернуться ко входу по паролю",
   "WeChat sign in": "Вход через WeChat",
   "Scan the QR code, follow the account, and enter the verification code.":
@@ -616,8 +616,7 @@ const customerRuTranslations = {
   "Copy key": "Скопировать ключ",
   "CNY and USD are settled 1:1.": "CNY и USD рассчитываются 1:1.",
   "Customer navigation": "Навигация клиента",
-  "Enter a quota limit for this key.":
-    "Введите лимит квоты для этого ключа.",
+  "Enter a quota limit for this key.": "Введите лимит квоты для этого ключа.",
   "Close navigation": "Закрыть навигацию",
   "Network request failed. Please check the backend service.":
     "Сетевой запрос не удался. Проверьте серверную службу.",
