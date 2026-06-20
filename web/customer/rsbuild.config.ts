@@ -49,6 +49,7 @@ export default defineConfig(({ envMode }) => {
     },
     output: {
       minify: isProd,
+      filenameHash: "contenthash:16",
       target: "web",
       distPath: {
         root: "dist",
