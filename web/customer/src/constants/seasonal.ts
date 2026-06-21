@@ -6,7 +6,7 @@
  */
 
 /** Father's Day falling gift boxes on the home page. */
-export const FATHERS_DAY_GIFTS_ENABLED = true;
+export const FATHERS_DAY_GIFTS_ENABLED = false;
 
 /**
  * Destination for the fixed gift entry shown at the top of the page.
