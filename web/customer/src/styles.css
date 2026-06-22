@@ -5487,6 +5487,18 @@ h3 {
   text-align: right;
 }
 
+.key-group {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  color: #00ad4b;
+  font-size: 12px;
+  font-weight: 850;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .key-expiry {
   min-width: 0;
   max-width: 100%;
@@ -5543,6 +5555,16 @@ h3 {
 
 .key-create-head {
   padding-bottom: 2px;
+}
+
+.key-create-head p {
+  max-width: calc(100% - 44px);
+  overflow: hidden;
+  color: #98a2b3;
+  font-size: 13px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .key-create-form {
@@ -9404,6 +9426,7 @@ h3 {
   .key-mask,
   .key-meta,
   .key-quota,
+  .key-group,
   .key-expiry {
     min-width: 0;
     overflow: hidden;

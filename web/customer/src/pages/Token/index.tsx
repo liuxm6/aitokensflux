@@ -3,6 +3,7 @@ import {
   ArrowRightLeft,
   Check,
   Copy,
+  Pencil,
   KeyRound,
   LoaderCircle,
   X,
@@ -25,6 +26,7 @@ import {
   getApiKeyExpiryTimestamp,
   getApiKeyQuotaLimitUnit,
   getDefaultApiKeyCreateForm,
+  getQuotaPerUnit,
   normalizePageData,
   parseApiKeyQuotaLimit,
   toDateInputValue,
@@ -121,6 +123,12 @@ type CCSwitchDialogState = {
   apiKey: string;
 } | null;
 
+type ApiKeyEditDialogState = {
+  token: CustomerToken;
+  form: ApiKeyCreateForm;
+  crossGroupRetry: boolean;
+} | null;
+
 export function ApiKeysPage() {
   const { requestConfirm } = useContext(ConfirmActionContext);
   const { language } = useContext(LanguageContext);
@@ -141,6 +149,8 @@ export function ApiKeysPage() {
   const [createMessage, setCreateMessage] = useState("");
   const [groupOptions, setGroupOptions] = useState<UserGroupSelectOption[]>([]);
   const [groupsLoading, setGroupsLoading] = useState(false);
+  const [editDialog, setEditDialog] = useState<ApiKeyEditDialogState>(null);
+  const [editSubmitting, setEditSubmitting] = useState(false);
   const [ccSwitchDialog, setCcSwitchDialog] =
     useState<CCSwitchDialogState>(null);
   const [ccSwitchApp, setCcSwitchApp] = useState<CCSwitchApp>("claude");
@@ -199,7 +209,9 @@ export function ApiKeysPage() {
     setLoadingTokens(false);
   };
 
-  const loadUserGroups = async () => {
+  const loadUserGroups = async (
+    onError: (message: string) => void = setCreateMessage,
+  ) => {
     if (groupsLoading || groupOptions.length > 0) return;
     setGroupsLoading(true);
     const response = await fetchUserGroups();
@@ -208,9 +220,7 @@ export function ApiKeysPage() {
       setGroupOptions(normalizeUserGroupOptions(response.data));
       return;
     }
-    setCreateMessage(
-      response.message || localizeKey(language, "Failed to load groups"),
-    );
+    onError(response.message || localizeKey(language, "Failed to load groups"));
   };
 
   const openCreateDialog = () => {
@@ -336,6 +346,105 @@ export function ApiKeysPage() {
       },
       onConfirm: () => updateTokenStatus(token, nextStatus),
     });
+  };
+
+  const openEditDialog = async (token: CustomerToken) => {
+    setTokenMessage(localizeKey(language, "Loading key..."));
+    void loadUserGroups(setTokenMessage);
+    const response = await apiRequest<CustomerToken>(`/api/token/${token.id}`, {
+      method: "GET",
+    });
+    if (!response.success || !response.data) {
+      setTokenMessage(
+        response.message || localizeKey(language, "Failed to load key"),
+      );
+      return;
+    }
+    setEditDialog({
+      token: response.data,
+      form: getApiKeyEditForm(response.data, status),
+      crossGroupRetry: Boolean(response.data.cross_group_retry),
+    });
+    setTokenMessage("");
+  };
+
+  const closeEditDialog = () => {
+    if (!editSubmitting) setEditDialog(null);
+  };
+
+  const updateToken = async () => {
+    if (!editDialog) return;
+    const name = editDialog.form.name.trim();
+    if (!name) {
+      setTokenMessage(localizeKey(language, "Please enter a key name"));
+      return;
+    }
+    if (name.length > 50) {
+      setTokenMessage(
+        localizeKey(language, "Key name cannot exceed 50 characters"),
+      );
+      return;
+    }
+    const group = editDialog.form.group.trim();
+    if (!group) {
+      setTokenMessage(localizeKey(language, "Please select a group"));
+      return;
+    }
+    if (
+      groupOptions.length > 0 &&
+      !groupOptions.some((option) => option.name === group)
+    ) {
+      setTokenMessage(localizeKey(language, "Please select a group"));
+      return;
+    }
+
+    const expiredTime = getApiKeyExpiryTimestamp(editDialog.form);
+    if (expiredTime === null) {
+      setTokenMessage(localizeKey(language, "Please choose a valid time"));
+      return;
+    }
+
+    let remainQuota = 0;
+    if (!editDialog.form.unlimitedQuota) {
+      if (!editDialog.form.quotaLimit.trim()) {
+        setTokenMessage(localizeKey(language, "Please enter a quota limit"));
+        return;
+      }
+      remainQuota = parseApiKeyQuotaLimit(editDialog.form.quotaLimit, status);
+      if (!Number.isFinite(remainQuota) || remainQuota < 0) {
+        setTokenMessage(
+          localizeKey(language, "Quota limit must be 0 or greater"),
+        );
+        return;
+      }
+    }
+
+    setEditSubmitting(true);
+    setTokenMessage(localizeKey(language, "Updating key..."));
+    const response = await apiRequest<CustomerToken>("/api/token/", {
+      method: "PUT",
+      body: JSON.stringify(
+        buildTokenUpdatePayload(
+          editDialog.token,
+          name,
+          group,
+          expiredTime,
+          remainQuota,
+          editDialog.form.unlimitedQuota,
+          editDialog.crossGroupRetry,
+        ),
+      ),
+    });
+    setEditSubmitting(false);
+    if (!response.success) {
+      setTokenMessage(
+        response.message || localizeKey(language, "Failed to update key"),
+      );
+      return;
+    }
+    setEditDialog(null);
+    setTokenMessage(localizeKey(language, "Key updated"));
+    await loadTokens(tokenPage);
   };
 
   const deleteTokenNow = async (token: CustomerToken) => {
@@ -548,6 +657,9 @@ export function ApiKeysPage() {
                     {formatApiKey(token.key)}
                   </span>
                   <span className="key-meta">
+                    <span className="key-group">
+                      {formatTokenGroupLabel(token, groupOptions, language)}
+                    </span>
                     <span className="mono key-quota">
                       {token.unlimited_quota ? (
                         <T id="Unlimited" />
@@ -574,6 +686,14 @@ export function ApiKeysPage() {
                     <Copy size={16} />
                   </button>
                   <div className="key-row-actions">
+                    <button
+                      className="btn btn-ghost btn-sm key-action"
+                      type="button"
+                      onClick={() => void openEditDialog(token)}
+                    >
+                      <Pencil size={15} />
+                      <T id="Edit" />
+                    </button>
                     <button
                       className="btn btn-ghost btn-sm key-action"
                       type="button"
@@ -660,6 +780,29 @@ export function ApiKeysPage() {
         onChange={setCreateForm}
         onClose={closeCreateDialog}
         onSubmit={createToken}
+      />
+      <ApiKeyEditDialog
+        form={editDialog?.form || getDefaultApiKeyCreateForm()}
+        groupOptions={groupOptions}
+        groupsLoading={groupsLoading}
+        open={Boolean(editDialog)}
+        status={status}
+        submitting={editSubmitting}
+        tokenName={editDialog?.token.name || ""}
+        onChange={(form) =>
+          setEditDialog((current) =>
+            current
+              ? {
+                  ...current,
+                  form,
+                  crossGroupRetry:
+                    form.group === "auto" ? current.crossGroupRetry : false,
+                }
+              : current,
+          )
+        }
+        onClose={closeEditDialog}
+        onSubmit={updateToken}
       />
       <CCSwitchImportDialog
         app={ccSwitchApp}
@@ -894,6 +1037,224 @@ function ApiKeyCreateDialog({
   );
 }
 
+function ApiKeyEditDialog({
+  open,
+  form,
+  groupOptions,
+  groupsLoading,
+  status,
+  submitting,
+  tokenName,
+  onChange,
+  onClose,
+  onSubmit,
+}: {
+  open: boolean;
+  form: ApiKeyCreateForm;
+  groupOptions: UserGroupSelectOption[];
+  groupsLoading: boolean;
+  status: CustomerStatus | null;
+  submitting: boolean;
+  tokenName: string;
+  onChange: (form: ApiKeyCreateForm) => void;
+  onClose: () => void;
+  onSubmit: () => void | Promise<void>;
+}) {
+  const { language } = useContext(LanguageContext);
+  if (!open) return null;
+
+  const quotaUnit = getApiKeyQuotaLimitUnit(status);
+  const quotaLimit = parseApiKeyQuotaLimit(form.quotaLimit, status);
+  const quotaPreview =
+    !form.unlimitedQuota &&
+    form.quotaLimit.trim() &&
+    Number.isFinite(quotaLimit)
+      ? formatQuotaTokens(quotaLimit)
+      : "";
+
+  const setField = <K extends keyof ApiKeyCreateForm>(
+    key: K,
+    value: ApiKeyCreateForm[K],
+  ) => onChange({ ...form, [key]: value });
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void onSubmit();
+  };
+
+  return (
+    <div className="purchase-dialog key-create-dialog" role="dialog" aria-modal>
+      <button
+        className="purchase-backdrop as-button"
+        type="button"
+        aria-label={localizeKey(language, "Close")}
+        disabled={submitting}
+        onClick={onClose}
+      />
+      <form className="purchase-panel key-create-panel" onSubmit={handleSubmit}>
+        <button
+          className="purchase-close"
+          type="button"
+          aria-label={localizeKey(language, "Close")}
+          disabled={submitting}
+          onClick={onClose}
+        >
+          <X size={20} />
+        </button>
+        <div className="purchase-head key-create-head">
+          <span className="purchase-kicker">
+            <T id="API key" />
+          </span>
+          <h2>
+            <T id="Edit key" />
+          </h2>
+          {tokenName ? <p>{tokenName}</p> : null}
+        </div>
+        <div className="key-create-form">
+          <label className="key-create-field">
+            <span>
+              <T id="Name" />
+            </span>
+            <input
+              className="console-input"
+              maxLength={50}
+              placeholder={localizeKey(language, "e.g. Production")}
+              value={form.name}
+              onChange={(event) => setField("name", event.target.value)}
+            />
+          </label>
+
+          <label className="key-create-field">
+            <span>
+              <T id="Group" />
+              <b className="required-dot">*</b>
+            </span>
+            <select
+              className="console-select"
+              disabled={submitting || groupsLoading}
+              required
+              value={form.group}
+              onChange={(event) => setField("group", event.target.value)}
+            >
+              <option value="">
+                {groupsLoading
+                  ? localizeKey(language, "Loading groups...")
+                  : localizeKey(language, "Select group")}
+              </option>
+              {groupOptions.map((option) => (
+                <option key={option.name} value={option.name}>
+                  {formatUserGroupOptionLabel(option)}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div className="key-create-grid">
+            <label className="key-create-field">
+              <span>
+                <T id="Valid until" />
+              </span>
+              <select
+                className="console-select"
+                value={form.expiryMode}
+                onChange={(event) =>
+                  setField("expiryMode", event.target.value as ApiKeyExpiryMode)
+                }
+              >
+                <option value="never">
+                  {localizeKey(language, "Never expires")}
+                </option>
+                <option value="7d">{localizeKey(language, "7 days")}</option>
+                <option value="30d">{localizeKey(language, "30 days")}</option>
+                <option value="90d">{localizeKey(language, "90 days")}</option>
+                <option value="custom">
+                  {localizeKey(language, "Custom date")}
+                </option>
+              </select>
+            </label>
+            <label className="key-create-field">
+              <span>
+                <T id="Expiry date" />
+              </span>
+              <input
+                className="console-input"
+                disabled={form.expiryMode !== "custom"}
+                min={toDateInputValue(new Date())}
+                type="date"
+                value={form.expiryDate}
+                onChange={(event) => setField("expiryDate", event.target.value)}
+              />
+            </label>
+          </div>
+
+          <div className="key-create-grid key-create-quota-grid">
+            <label className="key-create-field">
+              <span>
+                <T id="Quota ({{unit}})" values={{ unit: quotaUnit }} />
+              </span>
+              <input
+                className="console-input"
+                disabled={form.unlimitedQuota}
+                inputMode="decimal"
+                min="0"
+                placeholder="10"
+                step={quotaUnit === "tokens" ? "1" : "0.01"}
+                type="number"
+                value={form.quotaLimit}
+                onChange={(event) => setField("quotaLimit", event.target.value)}
+              />
+            </label>
+            <label className="key-create-check">
+              <input
+                checked={form.unlimitedQuota}
+                type="checkbox"
+                onChange={(event) =>
+                  setField("unlimitedQuota", event.target.checked)
+                }
+              />
+              <span>
+                <T id="Unlimited quota" />
+              </span>
+            </label>
+          </div>
+
+          <div className="key-create-hint">
+            {form.unlimitedQuota ? (
+              <T id="With unlimited quota enabled, this key is not capped at the key level." />
+            ) : quotaPreview ? (
+              <T
+                id="Submitted quota: {{quota}}"
+                values={{ quota: quotaPreview }}
+              />
+            ) : (
+              <T id="Enter a quota limit for this key." />
+            )}
+          </div>
+
+          <div className="key-create-actions">
+            <button
+              className="btn btn-ghost"
+              type="button"
+              disabled={submitting}
+              onClick={onClose}
+            >
+              <T id="Cancel" />
+            </button>
+            <button
+              className="btn btn-flux"
+              type="submit"
+              disabled={submitting || groupsLoading}
+            >
+              {submitting ? <LoaderCircle size={16} /> : <Pencil size={16} />}
+              <T id="Save changes" />
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 function CCSwitchImportDialog({
   app,
   name,
@@ -1076,6 +1437,74 @@ function buildCcSwitchUrl({
   params.set("usageAutoInterval", "5");
   params.set("usageScript", encodeBase64(buildCcSwitchUsageScript()));
   return `ccswitch://v1/import?${params.toString()}`;
+}
+
+function buildTokenUpdatePayload(
+  token: CustomerToken,
+  name: string,
+  group: string,
+  expiredTime: number,
+  remainQuota: number,
+  unlimitedQuota: boolean,
+  crossGroupRetry: boolean,
+) {
+  return {
+    id: token.id,
+    name,
+    expired_time: expiredTime,
+    remain_quota: unlimitedQuota ? 0 : remainQuota,
+    unlimited_quota: unlimitedQuota,
+    model_limits_enabled: Boolean(token.model_limits_enabled),
+    model_limits: token.model_limits || "",
+    allow_ips: token.allow_ips ?? "",
+    group,
+    cross_group_retry: group === "auto" ? crossGroupRetry : false,
+  };
+}
+
+function getApiKeyEditForm(
+  token: CustomerToken,
+  status?: CustomerStatus | null,
+): ApiKeyCreateForm {
+  const expiredTime = Number(token.expired_time ?? -1);
+  return {
+    name: token.name || "",
+    group: token.group || "",
+    expiryMode: expiredTime > 0 ? "custom" : "never",
+    expiryDate:
+      expiredTime > 0
+        ? toDateInputValue(new Date(expiredTime * 1000))
+        : getDefaultApiKeyCreateForm().expiryDate,
+    quotaLimit: getApiKeyQuotaLimitInputValue(token.remain_quota ?? 0, status),
+    unlimitedQuota: Boolean(token.unlimited_quota),
+  };
+}
+
+function getApiKeyQuotaLimitInputValue(
+  quota: number,
+  status?: CustomerStatus | null,
+) {
+  const value =
+    status?.quota_display_type?.toUpperCase() === "TOKENS"
+      ? Number(quota)
+      : Number(quota) / getQuotaPerUnit(status);
+  if (!Number.isFinite(value)) return "0";
+  if (Number.isInteger(value)) return String(value);
+  return value.toFixed(6).replace(/\.?0+$/, "");
+}
+
+function formatTokenGroupLabel(
+  token: CustomerToken,
+  groupOptions: UserGroupSelectOption[],
+  language: Language,
+) {
+  const group = (token.group || "").trim();
+  if (!group) return localizeKey(language, "Select group");
+  const option = groupOptions.find((item) => item.name === group);
+  if (!option) return group;
+  const parts = [group];
+  if (option.ratio) parts.push(option.ratio);
+  return parts.join(" · ");
 }
 
 function buildCcSwitchUsageScript() {

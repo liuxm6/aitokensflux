@@ -97,6 +97,10 @@ export type CustomerToken = {
   used_quota?: number;
   unlimited_quota?: boolean;
   group?: string;
+  model_limits_enabled?: boolean;
+  model_limits?: string;
+  allow_ips?: string | null;
+  cross_group_retry?: boolean;
 };
 
 export type ATFSwitchConnectData = {

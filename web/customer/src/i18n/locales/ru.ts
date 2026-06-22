@@ -270,6 +270,8 @@ const customerRuTranslations = {
   "System prompt override": "Переопределение системного промпта",
   "Violation fee": "Штрафное списание",
   Wallet: "Кошелек",
+  "Edit key": "Изменить ключ",
+  "Key updated": "Ключ обновлен",
   "Use the following Base URL instead of official endpoints with your API key":
     "Используйте этот Base URL вместо официальных адресов вместе с вашим API-ключом",
   Examples: "Примеры",
@@ -278,6 +280,8 @@ const customerRuTranslations = {
   "Create key": "Создать ключ",
   "Failed to load API keys": "Не удалось загрузить API-ключи",
   "Failed to load groups": "Не удалось загрузить группы",
+  "Failed to load key": "Не удалось загрузить ключ",
+  "Failed to update key": "Не удалось обновить ключ",
   "Please enter a key name": "Введите название ключа",
   "Key name cannot exceed 50 characters":
     "Название ключа не может превышать 50 символов",
@@ -300,6 +304,8 @@ const customerRuTranslations = {
   "Failed to read key": "Не удалось прочитать ключ",
   "Key copied": "Ключ скопирован",
   "Loading API keys": "Загрузка API-ключей",
+  "Loading key...": "Загрузка ключа...",
+  "Updating key...": "Обновление ключа...",
   "No API keys yet": "API-ключей пока нет",
   "Create first key": "Создать первый ключ",
   "e.g. Production": "например, Production",
