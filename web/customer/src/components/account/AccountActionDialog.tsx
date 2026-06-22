@@ -13,7 +13,11 @@ import { LanguageContext } from "../../context/Language";
 import { useToastMessage } from "../../context/Toast";
 import { getBoundEmail } from "../../helpers/account";
 import { localizeCopy } from "../../i18n/localization";
-import { apiRequest, buildQuery } from "../../services/api";
+import {
+  apiRequest,
+  buildQuery,
+  withTurnstileHeader,
+} from "../../services/api";
 import type {
   AccountDialogMode,
   CustomerStatus,
@@ -239,9 +243,8 @@ export function AccountActionDialog({
     const response = await apiRequest(
       `/api/verification${buildQuery({
         email,
-        turnstile: turnstileToken,
       })}`,
-      { method: "GET" },
+      { method: "GET", headers: withTurnstileHeader(turnstileToken) },
     );
     setCodeLoading(false);
     if (response.success) {

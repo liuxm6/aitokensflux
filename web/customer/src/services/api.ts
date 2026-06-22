@@ -3,6 +3,34 @@ import { detectCustomerLanguage } from "../i18n/languages";
 import type { ApiResponse } from "../types";
 
 const API_REQUEST_TIMEOUT_MS = 8000;
+const TURNSTILE_HEADER_NAME = "X-Turnstile-Token";
+
+function mergeRequestHeaders(headers?: HeadersInit) {
+  const merged = new Headers();
+  merged.set("Content-Type", "application/json");
+
+  const uid = window.localStorage.getItem("uid");
+  if (uid) merged.set("New-API-User", uid);
+
+  if (headers) {
+    new Headers(headers).forEach((value, key) => {
+      merged.set(key, value);
+    });
+  }
+
+  return merged;
+}
+
+export function withTurnstileHeader(
+  turnstileToken?: string,
+  headers?: HeadersInit,
+): HeadersInit | undefined {
+  if (!turnstileToken) return headers;
+
+  const merged = new Headers(headers);
+  merged.set(TURNSTILE_HEADER_NAME, turnstileToken);
+  return merged;
+}
 
 function getNetworkErrorMessage(error: unknown) {
   const language = detectCustomerLanguage();
@@ -25,16 +53,11 @@ export async function apiRequest<T>(
     API_REQUEST_TIMEOUT_MS,
   );
   try {
+    const { headers, ...requestOptions } = options;
     const response = await fetch(url, {
+      ...requestOptions,
       credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        ...(window.localStorage.getItem("uid")
-          ? { "New-API-User": window.localStorage.getItem("uid") ?? "" }
-          : {}),
-        ...(options.headers ?? {}),
-      },
-      ...options,
+      headers: mergeRequestHeaders(headers),
       signal: controller.signal,
     });
     const data = (await response.json().catch(() => ({}))) as ApiResponse<T>;

@@ -37,7 +37,11 @@ import {
 } from "../../helpers/passkeys";
 import { navigateTo } from "../../helpers/navigation";
 import { localizeKey, localizeCopy } from "../../i18n/localization";
-import { apiRequest, buildQuery } from "../../services/api";
+import {
+  apiRequest,
+  buildQuery,
+  withTurnstileHeader,
+} from "../../services/api";
 import type {
   AuthFormValues,
   AuthLoginMethod,
@@ -66,8 +70,8 @@ function getStoredAffCode() {
 async function getOAuthState(turnstileToken?: string) {
   const aff = getStoredAffCode();
   const response = await apiRequest<string>(
-    `/api/oauth/state${buildQuery({ aff, turnstile: turnstileToken })}`,
-    { method: "GET" },
+    `/api/oauth/state${buildQuery({ aff })}`,
+    { method: "GET", headers: withTurnstileHeader(turnstileToken) },
   );
   return response.success && response.data ? response.data : "";
 }
@@ -541,9 +545,10 @@ export function AuthPage({
     setLoading(true);
     try {
       const response = await apiRequest<LoginData>(
-        `/api/user/login${buildQuery({ turnstile: turnstileToken })}`,
+        "/api/user/login",
         {
           method: "POST",
+          headers: withTurnstileHeader(turnstileToken),
           body: JSON.stringify({
             username: values.email.trim(),
             password: values.password,
@@ -576,9 +581,10 @@ export function AuthPage({
     setLoading(true);
     try {
       const response = await apiRequest<LoginData>(
-        `/api/user/email-code/login${buildQuery({ turnstile: turnstileToken })}`,
+        "/api/user/email-code/login",
         {
           method: "POST",
+          headers: withTurnstileHeader(turnstileToken),
           body: JSON.stringify({
             email: values.email.trim(),
             verification_code: values.verificationCode.trim(),
@@ -622,9 +628,10 @@ export function AuthPage({
       const email = values.email.trim();
       const username = generateUsernameFromEmail(email);
       const registerResponse = await apiRequest(
-        `/api/user/register${buildQuery({ turnstile: turnstileToken })}`,
+        "/api/user/register",
         {
           method: "POST",
+          headers: withTurnstileHeader(turnstileToken),
           body: JSON.stringify({
             username,
             email,
@@ -646,7 +653,7 @@ export function AuthPage({
 
       setMessage({ type: "success", text: copy.success });
       const loginResponse = await apiRequest<LoginData>(
-        `/api/user/login${buildQuery({ turnstile: turnstileToken })}`,
+        "/api/user/login",
         {
           method: "POST",
           body: JSON.stringify({
@@ -695,9 +702,8 @@ export function AuthPage({
       `/api/verification${buildQuery({
         email: values.email.trim(),
         purpose: isEmailCodeLogin ? "l" : undefined,
-        turnstile: turnstileToken,
       })}`,
-      { method: "GET" },
+      { method: "GET", headers: withTurnstileHeader(turnstileToken) },
     );
     setCodeLoading(false);
     if (response.success) {
@@ -733,9 +739,8 @@ export function AuthPage({
     const response = await apiRequest(
       `/api/reset_password${buildQuery({
         email: values.email.trim(),
-        turnstile: turnstileToken,
       })}`,
-      { method: "GET" },
+      { method: "GET", headers: withTurnstileHeader(turnstileToken) },
     );
     setLoading(false);
     setMessage({
@@ -801,11 +806,10 @@ export function AuthPage({
     setOAuthLoading("passkey");
     try {
       const begin = await apiRequest(
-        `/api/user/passkey/login/begin${buildQuery({
-          turnstile: turnstileToken,
-        })}`,
+        "/api/user/passkey/login/begin",
         {
           method: "POST",
+          headers: withTurnstileHeader(turnstileToken),
         },
       );
       if (!begin.success || !begin.data) {
@@ -870,9 +874,8 @@ export function AuthPage({
     const response = await apiRequest<CustomerUser>(
       `/api/oauth/wechat${buildQuery({
         code: wechatCode.trim(),
-        turnstile: turnstileToken,
       })}`,
-      { method: "GET" },
+      { method: "GET", headers: withTurnstileHeader(turnstileToken) },
     );
     setOAuthLoading("");
     if (response.success && response.data) {
@@ -906,11 +909,10 @@ export function AuthPage({
         params.set(field, String(value));
       }
     }
-    if (turnstileToken) params.set("turnstile", turnstileToken);
     setOAuthLoading("telegram");
     const response = await apiRequest<CustomerUser>(
       `/api/oauth/telegram/login?${params.toString()}`,
-      { method: "GET" },
+      { method: "GET", headers: withTurnstileHeader(turnstileToken) },
     );
     setOAuthLoading("");
     if (response.success && response.data) {

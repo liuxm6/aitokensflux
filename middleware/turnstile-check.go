@@ -1,9 +1,9 @@
 package middleware
 
 import (
-	"encoding/json"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/QuantumNous/new-api/common"
 	"github.com/gin-contrib/sessions"
@@ -12,6 +12,10 @@ import (
 
 type turnstileCheckResponse struct {
 	Success bool `json:"success"`
+}
+
+var turnstileHTTPClient = &http.Client{
+	Timeout: 8 * time.Second,
 }
 
 func TurnstileCheck() gin.HandlerFunc {
@@ -23,7 +27,10 @@ func TurnstileCheck() gin.HandlerFunc {
 				c.Next()
 				return
 			}
-			response := c.Query("turnstile")
+			response := c.GetHeader("X-Turnstile-Token")
+			if response == "" {
+				response = c.Query("turnstile")
+			}
 			if response == "" {
 				c.JSON(http.StatusOK, gin.H{
 					"success": false,
@@ -32,7 +39,7 @@ func TurnstileCheck() gin.HandlerFunc {
 				c.Abort()
 				return
 			}
-			rawRes, err := http.PostForm("https://challenges.cloudflare.com/turnstile/v0/siteverify", url.Values{
+			rawRes, err := turnstileHTTPClient.PostForm("https://challenges.cloudflare.com/turnstile/v0/siteverify", url.Values{
 				"secret":   {common.TurnstileSecretKey},
 				"response": {response},
 				"remoteip": {c.ClientIP()},
@@ -48,7 +55,7 @@ func TurnstileCheck() gin.HandlerFunc {
 			}
 			defer rawRes.Body.Close()
 			var res turnstileCheckResponse
-			err = json.NewDecoder(rawRes.Body).Decode(&res)
+			err = common.DecodeJson(rawRes.Body, &res)
 			if err != nil {
 				common.SysLog(err.Error())
 				c.JSON(http.StatusOK, gin.H{

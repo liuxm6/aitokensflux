@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>正式服务器用户使用情况运营分析报告 - 2026-06-22</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fb;
+      --paper: #ffffff;
+      --ink: #172033;
+      --muted: #667085;
+      --line: #d9e0ea;
+      --soft: #eef3f8;
+      --brand: #2563eb;
+      --brand-2: #0f766e;
+      --warn: #b45309;
+      --danger: #b42318;
+      --good: #047857;
+      --shadow: 0 14px 40px rgba(23, 32, 51, 0.08);
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.58;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: 32px auto 56px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #13233f 0%, #1b3a6f 52%, #0f766e 100%);
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 34px 36px;
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.78);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1.14;
+      font-weight: 760;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      max-width: 860px;
+      margin: 14px 0 0;
+      color: rgba(255, 255, 255, 0.84);
+      font-size: 16px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 4px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      border-radius: 999px;
+      color: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.08);
+      font-size: 13px;
+    }
+
+    .section {
+      margin-top: 22px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .section-header {
+      padding: 22px 24px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .section-note {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .content {
+      padding: 22px 24px 24px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .grid.cards-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .grid.cards-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid.two {
+      grid-template-columns: 1.05fr 0.95fr;
+      align-items: start;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      padding: 16px;
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .metric-value {
+      margin-top: 5px;
+      font-size: 29px;
+      line-height: 1.15;
+      font-weight: 760;
+      letter-spacing: 0;
+    }
+
+    .metric-sub {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .good {
+      color: var(--good);
+    }
+
+    .warn {
+      color: var(--warn);
+    }
+
+    .danger {
+      color: var(--danger);
+    }
+
+    .callout {
+      border-left: 4px solid var(--brand);
+      background: #eff6ff;
+      padding: 14px 16px;
+      border-radius: 6px;
+      color: #1e3a8a;
+    }
+
+    .callout.warn {
+      border-left-color: var(--warn);
+      background: #fff7ed;
+      color: #7c2d12;
+    }
+
+    .callout.good {
+      border-left-color: var(--good);
+      background: #ecfdf5;
+      color: #064e3b;
+    }
+
+    .callout p {
+      margin: 0;
+    }
+
+    .funnel {
+      display: grid;
+      gap: 12px;
+    }
+
+    .funnel-row {
+      display: grid;
+      grid-template-columns: 130px 1fr 92px;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .bar-track {
+      height: 26px;
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      min-width: 2px;
+      background: linear-gradient(90deg, var(--brand), var(--brand-2));
+      border-radius: 999px;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 8px;
+      text-align: right;
+      vertical-align: top;
+    }
+
+    th:first-child,
+    td:first-child {
+      text-align: left;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #344054;
+      font-weight: 650;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .insight-list {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .insight-list li {
+      padding: 13px 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    .insight-list strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .priority {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 24px;
+      margin-right: 8px;
+      border-radius: 999px;
+      background: #dbeafe;
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: 700;
+      vertical-align: text-bottom;
+    }
+
+    .priority.p0 {
+      background: #fee2e2;
+      color: #b42318;
+    }
+
+    .priority.p1 {
+      background: #ffedd5;
+      color: #9a3412;
+    }
+
+    .priority.p2 {
+      background: #dcfce7;
+      color: #047857;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 10px;
+      align-items: end;
+    }
+
+    .day-bar {
+      display: grid;
+      gap: 7px;
+      align-items: end;
+      text-align: center;
+      min-width: 74px;
+    }
+
+    .day-bar .column {
+      height: 160px;
+      display: flex;
+      align-items: end;
+      justify-content: center;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 4px;
+    }
+
+    .day-bar .column span {
+      display: block;
+      width: 100%;
+      min-height: 2px;
+      border-radius: 4px;
+      background: linear-gradient(180deg, var(--brand), var(--brand-2));
+    }
+
+    .footer {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 18px 4px 0;
+    }
+
+    @media (max-width: 900px) {
+      .grid.cards-4,
+      .grid.cards-3,
+      .grid.two {
+        grid-template-columns: 1fr;
+      }
+
+      .timeline {
+        overflow-x: auto;
+        grid-template-columns: repeat(7, 100px);
+      }
+    }
+
+    @media (max-width: 620px) {
+      .page {
+        width: min(100% - 18px, 1180px);
+        margin-top: 12px;
+      }
+
+      .hero,
+      .content,
+      .section-header {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .funnel-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+
+      .metric-value {
+        font-size: 25px;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      .page {
+        width: 100%;
+        margin: 0;
+      }
+
+      .hero,
+      .section {
+        box-shadow: none;
+      }
+
+      .section {
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <p class="eyebrow">Production User Analytics</p>
+      <h1>正式服务器用户使用情况运营分析报告</h1>
+      <p class="subtitle">基于正式 PostgreSQL 数据库只读聚合结果，分析用户注册、激活、使用、付费和流失原因。报告不包含用户名、邮箱、Token、订单号等敏感明细。</p>
+      <div class="meta">
+        <span class="pill">取数时间：2026-06-22 17:52 上海时间</span>
+        <span class="pill">数据源：users / logs / tokens / top_ups / subscriptions</span>
+        <span class="pill">普通用户口径：role = 1 且未删除</span>
+      </div>
+    </header>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>一页结论</h2>
+        <p class="section-note">当前问题不是服务稳定性，而是新用户从注册到首次调用的激活漏斗损耗。</p>
+      </div>
+      <div class="content">
+        <div class="grid cards-4">
+          <div class="card">
+            <div class="metric-label">普通用户总数</div>
+            <div class="metric-value">476</div>
+            <div class="metric-sub">启用 445，禁用 31</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">近 7 天新增</div>
+            <div class="metric-value warn">406</div>
+            <div class="metric-sub">增长集中在 6 月 18 日后</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">成功消费用户</div>
+            <div class="metric-value">148</div>
+            <div class="metric-sub">全量消费转化率 31.1%</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">付费用户</div>
+            <div class="metric-value">40</div>
+            <div class="metric-sub">全量付费转化率 8.4%</div>
+          </div>
+        </div>
+
+        <div style="height: 16px"></div>
+
+        <div class="grid cards-3">
+          <div class="callout warn">
+            <p><strong>最大断点：</strong>近 7 天新增 406 人，其中 190 人没有创建 API Key，94 人创建 Key 但没有成功消费。</p>
+          </div>
+          <div class="callout good">
+            <p><strong>服务质量：</strong>近 7 天成功请求 44,361 次，错误请求 1 次，错误率约 0.002%。系统稳定性不是主要流失原因。</p>
+          </div>
+          <div class="callout warn">
+            <p><strong>支付损耗：</strong>全量订单 107 笔，成功 52 笔，expired/failed 54 笔，订单成功率 48.6%。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>注册与激活漏斗</h2>
+        <p class="section-note">从注册到创建 Key，再到首次消费和付费，当前主要损耗发生在前两步。</p>
+      </div>
+      <div class="content grid two">
+        <div class="card">
+          <h3 style="margin-top: 0">全量用户漏斗</h3>
+          <div class="funnel">
+            <div class="funnel-row">
+              <strong>注册</strong>
+              <div class="bar-track"><div class="bar-fill" style="width: 100%"></div></div>
+              <span>476 / 100%</span>
+            </div>
+            <div class="funnel-row">
+              <strong>创建 Key</strong>
+              <div class="bar-track"><div class="bar-fill" style="width: 52.1%"></div></div>
+              <span>248 / 52.1%</span>
+            </div>
+            <div class="funnel-row">
+              <strong>成功消费</strong>
+              <div class="bar-track"><div class="bar-fill" style="width: 31.1%"></div></div>
+              <span>148 / 31.1%</span>
+            </div>
+            <div class="funnel-row">
+              <strong>付费</strong>
+              <div class="bar-track"><div class="bar-fill" style="width: 8.4%"></div></div>
+              <span>40 / 8.4%</span>
+            </div>
+          </div>
+          <p class="small">平均注册到创建 Key：3.65 小时；平均注册到首次消费：15.18 小时；平均注册到付费：57.05 小时。</p>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top: 0">近 7 天新增用户漏斗</h3>
+          <div class="funnel">
+            <div class="funnel-row">
+              <strong>新增注册</strong>
+              <div class="bar-track"><div class="bar-fill" style="width: 100%"></div></div>
+              <span>406 / 100%</span>
+            </div>
+            <div class="funnel-row">
+              <strong>创建 Key</strong>
+              <div class="bar-track"><div class="bar-fill" style="width: 53.2%"></div></div>
+              <span>216 / 53.2%</span>
+            </div>
+            <div class="funnel-row">
+              <strong>成功消费</strong>
+              <div class="bar-track"><div class="bar-fill" style="width: 30.0%"></div></div>
+              <span>122 / 30.0%</span>
+            </div>
+            <div class="funnel-row">
+              <strong>付费</strong>
+              <div class="bar-track"><div class="bar-fill" style="width: 7.1%"></div></div>
+              <span>29 / 7.1%</span>
+            </div>
+          </div>
+          <p class="small">新增用户中，190 人没有 Key，94 人有 Key 但无成功消费，是最值得运营介入的池子。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>注册趋势</h2>
+        <p class="section-note">6 月 18 日出现注册突增，当天新增 220 人，但新增后的激活承接不足。</p>
+      </div>
+      <div class="content">
+        <div class="timeline" aria-label="最近 7 天注册趋势">
+          <div class="day-bar">
+            <div class="column"><span style="height: 12%"></span></div>
+            <strong>6/16</strong>
+            <span class="small">27</span>
+          </div>
+          <div class="day-bar">
+            <div class="column"><span style="height: 8%"></span></div>
+            <strong>6/17</strong>
+            <span class="small">18</span>
+          </div>
+          <div class="day-bar">
+            <div class="column"><span style="height: 100%"></span></div>
+            <strong>6/18</strong>
+            <span class="small">220</span>
+          </div>
+          <div class="day-bar">
+            <div class="column"><span style="height: 25%"></span></div>
+            <strong>6/19</strong>
+            <span class="small">54</span>
+          </div>
+          <div class="day-bar">
+            <div class="column"><span style="height: 19%"></span></div>
+            <strong>6/20</strong>
+            <span class="small">41</span>
+          </div>
+          <div class="day-bar">
+            <div class="column"><span style="height: 11%"></span></div>
+            <strong>6/21</strong>
+            <span class="small">25</span>
+          </div>
+          <div class="day-bar">
+            <div class="column"><span style="height: 8%"></span></div>
+            <strong>6/22</strong>
+            <span class="small">17</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>使用情况</h2>
+        <p class="section-note">已经跑通的用户使用强度较高，且错误率极低。金额等价按项目默认 500,000 quota = 1 unit 估算，仅作为内部消耗口径。</p>
+      </div>
+      <div class="content">
+        <div class="grid cards-4">
+          <div class="card">
+            <div class="metric-label">近 7 天消费用户</div>
+            <div class="metric-value">142</div>
+            <div class="metric-sub">历史消费用户 148，说明已激活用户留存较好</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">近 7 天成功请求</div>
+            <div class="metric-value">44,361</div>
+            <div class="metric-sub">成功请求主导，失败很少</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">近 7 天错误率</div>
+            <div class="metric-value good">0.002%</div>
+            <div class="metric-sub">错误请求 1 次</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">近 7 天平均耗时</div>
+            <div class="metric-value">15.16s</div>
+            <div class="metric-sub">P95 约 41s</div>
+          </div>
+        </div>
+
+        <div style="height: 18px"></div>
+
+        <div class="grid two">
+          <div>
+            <h3>最近 7 天每日使用</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>日期</th>
+                    <th>活跃用户</th>
+                    <th>成功请求</th>
+                    <th>消耗等价</th>
+                    <th>Tokens</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>2026-06-16</td><td>25</td><td>4,739</td><td>294.90</td><td>459,587,046</td></tr>
+                  <tr><td>2026-06-17</td><td>24</td><td>5,833</td><td>424.54</td><td>516,386,593</td></tr>
+                  <tr><td>2026-06-18</td><td>81</td><td>10,392</td><td>717.94</td><td>1,064,674,758</td></tr>
+                  <tr><td>2026-06-19</td><td>45</td><td>6,115</td><td>389.92</td><td>616,081,159</td></tr>
+                  <tr><td>2026-06-20</td><td>27</td><td>4,471</td><td>343.06</td><td>415,871,514</td></tr>
+                  <tr><td>2026-06-21</td><td>28</td><td>4,882</td><td>326.63</td><td>555,369,778</td></tr>
+                  <tr><td>2026-06-22</td><td>62</td><td>6,964</td><td>555.81</td><td>672,334,503</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="small">6 月 22 日为截至 17:52 的日内数据。</p>
+          </div>
+
+          <div>
+            <h3>近 7 天模型消费 Top</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>模型</th>
+                    <th>请求</th>
+                    <th>用户</th>
+                    <th>消耗等价</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>gpt-5.5</td><td>31,980</td><td>103</td><td>2,169.72</td></tr>
+                  <tr><td>claude-opus-4-8</td><td>1,354</td><td>24</td><td>590.81</td></tr>
+                  <tr><td>gpt-5.4</td><td>8,275</td><td>65</td><td>266.03</td></tr>
+                  <tr><td>claude-sonnet-4-6</td><td>894</td><td>11</td><td>43.77</td></tr>
+                  <tr><td>claude-opus-4-7</td><td>270</td><td>5</td><td>22.81</td></tr>
+                  <tr><td>claude-haiku-4-5-20251001</td><td>883</td><td>12</td><td>9.44</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="small">消费集中度：Top 1 用户贡献 21.04%，Top 5 贡献 53.31%，Top 10 贡献 63.02%。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>付费情况</h2>
+        <p class="section-note">付费用户留存不错，但支付过期/放弃比例偏高，是第二个运营损耗点。</p>
+      </div>
+      <div class="content">
+        <div class="grid cards-4">
+          <div class="card">
+            <div class="metric-label">全量订单</div>
+            <div class="metric-value">107</div>
+            <div class="metric-sub">成功 52，pending 1，expired/failed 54</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">订单成功率</div>
+            <div class="metric-value warn">48.6%</div>
+            <div class="metric-sub">近 7 天提升到 64.3%</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">成功付费用户</div>
+            <div class="metric-value">40</div>
+            <div class="metric-sub">其中 34 人近 7 天仍在消费</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">成功 money 合计</div>
+            <div class="metric-value">896.88</div>
+            <div class="metric-sub">平均成功订单 17.25</div>
+          </div>
+        </div>
+
+        <div style="height: 18px"></div>
+
+        <div class="grid two">
+          <div>
+            <h3>套餐购买分布</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>套餐</th>
+                    <th>订单</th>
+                    <th>成功</th>
+                    <th>成功用户</th>
+                    <th>money</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>父亲节套餐</td><td>27</td><td>24</td><td>24</td><td>120.00</td></tr>
+                  <tr><td>Ai Coding Pro 版</td><td>28</td><td>6</td><td>6</td><td>125.94</td></tr>
+                  <tr><td>Ai Coding Max 版</td><td>18</td><td>5</td><td>5</td><td>239.95</td></tr>
+                  <tr><td>Ai Coding Token 加量包</td><td>16</td><td>2</td><td>2</td><td>39.98</td></tr>
+                  <tr><td>Ai Coding Ultra 版</td><td>12</td><td>1</td><td>1</td><td>149.99</td></tr>
+                  <tr><td>基础版</td><td>1</td><td>1</td><td>1</td><td>200.00</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div>
+            <h3>订阅状态</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>状态</th>
+                    <th>订阅数</th>
+                    <th>用户数</th>
+                    <th>额度使用率</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>active</td><td>38</td><td>34</td><td>35.46%</td></tr>
+                  <tr><td>cancelled</td><td>1</td><td>1</td><td>0.00%</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="small">当前没有 7 天内到期的 active 订阅。付费后的使用留存较好，问题更偏支付前和首次使用前。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>流失与未激活分层</h2>
+        <p class="section-note">真正的老用户流失不多，主要是 6 月 18 日后大批新注册用户没有完成激活。</p>
+      </div>
+      <div class="content">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>注册年龄</th>
+                <th>用户</th>
+                <th>无 Key</th>
+                <th>有 Key 无消费</th>
+                <th>已消费</th>
+                <th>7日活跃</th>
+                <th>7日沉默</th>
+                <th>付费</th>
+                <th>无余额无订阅</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>0-1 天</td><td>28</td><td>15</td><td>9</td><td>4</td><td>4</td><td>0</td><td>6</td><td>20</td></tr>
+              <tr><td>1-3 天</td><td>73</td><td>55</td><td>11</td><td>7</td><td>7</td><td>0</td><td>10</td><td>60</td></tr>
+              <tr><td>3-7 天</td><td>305</td><td>120</td><td>74</td><td>111</td><td>111</td><td>0</td><td>13</td><td>48</td></tr>
+              <tr><td>7-14 天</td><td>47</td><td>32</td><td>4</td><td>11</td><td>8</td><td>3</td><td>7</td><td>1</td></tr>
+              <tr><td>14 天以上</td><td>23</td><td>6</td><td>2</td><td>15</td><td>11</td><td>4</td><td>4</td><td>2</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="height: 16px"></div>
+
+        <div class="callout warn">
+          <p><strong>重点人群：</strong>3-7 天注册用户 305 人中，120 人未创建 Key，74 人创建 Key 但无消费。这批人已经过了“刚注册还没来得及操作”的窗口，是当前最值得挽回的运营池。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>原因判断</h2>
+        <p class="section-note">结合注册、Key、消费、支付和错误日志，当前损耗更像新手路径和试用门槛问题。</p>
+      </div>
+      <div class="content">
+        <ul class="insight-list">
+          <li>
+            <strong>1. 注册后接入门槛高</strong>
+            近 7 天新增用户里 190 人没有创建 Key。用户可能看到了注册入口，但没有被顺畅带到“创建 Key、复制 Base URL、选择模型、完成一次请求”的路径。
+          </li>
+          <li>
+            <strong>2. Key 到首次成功调用存在明显断点</strong>
+            全量 100 人有 Key 但无成功消费，近 7 天新增里有 94 人处在这个状态。API Key 的 accessed_time 均有记录，说明用户可能已经触达 Key，但没有完成有效请求。
+          </li>
+          <li>
+            <strong>3. 新用户缺少直接试用额度</strong>
+            生产配置显示 QuotaForNewUser = 0，QuotaForInviter = 1,000,000。直注册用户没有新手额度，会阻断首次调用；当前 131 人处于无余额且无 active 订阅状态。
+          </li>
+          <li>
+            <strong>4. 支付放弃率偏高</strong>
+            全量订单 107 笔中 expired/failed 54 笔。用户有支付意图但没有完成支付，可能与支付页说明、支付有效期、回跳确认或价格认知有关。
+          </li>
+          <li>
+            <strong>5. 服务稳定性不是主要原因</strong>
+            近 7 天只有 1 条错误日志，高失败率用户为 0。已完成首次调用的用户总体留存和使用都较好。
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>运营行动建议</h2>
+        <p class="section-note">优先提高首次成功调用率，再处理支付召回和高价值用户留存。</p>
+      </div>
+      <div class="content">
+        <ul class="insight-list">
+          <li>
+            <strong><span class="priority p0">P0</span>补齐新手激活闭环</strong>
+            给新用户一个“创建 Key -> 复制 Base URL -> 选择推荐模型 -> 一键复制 curl / 客户端配置 -> 看到首次成功请求”的路径。首屏不要只展示概念，直接让用户完成一次可验证调用。
+          </li>
+          <li>
+            <strong><span class="priority p0">P0</span>配置小额新手试用额度</strong>
+            建议设置 QuotaForNewUser 或 QuotaForInvitee，让直注册用户能完成至少一次真实调用。额度不必大，目标是把首次成功调用率从 31.1% 拉升到 45% 以上。
+          </li>
+          <li>
+            <strong><span class="priority p1">P1</span>按用户状态做召回</strong>
+            对“无 Key”用户推创建 Key 指引；对“有 Key 无消费”用户推 Base URL、模型名、客户端导入教程；对“支付 expired”用户推继续支付/重新下单入口。
+          </li>
+          <li>
+            <strong><span class="priority p1">P1</span>优化支付完成率</strong>
+            针对 54 笔 expired/failed 订单检查支付页文案、套餐权益、支付倒计时、回跳确认和 webhook 到账提示。近 7 天成功率已经到 64.3%，目标可以先定到 70%。
+          </li>
+          <li>
+            <strong><span class="priority p2">P2</span>维护头部高价值用户</strong>
+            Top 10 用户贡献 63.02% 的近 7 天消耗，需要建立余额提醒、订阅额度提醒、专属模型稳定性监控，避免头部用户因额度或模型变动中断。
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>补充排查：客户主题 Turnstile</h2>
+        <p class="section-note">Turnstile 开启后的登录不稳定主要发生在客户主题登录链路，不属于模型调用服务稳定性问题。</p>
+      </div>
+      <div class="content">
+        <ul class="insight-list">
+          <li>
+            <strong>1. 运营影响</strong>
+            Turnstile 如果在注册、登录、邮箱验证码、OAuth、Passkey 等入口不稳定，会直接放大新用户注册后的首登和首次使用损耗，尤其影响报告中 0-7 天新增用户的激活转化。
+          </li>
+          <li>
+            <strong>2. 主要原因</strong>
+            客户主题原先把 Turnstile token 放在 URL query 中传递，生产访问日志会记录较长的 token；注册成功后还会立即复用同一个 token 做自动登录。Turnstile token 具备短时效和一次性校验特征，复用会造成“有时成功、有时失败”的体验。
+          </li>
+          <li>
+            <strong>3. 已处理方向</strong>
+            客户主题已改为通过 <code>X-Turnstile-Token</code> 请求头传递 token，后端中间件兼容该 header 并保留 query 回退；后端校验请求增加 8 秒超时，避免 Cloudflare 校验异常时拖住登录请求。
+          </li>
+          <li>
+            <strong>4. 后续观察</strong>
+            重新开启 Turnstile 后建议重点观察登录失败率、注册成功后自动登录成功率、验证码发送成功率，以及 0-1 天新增用户的创建 Key 转化率是否回升。
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>下周建议追踪指标</h2>
+        <p class="section-note">建议用这些指标判断运营动作是否有效。</p>
+      </div>
+      <div class="content">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>指标</th>
+                <th>当前值</th>
+                <th>建议目标</th>
+                <th>判断含义</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>注册到创建 Key 转化率</td><td>52.1%</td><td>70%+</td><td>验证新手路径是否清晰</td></tr>
+              <tr><td>注册到首次消费转化率</td><td>31.1%</td><td>45%+</td><td>验证接入和试用额度是否有效</td></tr>
+              <tr><td>近 7 天新增付费率</td><td>7.1%</td><td>10%+</td><td>验证首购动机和支付链路</td></tr>
+              <tr><td>订单成功率</td><td>48.6% 全量 / 64.3% 近 7 天</td><td>70%+</td><td>验证支付页和回跳体验</td></tr>
+              <tr><td>7 日消费活跃用户</td><td>142</td><td>持续增长</td><td>验证新增是否能变成真实使用</td></tr>
+              <tr><td>错误率</td><td>0.002% 近 7 天</td><td>维持低位</td><td>确认增长没有牺牲稳定性</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <p class="footer">说明：本报告由正式库聚合数据生成，不包含用户个人信息或敏感凭据。部分“消耗等价”不是财务收入，只是按 quota 规则折算的内部用量口径。</p>
+  </main>
+</body>
+</html>
