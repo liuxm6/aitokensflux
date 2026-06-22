@@ -37,6 +37,7 @@ import { localizeKey } from "../../i18n/localization";
 import { apiRequest, buildQueryFromValues } from "../../services/api";
 import {
   fetchCustomerStatus,
+  fetchUserGroups,
   fetchUserModels,
 } from "../../services/customer-api";
 import type {
@@ -48,11 +49,18 @@ import type {
   PageData,
 } from "../../types";
 
+const CLAUDE_DEFAULT_MODELS = {
+  model: "claude-sonnet-4.6",
+  haikuModel: "claude-haiku-4-5-20251001",
+  sonnetModel: "claude-sonnet-4.6",
+  opusModel: "claude-opus-4-8",
+};
+
 const CC_SWITCH_APP_CONFIGS = {
   claude: {
     label: "Claude",
     defaultName: "My Claude",
-    defaultModel: "claude-sonnet-4.6",
+    defaultModels: CLAUDE_DEFAULT_MODELS,
     modelFields: [
       { key: "model", labelId: "Primary Model", required: true },
       { key: "haikuModel", labelId: "Haiku Model", required: false },
@@ -63,18 +71,50 @@ const CC_SWITCH_APP_CONFIGS = {
   codex: {
     label: "Codex",
     defaultName: "My Codex",
-    defaultModel: "gpt-5.5",
+    defaultModels: { model: "gpt-5.5" },
     modelFields: [{ key: "model", labelId: "Primary Model", required: true }],
   },
   gemini: {
     label: "Gemini",
     defaultName: "My Gemini",
-    defaultModel: "gemini-2.5-pro",
+    defaultModels: { model: "gemini-2.5-pro" },
     modelFields: [{ key: "model", labelId: "Primary Model", required: true }],
   },
 } as const;
 
 type CCSwitchApp = keyof typeof CC_SWITCH_APP_CONFIGS;
+type UserGroupSelectOption = {
+  name: string;
+  desc: string;
+  ratio: string;
+};
+
+function buildDefaultCcSwitchModels(app: CCSwitchApp) {
+  return { ...CC_SWITCH_APP_CONFIGS[app].defaultModels };
+}
+
+function normalizeUserGroupOptions(
+  groups: Record<string, { ratio?: string | number; desc?: string }>,
+): UserGroupSelectOption[] {
+  return Object.entries(groups)
+    .map(([name, info]) => ({
+      name,
+      desc: String(info.desc || ""),
+      ratio: String(info.ratio ?? ""),
+    }))
+    .sort((first, second) => {
+      if (first.name === "auto") return -1;
+      if (second.name === "auto") return 1;
+      return first.name.localeCompare(second.name);
+    });
+}
+
+function formatUserGroupOptionLabel(option: UserGroupSelectOption) {
+  const parts = [option.name];
+  if (option.desc) parts.push(option.desc);
+  if (option.ratio) parts.push(option.ratio);
+  return parts.join(" · ");
+}
 
 type CCSwitchDialogState = {
   token: CustomerToken;
@@ -99,6 +139,8 @@ export function ApiKeysPage() {
   );
   const [createSubmitting, setCreateSubmitting] = useState(false);
   const [createMessage, setCreateMessage] = useState("");
+  const [groupOptions, setGroupOptions] = useState<UserGroupSelectOption[]>([]);
+  const [groupsLoading, setGroupsLoading] = useState(false);
   const [ccSwitchDialog, setCcSwitchDialog] =
     useState<CCSwitchDialogState>(null);
   const [ccSwitchApp, setCcSwitchApp] = useState<CCSwitchApp>("claude");
@@ -106,7 +148,7 @@ export function ApiKeysPage() {
     CC_SWITCH_APP_CONFIGS.claude.defaultName,
   );
   const [ccSwitchModels, setCcSwitchModels] = useState<Record<string, string>>({
-    model: CC_SWITCH_APP_CONFIGS.claude.defaultModel,
+    ...CC_SWITCH_APP_CONFIGS.claude.defaultModels,
   });
   const [ccSwitchModelOptions, setCcSwitchModelOptions] = useState<string[]>(
     [],
@@ -157,10 +199,25 @@ export function ApiKeysPage() {
     setLoadingTokens(false);
   };
 
+  const loadUserGroups = async () => {
+    if (groupsLoading || groupOptions.length > 0) return;
+    setGroupsLoading(true);
+    const response = await fetchUserGroups();
+    setGroupsLoading(false);
+    if (response.success && response.data) {
+      setGroupOptions(normalizeUserGroupOptions(response.data));
+      return;
+    }
+    setCreateMessage(
+      response.message || localizeKey(language, "Failed to load groups"),
+    );
+  };
+
   const openCreateDialog = () => {
     setCreateForm(getDefaultApiKeyCreateForm());
     setCreateMessage("");
     setCreateDialogOpen(true);
+    void loadUserGroups();
   };
 
   const closeCreateDialog = () => {
@@ -177,6 +234,18 @@ export function ApiKeysPage() {
       setCreateMessage(
         localizeKey(language, "Key name cannot exceed 50 characters"),
       );
+      return;
+    }
+    const group = createForm.group.trim();
+    if (!group) {
+      setCreateMessage(localizeKey(language, "Please select a group"));
+      return;
+    }
+    if (
+      groupOptions.length > 0 &&
+      !groupOptions.some((option) => option.name === group)
+    ) {
+      setCreateMessage(localizeKey(language, "Please select a group"));
       return;
     }
     const expiredTime = getApiKeyExpiryTimestamp(createForm);
@@ -206,6 +275,7 @@ export function ApiKeysPage() {
       method: "POST",
       body: JSON.stringify({
         name,
+        group,
         expired_time: expiredTime,
         remain_quota: remainQuota,
         unlimited_quota: createForm.unlimitedQuota,
@@ -339,7 +409,7 @@ export function ApiKeysPage() {
     const config = CC_SWITCH_APP_CONFIGS[app];
     setCcSwitchApp(app);
     setCcSwitchName(config.defaultName);
-    setCcSwitchModels({ model: config.defaultModel });
+    setCcSwitchModels(buildDefaultCcSwitchModels(app));
     setCcSwitchDialog({ token, apiKey });
     setTokenMessage("");
     void loadCcSwitchModels();
@@ -349,7 +419,7 @@ export function ApiKeysPage() {
     const config = CC_SWITCH_APP_CONFIGS[app];
     setCcSwitchApp(app);
     setCcSwitchName(config.defaultName);
-    setCcSwitchModels({ model: config.defaultModel });
+    setCcSwitchModels(buildDefaultCcSwitchModels(app));
   };
 
   const openCcSwitch = () => {
@@ -384,6 +454,7 @@ export function ApiKeysPage() {
       if (response.success && response.data) setStatus(response.data);
     });
     void loadTokens();
+    void loadUserGroups();
   }, []);
 
   const tokenTotalPages = Math.max(
@@ -582,6 +653,8 @@ export function ApiKeysPage() {
       <ApiKeyCreateDialog
         open={createDialogOpen}
         form={createForm}
+        groupOptions={groupOptions}
+        groupsLoading={groupsLoading}
         status={status}
         submitting={createSubmitting}
         onChange={setCreateForm}
@@ -609,6 +682,8 @@ export function ApiKeysPage() {
 function ApiKeyCreateDialog({
   open,
   form,
+  groupOptions,
+  groupsLoading,
   status,
   submitting,
   onChange,
@@ -617,6 +692,8 @@ function ApiKeyCreateDialog({
 }: {
   open: boolean;
   form: ApiKeyCreateForm;
+  groupOptions: UserGroupSelectOption[];
+  groupsLoading: boolean;
   status: CustomerStatus | null;
   submitting: boolean;
   onChange: (form: ApiKeyCreateForm) => void;
@@ -684,6 +761,31 @@ function ApiKeyCreateDialog({
               value={form.name}
               onChange={(event) => setField("name", event.target.value)}
             />
+          </label>
+
+          <label className="key-create-field">
+            <span>
+              <T id="Group" />
+              <b className="required-dot">*</b>
+            </span>
+            <select
+              className="console-select"
+              disabled={submitting || groupsLoading}
+              required
+              value={form.group}
+              onChange={(event) => setField("group", event.target.value)}
+            >
+              <option value="">
+                {groupsLoading
+                  ? localizeKey(language, "Loading groups...")
+                  : localizeKey(language, "Select group")}
+              </option>
+              {groupOptions.map((option) => (
+                <option key={option.name} value={option.name}>
+                  {formatUserGroupOptionLabel(option)}
+                </option>
+              ))}
+            </select>
           </label>
 
           <div className="key-create-grid">
@@ -780,7 +882,7 @@ function ApiKeyCreateDialog({
             <button
               className="btn btn-flux"
               type="submit"
-              disabled={submitting}
+              disabled={submitting || groupsLoading}
             >
               {submitting ? <LoaderCircle size={16} /> : <KeyRound size={16} />}
               <T id="Create key" />
@@ -953,6 +1055,7 @@ function buildCcSwitchUrl({
   openaiBaseUrl: string;
 }) {
   const endpoint = app === "codex" ? openaiBaseUrl : serverAddress;
+  const primaryModel = models.model?.trim() || "";
   const params = new URLSearchParams();
   params.set("resource", "provider");
   params.set("app", app);
@@ -964,8 +1067,81 @@ function buildCcSwitchUrl({
     if (trimmed) params.set(key, trimmed);
   }
   params.set("homepage", serverAddress);
+  params.set("notes", primaryModel ? `${name} · ${primaryModel}` : name);
+  params.set("icon", "atf");
   params.set("enabled", "true");
+  params.set("usageEnabled", "true");
+  params.set("usageApiKey", apiKey);
+  params.set("usageBaseUrl", serverAddress);
+  params.set("usageAutoInterval", "5");
+  params.set("usageScript", encodeBase64(buildCcSwitchUsageScript()));
   return `ccswitch://v1/import?${params.toString()}`;
+}
+
+function buildCcSwitchUsageScript() {
+  return `({
+  request: {
+    url: "{{baseUrl}}/api/token/usage",
+    method: "GET",
+    headers: {
+      "Authorization": "Bearer {{apiKey}}",
+      "User-Agent": "cc-switch/1.0"
+    }
+  },
+  extractor: function(response) {
+    if (!response || (response.code !== true && response.success !== true) || !response.data) {
+      return {
+        isValid: false,
+        invalidMessage: response && response.message ? response.message : "Failed to load usage",
+        remaining: 0,
+        unit: "USD"
+      };
+    }
+
+    var data = response.data;
+    var quotaPerUnit = 500000;
+    var toNumber = function(value) {
+      var number = Number(value);
+      return Number.isFinite(number) ? number : 0;
+    };
+    var toUSD = function(quota) {
+      return toNumber(quota) / quotaPerUnit;
+    };
+    var walletQuota = toNumber(data.wallet_quota !== undefined ? data.wallet_quota : data.user_quota);
+    var walletUsedQuota = toNumber(data.wallet_used_quota !== undefined ? data.wallet_used_quota : data.user_used_quota);
+    var keyAvailable = data.unlimited_quota ? walletQuota : toNumber(data.total_available);
+    var keyUsed = toNumber(data.total_used);
+    var keyTotal = data.unlimited_quota ? keyAvailable + keyUsed : toNumber(data.total_granted);
+
+    return [
+      {
+        planName: data.name || "API key quota",
+        remaining: toUSD(keyAvailable),
+        used: toUSD(keyUsed),
+        total: toUSD(keyTotal),
+        unit: "USD",
+        isValid: true
+      },
+      {
+        planName: "Wallet balance",
+        remaining: toUSD(walletQuota),
+        used: toUSD(walletUsedQuota),
+        total: toUSD(walletQuota + walletUsedQuota),
+        unit: "USD",
+        isValid: true
+      }
+    ];
+  }
+})`;
+}
+
+function encodeBase64(value: string) {
+  const bytes = new TextEncoder().encode(value);
+  let binary = "";
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return window.btoa(binary);
 }
 
 function formatApiKey(key: string) {

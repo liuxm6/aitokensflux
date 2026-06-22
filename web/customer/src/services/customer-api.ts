@@ -5,6 +5,7 @@ import type {
   CustomerStatus,
   ATFSwitchConnectData,
   CustomerUser,
+  UserGroupOption,
   ModelPricingData,
   PageData,
   PricingModel,
@@ -31,6 +32,12 @@ export async function fetchCustomerStatus() {
 
 export async function fetchUserModels() {
   return apiRequest<string[]>("/api/user/models", { method: "GET" });
+}
+
+export async function fetchUserGroups() {
+  return apiRequest<Record<string, UserGroupOption>>("/api/user/self/groups", {
+    method: "GET",
+  });
 }
 
 export async function connectATFSwitch(

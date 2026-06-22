@@ -83,6 +83,7 @@ export function getDefaultApiKeyExpiryDate() {
 export function getDefaultApiKeyCreateForm(): ApiKeyCreateForm {
   return {
     name: "",
+    group: "",
     expiryMode: "never",
     expiryDate: getDefaultApiKeyExpiryDate(),
     quotaLimit: "10",

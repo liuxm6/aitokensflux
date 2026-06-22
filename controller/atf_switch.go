@@ -1,13 +1,17 @@
 package controller
 
 import (
+	"encoding/base64"
 	"fmt"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/model"
+	"github.com/QuantumNous/new-api/service"
+	"github.com/QuantumNous/new-api/setting"
 	"github.com/QuantumNous/new-api/setting/operation_setting"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -25,6 +29,9 @@ type atfSwitchAppInfo struct {
 	Label     string
 	Endpoint  string
 	Model     string
+	Haiku     string
+	Sonnet    string
+	Opus      string
 	TokenName string
 }
 
@@ -34,6 +41,9 @@ var atfSwitchApps = map[string]atfSwitchAppInfo{
 		Label:     "Claude Code",
 		Endpoint:  atfSwitchEndpoint,
 		Model:     "claude-sonnet-4.6",
+		Haiku:     "claude-haiku-4-5-20251001",
+		Sonnet:    "claude-sonnet-4.6",
+		Opus:      "claude-opus-4-8",
 		TokenName: "ATF Switch - Claude Code",
 	},
 	"claude-desktop": {
@@ -41,6 +51,9 @@ var atfSwitchApps = map[string]atfSwitchAppInfo{
 		Label:     "Claude Desktop",
 		Endpoint:  atfSwitchEndpoint,
 		Model:     "claude-sonnet-4.6",
+		Haiku:     "claude-haiku-4-5-20251001",
+		Sonnet:    "claude-sonnet-4.6",
+		Opus:      "claude-opus-4-8",
 		TokenName: "ATF Switch - Claude Desktop",
 	},
 	"codex": {
@@ -62,6 +75,9 @@ var atfSwitchApps = map[string]atfSwitchAppInfo{
 		Label:     "OpenCode",
 		Endpoint:  atfSwitchV1Endpoint,
 		Model:     "claude-sonnet-4.6",
+		Haiku:     "claude-haiku-4-5-20251001",
+		Sonnet:    "claude-sonnet-4.6",
+		Opus:      "claude-opus-4-8",
 		TokenName: "ATF Switch - OpenCode",
 	},
 	"openclaw": {
@@ -69,6 +85,9 @@ var atfSwitchApps = map[string]atfSwitchAppInfo{
 		Label:     "OpenClaw",
 		Endpoint:  atfSwitchV1Endpoint,
 		Model:     "claude-sonnet-4.6",
+		Haiku:     "claude-haiku-4-5-20251001",
+		Sonnet:    "claude-sonnet-4.6",
+		Opus:      "claude-opus-4-8",
 		TokenName: "ATF Switch - OpenClaw",
 	},
 	"hermes": {
@@ -76,6 +95,9 @@ var atfSwitchApps = map[string]atfSwitchAppInfo{
 		Label:     "Hermes",
 		Endpoint:  atfSwitchV1Endpoint,
 		Model:     "claude-sonnet-4.6",
+		Haiku:     "claude-haiku-4-5-20251001",
+		Sonnet:    "claude-sonnet-4.6",
+		Opus:      "claude-opus-4-8",
 		TokenName: "ATF Switch - Hermes",
 	},
 }
@@ -135,8 +157,36 @@ func findATFSwitchToken(userId int, tokenName string) (*model.Token, error) {
 	return &token, nil
 }
 
-func ensureATFSwitchToken(userId int, info atfSwitchAppInfo) (*model.Token, bool, error) {
+func defaultATFSwitchTokenGroup(userGroup string) string {
+	userGroup = strings.TrimSpace(userGroup)
+	if setting.DefaultUseAutoGroup {
+		return "auto"
+	}
+
+	usableGroups := service.GetUserUsableGroups(userGroup)
+	if _, ok := usableGroups["auto"]; ok {
+		return "auto"
+	}
+	if userGroup != "" {
+		return userGroup
+	}
+
+	groupNames := make([]string, 0, len(usableGroups))
+	for groupName := range usableGroups {
+		if strings.TrimSpace(groupName) != "" {
+			groupNames = append(groupNames, groupName)
+		}
+	}
+	sort.Strings(groupNames)
+	if len(groupNames) > 0 {
+		return groupNames[0]
+	}
+	return ""
+}
+
+func ensureATFSwitchToken(user *model.User, info atfSwitchAppInfo) (*model.Token, bool, error) {
 	now := common.GetTimestamp()
+	userId := user.Id
 	token, err := findATFSwitchToken(userId, info.TokenName)
 	if err == nil {
 		changed := false
@@ -153,6 +203,12 @@ func ensureATFSwitchToken(userId int, info atfSwitchAppInfo) (*model.Token, bool
 			token.UnlimitedQuota = true
 			token.RemainQuota = 0
 			changed = true
+		}
+		if strings.TrimSpace(token.Group) == "" {
+			if group := defaultATFSwitchTokenGroup(user.Group); group != "" {
+				token.Group = group
+				changed = true
+			}
 		}
 		if token.AccessedTime != now {
 			token.AccessedTime = now
@@ -197,6 +253,7 @@ func ensureATFSwitchToken(userId int, info atfSwitchAppInfo) (*model.Token, bool
 		ExpiredTime:    -1,
 		RemainQuota:    0,
 		UnlimitedQuota: true,
+		Group:          defaultATFSwitchTokenGroup(user.Group),
 	}
 	if err := token.Insert(); err != nil {
 		return nil, false, err
@@ -232,7 +289,70 @@ func ensureATFSwitchAccessToken(user *model.User) (string, error) {
 	return "", fmt.Errorf("生成 ATF Switch 授权令牌失败，请重试")
 }
 
-func buildATFSwitchDeepLink(info atfSwitchAppInfo, endpoint string, userId int, apiKey string, accessToken string, accountEmail string) string {
+func buildATFSwitchUsageScript() string {
+	script := `({
+  request: {
+    url: "{{baseUrl}}/api/token/usage",
+    method: "GET",
+    headers: {
+      "Authorization": "Bearer {{apiKey}}",
+      "User-Agent": "cc-switch/1.0"
+    }
+  },
+  extractor: function(response) {
+    if (!response || (response.code !== true && response.success !== true) || !response.data) {
+      return {
+        isValid: false,
+        invalidMessage: response && response.message ? response.message : "Failed to load usage",
+        remaining: 0,
+        unit: "USD"
+      };
+    }
+
+    var data = response.data;
+    var quotaPerUnit = 500000;
+    var toNumber = function(value) {
+      var number = Number(value);
+      return Number.isFinite(number) ? number : 0;
+    };
+    var toUSD = function(quota) {
+      return toNumber(quota) / quotaPerUnit;
+    };
+    var walletQuota = toNumber(data.wallet_quota !== undefined ? data.wallet_quota : data.user_quota);
+    var walletUsedQuota = toNumber(data.wallet_used_quota !== undefined ? data.wallet_used_quota : data.user_used_quota);
+    var keyAvailable = data.unlimited_quota ? walletQuota : toNumber(data.total_available);
+    var keyUsed = toNumber(data.total_used);
+    var keyTotal = data.unlimited_quota ? keyAvailable + keyUsed : toNumber(data.total_granted);
+
+    return [
+      {
+        planName: data.name || "API key quota",
+        remaining: toUSD(keyAvailable),
+        used: toUSD(keyUsed),
+        total: toUSD(keyTotal),
+        unit: "USD",
+        isValid: true
+      },
+      {
+        planName: "Wallet balance",
+        remaining: toUSD(walletQuota),
+        used: toUSD(walletUsedQuota),
+        total: toUSD(walletQuota + walletUsedQuota),
+        unit: "USD",
+        isValid: true
+      }
+    ];
+  }
+})`
+	return base64.StdEncoding.EncodeToString([]byte(script))
+}
+
+func atfSwitchUsageBaseURL(endpoint string) string {
+	baseURL := strings.TrimRight(endpoint, "/")
+	return strings.TrimSuffix(baseURL, "/v1")
+}
+
+func buildATFSwitchDeepLink(info atfSwitchAppInfo, endpoint string, usageBaseURL string, userId int, apiKey string, accessToken string, accountEmail string) string {
 	params := url.Values{}
 	params.Set("resource", "provider")
 	params.Set("app", info.App)
@@ -241,12 +361,21 @@ func buildATFSwitchDeepLink(info atfSwitchAppInfo, endpoint string, userId int, 
 	params.Set("endpoint", endpoint)
 	params.Set("apiKey", apiKey)
 	params.Set("model", info.Model)
+	if info.Haiku != "" {
+		params.Set("haikuModel", info.Haiku)
+	}
+	if info.Sonnet != "" {
+		params.Set("sonnetModel", info.Sonnet)
+	}
+	if info.Opus != "" {
+		params.Set("opusModel", info.Opus)
+	}
 	params.Set("notes", "浏览器授权 · "+info.Model)
 	params.Set("icon", "atf")
 	params.Set("enabled", "true")
 	params.Set("usageEnabled", "true")
 	params.Set("usageApiKey", apiKey)
-	params.Set("usageBaseUrl", endpoint)
+	params.Set("usageBaseUrl", usageBaseURL)
 	params.Set("usageAccessToken", accessToken)
 	params.Set("usageUserId", strconv.Itoa(userId))
 	if accountEmail != "" {
@@ -254,6 +383,7 @@ func buildATFSwitchDeepLink(info atfSwitchAppInfo, endpoint string, userId int, 
 	}
 	params.Set("usageAutoInterval", "5")
 	params.Set("usageTemplateType", "newapi")
+	params.Set("usageScript", buildATFSwitchUsageScript())
 	return "atfswitch://v1/import?" + params.Encode()
 }
 
@@ -278,13 +408,14 @@ func ConnectATFSwitch(c *gin.Context) {
 		return
 	}
 
-	token, created, err := ensureATFSwitchToken(userId, info)
+	token, created, err := ensureATFSwitchToken(user, info)
 	if err != nil {
 		common.ApiError(c, err)
 		return
 	}
 
 	endpoint := atfSwitchEndpointForRequest(c, info)
+	usageBaseURL := atfSwitchUsageBaseURL(endpoint)
 	apiKey := formatATFSwitchAPIKey(token.GetFullKey())
 	common.ApiSuccess(c, gin.H{
 		"app":           info.App,
@@ -307,6 +438,6 @@ func ConnectATFSwitch(c *gin.Context) {
 		"username":      user.Username,
 		"displayName":   user.DisplayName,
 		"display_name":  user.DisplayName,
-		"deep_link":     buildATFSwitchDeepLink(info, endpoint, userId, apiKey, accessToken, accountEmail),
+		"deep_link":     buildATFSwitchDeepLink(info, endpoint, usageBaseURL, userId, apiKey, accessToken, accountEmail),
 	})
 }

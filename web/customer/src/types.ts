@@ -96,6 +96,7 @@ export type CustomerToken = {
   remain_quota?: number;
   used_quota?: number;
   unlimited_quota?: boolean;
+  group?: string;
 };
 
 export type ATFSwitchConnectData = {
@@ -490,10 +491,16 @@ export type ApiKeyExpiryMode = "never" | "7d" | "30d" | "90d" | "custom";
 
 export type ApiKeyCreateForm = {
   name: string;
+  group: string;
   expiryMode: ApiKeyExpiryMode;
   expiryDate: string;
   quotaLimit: string;
   unlimitedQuota: boolean;
+};
+
+export type UserGroupOption = {
+  ratio?: string | number;
+  desc?: string;
 };
 
 export type NodeBufferCtor = {
