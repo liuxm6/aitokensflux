@@ -724,10 +724,10 @@ export function createHomePage({
 
           <ModelPricingSection />
 
-          <section className="section surface-band">
+          <section className="section surface-band pricing-section">
             <div className="wrap">
-              <div className="section-head">
-                <div>
+              <div className="pricing-section-head">
+                <div className="pricing-title center">
                   <Pill>
                     <T id="Pricing" />
                   </Pill>
@@ -735,7 +735,10 @@ export function createHomePage({
                     <T id="Transparent pricing that scales down" />
                   </h2>
                 </div>
-                <AppLink className="btn btn-ghost" href="/subscribe">
+                <AppLink
+                  className="btn btn-ghost pricing-all-link"
+                  href="/subscribe"
+                >
                   <T id="See all plans" />
                 </AppLink>
               </div>

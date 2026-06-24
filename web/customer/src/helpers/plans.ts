@@ -40,14 +40,16 @@ const CODING_PLAN_PRESETS: Record<
     ctaEn: "Buy now",
     tone: "",
     featuresZh: [
-      "用多少储多少，弹性不浪费",
-      "永久有效，无需续费",
-      "输入 Token 按模型定价折算为等效输出 Token",
+      "按量加量，临时任务也划算",
+      "余额当月有效，用完再充",
+      "适合补额度、试用和轻量开发",
+      "输入 Token 按模型价格自动折算",
     ],
     featuresEn: [
-      "Top up as needed without waste",
-      "Never expires, no renewal required",
-      "Input tokens are converted to equivalent output tokens by model pricing",
+      "Top up on demand for short tasks",
+      "Balance is valid for the current month",
+      "Great for trials, overflow, and light coding",
+      "Input tokens are converted by model pricing",
     ],
   },
   pro: {
