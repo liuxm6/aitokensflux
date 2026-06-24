@@ -1,6 +1,7 @@
 export const enTranslations = {
   "Model pricing": "Model pricing",
   "Pay only for the tokens you use": "Pay only for the tokens you use",
+  "1M = 1,000,000 tokens": "1M = 1,000,000 tokens",
   "Cache read": "Cache read",
   "per request": "per request",
   "30 days": "30 days",

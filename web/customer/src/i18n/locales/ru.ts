@@ -8,6 +8,7 @@ const defaultRuTranslations = defaultRuLocale.translation as Record<
 const customerRuTranslations = {
   "Model pricing": "Цены на модели",
   "Pay only for the tokens you use": "Платите только за использованные токены",
+  "1M = 1,000,000 tokens": "1M = 1 000 000 токенов",
   Input: "Ввод",
   Output: "Вывод",
   "Cache read": "Чтение из кэша",

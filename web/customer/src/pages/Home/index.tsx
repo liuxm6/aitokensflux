@@ -518,7 +518,9 @@ function ModelPricingSection() {
             </div>
             <div className="mp-panel-unit">
               <span aria-hidden="true" />
-              <span>1M tokens</span>
+              <span>
+                <T id="1M = 1,000,000 tokens" />
+              </span>
             </div>
           </div>
 

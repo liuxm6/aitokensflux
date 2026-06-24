@@ -2,6 +2,7 @@ export const zhTWTranslations = {
   "Father's Day gift": "父親節禮包",
   "Model pricing": "模型價格",
   "Pay only for the tokens you use": "只為你用掉的 Token 付費",
+  "1M = 1,000,000 tokens": "1M = 100萬 token",
   "Cache read": "快取讀取",
   "per request": "每次請求",
   "30 days": "30 天",
