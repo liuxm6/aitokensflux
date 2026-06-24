@@ -106,6 +106,10 @@ Use `bun` as the preferred package manager and script runner for the frontend (`
 - `bun run build` for production build
 - `bun run i18n:*` for i18n tooling
 
+### Rule 3A: Customer Theme Is the Default Frontend Target
+
+For customer-facing frontend requests, homepage changes, marketing pages, pricing display changes, and other visual/UI改造, default to the customer theme under `web/customer/`. Do not modify `web/default/` unless the user explicitly asks for the default admin/frontend theme or the surrounding code clearly belongs there.
+
 ### Rule 4: New Channel StreamOptions Support
 
 When implementing a new channel:

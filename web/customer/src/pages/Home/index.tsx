@@ -16,7 +16,10 @@ import {
 } from "react";
 import { AppLink } from "../../components/common/AppLink";
 import { EmptyState } from "../../components/common/EmptyState";
-import { FathersDayGifts, FathersDayGiftEntry } from "../../components/common/FathersDayGifts";
+import {
+  FathersDayGifts,
+  FathersDayGiftEntry,
+} from "../../components/common/FathersDayGifts";
 import { Pill } from "../../components/common/Pill";
 import { Footer } from "../../components/layout/Footer";
 import { SupportChannelGrid } from "../../components/support/SupportChannels";
@@ -213,7 +216,7 @@ function SupportSection() {
   );
 }
 
-type PricingProvider = "anthropic" | "openai";
+type PricingGroup = "claude" | "codex";
 
 type PriceRow = {
   name: string;
@@ -223,40 +226,63 @@ type PriceRow = {
   perCall: number | null;
 };
 
-const RATIO_TO_USD_PER_M = 2;
-const PRICING_PROVIDER_ORDER: PricingProvider[] = ["openai", "anthropic"];
+type GroupPricingRows = {
+  ratio: number;
+  rows: PriceRow[];
+};
 
-function classifyProvider(
+const RATIO_TO_USD_PER_M = 2;
+const PRICING_GROUP_ORDER: PricingGroup[] = ["claude", "codex"];
+
+function classifyFallbackGroup(
   modelName: string,
   vendorName?: string,
   ownerBy?: string,
-): PricingProvider | null {
+): PricingGroup | null {
   const vendor = `${vendorName ?? ""} ${ownerBy ?? ""}`.toLowerCase();
-  if (vendor.includes("anthropic")) return "anthropic";
-  if (vendor.includes("openai")) return "openai";
+  if (vendor.includes("anthropic")) return "claude";
+  if (vendor.includes("openai")) return "codex";
   const name = modelName.toLowerCase();
-  if (name.includes("claude")) return "anthropic";
+  if (name.includes("claude")) return "claude";
   if (
     /^(gpt|chatgpt|codex|o1|o3|o4|text-embedding|dall-e|whisper|davinci|babbage|tts)/.test(
       name,
     )
   ) {
-    return "openai";
+    return "codex";
   }
   return null;
 }
 
-function toPriceRow(model: PricingModel): PriceRow {
+function modelBelongsToGroup(
+  model: PricingModel,
+  group: PricingGroup,
+  vendorName?: string,
+): boolean {
+  const enableGroups = Array.isArray(model.enable_groups)
+    ? model.enable_groups
+    : [];
+  if (enableGroups.includes(group) || enableGroups.includes("all")) {
+    return true;
+  }
+  if (enableGroups.length > 0) return false;
+  return (
+    classifyFallbackGroup(model.model_name, vendorName, model.owner_by) ===
+    group
+  );
+}
+
+function toPriceRow(model: PricingModel, groupRatio: number): PriceRow {
   if (model.quota_type === 1) {
     return {
       name: model.model_name,
       input: null,
       output: null,
       cacheRead: null,
-      perCall: model.model_price,
+      perCall: model.model_price * groupRatio,
     };
   }
-  const input = model.model_ratio * RATIO_TO_USD_PER_M;
+  const input = model.model_ratio * RATIO_TO_USD_PER_M * groupRatio;
   return {
     name: model.model_name,
     input,
@@ -288,84 +314,148 @@ function comparePriceRows(a: PriceRow, b: PriceRow) {
 }
 
 const DEV_SAMPLE_PRICING: ModelPricingData = {
+  group_ratio: { claude: 1, codex: 0.6 },
   vendors: [
     { id: 1, name: "Anthropic" },
     { id: 2, name: "OpenAI" },
   ],
   data: [
-    { model_name: "Claude Opus 4.8", quota_type: 0, model_ratio: 2.5, model_price: 0, completion_ratio: 5, cache_ratio: 0.1, vendor_id: 1 },
-    { model_name: "Claude Sonnet 4.6", quota_type: 0, model_ratio: 1.5, model_price: 0, completion_ratio: 5, cache_ratio: 0.1, vendor_id: 1 },
-    { model_name: "Claude Haiku 4.5", quota_type: 0, model_ratio: 0.5, model_price: 0, completion_ratio: 5, cache_ratio: 0.1, vendor_id: 1 },
-    { model_name: "GPT-5.5", quota_type: 0, model_ratio: 0.625, model_price: 0, completion_ratio: 8, cache_ratio: 0.1, vendor_id: 2 },
-    { model_name: "GPT-5.5 mini", quota_type: 0, model_ratio: 0.125, model_price: 0, completion_ratio: 8, cache_ratio: 0.1, vendor_id: 2 },
-    { model_name: "o4-mini", quota_type: 0, model_ratio: 0.55, model_price: 0, completion_ratio: 4, cache_ratio: 0.25, vendor_id: 2 },
+    {
+      model_name: "Claude Opus 4.8",
+      quota_type: 0,
+      model_ratio: 2.5,
+      model_price: 0,
+      completion_ratio: 5,
+      cache_ratio: 0.1,
+      vendor_id: 1,
+      enable_groups: ["claude"],
+    },
+    {
+      model_name: "Claude Sonnet 4.6",
+      quota_type: 0,
+      model_ratio: 1.5,
+      model_price: 0,
+      completion_ratio: 5,
+      cache_ratio: 0.1,
+      vendor_id: 1,
+      enable_groups: ["claude"],
+    },
+    {
+      model_name: "Claude Haiku 4.5",
+      quota_type: 0,
+      model_ratio: 0.5,
+      model_price: 0,
+      completion_ratio: 5,
+      cache_ratio: 0.1,
+      vendor_id: 1,
+      enable_groups: ["claude"],
+    },
+    {
+      model_name: "GPT-5.5",
+      quota_type: 0,
+      model_ratio: 0.625,
+      model_price: 0,
+      completion_ratio: 8,
+      cache_ratio: 0.1,
+      vendor_id: 2,
+      enable_groups: ["codex"],
+    },
+    {
+      model_name: "GPT-5.5 mini",
+      quota_type: 0,
+      model_ratio: 0.125,
+      model_price: 0,
+      completion_ratio: 8,
+      cache_ratio: 0.1,
+      vendor_id: 2,
+      enable_groups: ["codex"],
+    },
+    {
+      model_name: "o4-mini",
+      quota_type: 0,
+      model_ratio: 0.55,
+      model_price: 0,
+      completion_ratio: 4,
+      cache_ratio: 0.25,
+      vendor_id: 2,
+      enable_groups: ["codex"],
+    },
   ],
 };
 
-const PROVIDER_META: Record<
-  PricingProvider,
+const GROUP_META: Record<
+  PricingGroup,
   {
     label: string;
-    multiplier: string;
-    mood?: string;
     Logo: ComponentType<{ className?: string }>;
   }
 > = {
-  anthropic: {
-    label: "Anthropic",
-    multiplier: "1.0x",
-    mood: "👎",
+  claude: {
+    label: "claude",
     Logo: ClaudeLogo,
   },
-  openai: { label: "OpenAI", multiplier: "0.6x", Logo: OpenAILogo },
+  codex: { label: "codex", Logo: OpenAILogo },
 };
+
+function formatGroupMultiplier(value: number): string {
+  if (!Number.isFinite(value)) return "1x";
+  return `${Number(value.toFixed(4))}x`;
+}
 
 function groupPricing(
   source: ModelPricingData,
-): Record<PricingProvider, PriceRow[]> {
+): Record<PricingGroup, GroupPricingRows> {
   const vendorName = new Map<number, string>();
   for (const vendor of source.vendors ?? [])
     vendorName.set(vendor.id, vendor.name);
-  const grouped: Record<PricingProvider, PriceRow[]> = {
-    anthropic: [],
-    openai: [],
+  const grouped: Record<PricingGroup, GroupPricingRows> = {
+    claude: { ratio: source.group_ratio?.claude ?? 1, rows: [] },
+    codex: { ratio: source.group_ratio?.codex ?? 1, rows: [] },
   };
   for (const model of source.data ?? []) {
-    const provider = classifyProvider(
-      model.model_name,
-      model.vendor_id != null ? vendorName.get(model.vendor_id) : undefined,
-      model.owner_by,
-    );
-    if (!provider) continue;
-    grouped[provider].push(toPriceRow(model));
+    const vendor =
+      model.vendor_id != null ? vendorName.get(model.vendor_id) : undefined;
+    for (const group of PRICING_GROUP_ORDER) {
+      if (!modelBelongsToGroup(model, group, vendor)) continue;
+      grouped[group].rows.push(toPriceRow(model, grouped[group].ratio));
+    }
   }
-  for (const provider of PRICING_PROVIDER_ORDER) {
-    grouped[provider] = grouped[provider].sort(comparePriceRows);
+  for (const group of PRICING_GROUP_ORDER) {
+    grouped[group].rows = grouped[group].rows.sort(comparePriceRows);
   }
   return grouped;
 }
 
 function ModelPricingSection() {
   const [grouped, setGrouped] = useState<Record<
-    PricingProvider,
-    PriceRow[]
+    PricingGroup,
+    GroupPricingRows
   > | null>(null);
-  const [tab, setTab] = useState<PricingProvider>("openai");
+  const [tab, setTab] = useState<PricingGroup>("claude");
 
   useEffect(() => {
     let mounted = true;
-    void fetchModelPricing().then((res) => {
-      if (!mounted) return;
-      const hasData = res.success && (res.data?.length ?? 0) > 0;
-      const next = groupPricing(
-        hasData
-          ? { data: res.data, vendors: res.vendors }
-          : import.meta.env.DEV
-            ? DEV_SAMPLE_PRICING
-            : {},
-      );
-      setGrouped(next);
-    });
+    void fetchModelPricing()
+      .then((res) => {
+        if (!mounted) return;
+        const hasData = res.success && (res.data?.length ?? 0) > 0;
+        const next = groupPricing(
+          hasData
+            ? {
+                data: res.data,
+                vendors: res.vendors,
+                group_ratio: res.group_ratio,
+              }
+            : import.meta.env.DEV
+              ? DEV_SAMPLE_PRICING
+              : {},
+        );
+        setGrouped(next);
+      })
+      .catch(() => {
+        if (!mounted || !import.meta.env.DEV) return;
+        setGrouped(groupPricing(DEV_SAMPLE_PRICING));
+      });
     return () => {
       mounted = false;
     };
@@ -373,8 +463,8 @@ function ModelPricingSection() {
 
   const providers = useMemo(
     () =>
-      PRICING_PROVIDER_ORDER.filter(
-        (provider) => (grouped?.[provider]?.length ?? 0) > 0,
+      PRICING_GROUP_ORDER.filter(
+        (group) => (grouped?.[group]?.rows.length ?? 0) > 0,
       ),
     [grouped],
   );
@@ -388,7 +478,7 @@ function ModelPricingSection() {
   if (!grouped) return null;
   if (providers.length === 0) return null;
 
-  const rows = grouped[tab] ?? [];
+  const rows = grouped[tab]?.rows ?? [];
 
   return (
     <section className="section model-pricing-section" id="model-pricing">
@@ -402,79 +492,92 @@ function ModelPricingSection() {
           </h2>
         </div>
 
-        <div className="mp-tabs" role="tablist">
-          {providers.map((provider) => {
-            const { label, multiplier, mood, Logo } = PROVIDER_META[provider];
-            return (
-              <button
-                key={provider}
-                type="button"
-                role="tab"
-                aria-selected={tab === provider}
-                className={`mp-tab${tab === provider ? " active" : ""}`}
-                onClick={() => setTab(provider)}
-              >
-                <Logo className={`mp-tab-logo ${provider}`} />
-                <span>{label}</span>
-                {mood ? (
-                  <span className="mp-tab-mood" aria-hidden="true">
-                    {mood}
-                  </span>
-                ) : null}
-                <span className="mp-tab-rate">{multiplier}</span>
-              </button>
-            );
-          })}
-        </div>
+        <div className="mp-panel">
+          <div className="mp-panel-top">
+            <div className="mp-tabs" role="tablist">
+              {providers.map((provider) => {
+                const { label, Logo } = GROUP_META[provider];
+                const multiplier = formatGroupMultiplier(
+                  grouped[provider].ratio,
+                );
+                return (
+                  <button
+                    key={provider}
+                    type="button"
+                    role="tab"
+                    aria-selected={tab === provider}
+                    className={`mp-tab${tab === provider ? " active" : ""}`}
+                    onClick={() => setTab(provider)}
+                  >
+                    <Logo className={`mp-tab-logo ${provider}`} />
+                    <span>{label}</span>
+                    <span className="mp-tab-rate">{multiplier}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mp-panel-unit">
+              <span aria-hidden="true" />
+              <span>1M tokens</span>
+            </div>
+          </div>
 
-        <div className="mp-table-wrap">
-          <table className="mp-table">
-            <thead>
-              <tr>
-                <th className="mp-col-model">
-                  <T id="Model" />
-                </th>
-                <th>
-                  <T id="Input" />
-                </th>
-                <th>
-                  <T id="Output" />
-                </th>
-                <th>
-                  <T id="Cache read" />
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.name}>
-                  <td className="mp-col-model">{row.name}</td>
-                  {row.perCall != null ? (
-                    <td className="mp-percall" colSpan={3}>
-                      <span className="mp-price">
-                        <span>{formatUsd(row.perCall)}</span>
-                        <span className="mp-unit">
-                          <T id="per request" />
+          <div className="mp-table-wrap">
+            <table className="mp-table">
+              <thead>
+                <tr>
+                  <th className="mp-col-model">
+                    <T id="Model" />
+                  </th>
+                  <th>
+                    <T id="Input" />
+                  </th>
+                  <th>
+                    <T id="Output" />
+                  </th>
+                  <th>
+                    <T id="Cache read" />
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.name}>
+                    <td className="mp-col-model">
+                      <span className="mp-model-cell">
+                        <span className="mp-model-mark" aria-hidden="true">
+                          {row.name.slice(0, 1)}
                         </span>
+                        <span className="mp-model-name">{row.name}</span>
                       </span>
                     </td>
-                  ) : (
-                    <>
-                      <td>
-                        <TokenPrice value={row.input} />
+                    {row.perCall != null ? (
+                      <td className="mp-percall" colSpan={3}>
+                        <span className="mp-price">
+                          <span>{formatUsd(row.perCall)}</span>
+                          <span className="mp-unit">
+                            <T id="per request" />
+                          </span>
+                        </span>
                       </td>
-                      <td>
-                        <TokenPrice value={row.output} />
-                      </td>
-                      <td className="mp-muted">
-                        <TokenPrice value={row.cacheRead} />
-                      </td>
-                    </>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    ) : (
+                      <>
+                        <td>
+                          <TokenPrice value={row.input} />
+                        </td>
+                        <td>
+                          <TokenPrice value={row.output} />
+                        </td>
+                        <td className="mp-muted">
+                          <TokenPrice value={row.cacheRead} />
+                        </td>
+                      </>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>

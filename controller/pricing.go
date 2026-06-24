@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	pricingResponseVersion = "a42d372ccf0b5dd13ecf71203521f9d2"
+	pricingResponseVersion = "3f4429f88ed1b7a9c29cc43c9841de6b"
 	publicPricingCacheTTL  = time.Minute
 )
 
@@ -22,6 +22,7 @@ type publicPricingResponse struct {
 	Success        bool                  `json:"success"`
 	Data           []publicPricingModel  `json:"data"`
 	Vendors        []model.PricingVendor `json:"vendors"`
+	GroupRatio     map[string]float64    `json:"group_ratio"`
 	PricingVersion string                `json:"pricing_version"`
 }
 
@@ -34,6 +35,7 @@ type publicPricingModel struct {
 	OwnerBy         string   `json:"owner_by,omitempty"`
 	CompletionRatio float64  `json:"completion_ratio"`
 	CacheRatio      *float64 `json:"cache_ratio,omitempty"`
+	EnableGroups    []string `json:"enable_groups,omitempty"`
 }
 
 var publicPricingCache = struct {
@@ -121,6 +123,7 @@ func GetPublicPricing(c *gin.Context) {
 		Success:        true,
 		Data:           toPublicPricingModels(model.GetPricing()),
 		Vendors:        model.GetVendors(),
+		GroupRatio:     ratio_setting.GetGroupRatioCopy(),
 		PricingVersion: pricingResponseVersion,
 	})
 	if err != nil {
@@ -162,6 +165,7 @@ func toPublicPricingModels(pricing []model.Pricing) []publicPricingModel {
 			OwnerBy:         item.OwnerBy,
 			CompletionRatio: item.CompletionRatio,
 			CacheRatio:      item.CacheRatio,
+			EnableGroups:    item.EnableGroup,
 		})
 	}
 	return items
