@@ -248,6 +248,7 @@ export type ModelPricingData = {
   data?: PricingModel[];
   vendors?: PricingVendor[];
   group_ratio?: Record<string, number>;
+  usable_group?: Record<string, string>;
 };
 
 export type CustomerSubscription = {

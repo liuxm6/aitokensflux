@@ -3,10 +3,6 @@ export const zhTranslations = {
   "Model pricing": "模型价格",
   "Pay only for the tokens you use": "只为你用掉的 Token 付费",
   "1M = 1,000,000 tokens": "1M = 100万 token",
-  "Claude Code group. Best for Claude Code and Anthropic-compatible traffic.":
-    "Claude Code 分组，适合 Claude Code 与 Anthropic 兼容请求。",
-  "Codex group. Best for Codex CLI and OpenAI-compatible traffic.":
-    "Codex 分组，适合 Codex CLI 与 OpenAI 兼容请求。",
   "Cache read": "缓存读取",
   "Group note": "分组备注",
   "per request": "每次请求",

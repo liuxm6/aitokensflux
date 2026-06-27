@@ -8,13 +8,14 @@ import (
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/model"
 	"github.com/QuantumNous/new-api/service"
+	"github.com/QuantumNous/new-api/setting"
 	"github.com/QuantumNous/new-api/setting/ratio_setting"
 
 	"github.com/gin-gonic/gin"
 )
 
 const (
-	pricingResponseVersion = "3f4429f88ed1b7a9c29cc43c9841de6b"
+	pricingResponseVersion = "d9b9725c4a4f4a59a71f91f72bfb0e51"
 	publicPricingCacheTTL  = time.Minute
 )
 
@@ -23,6 +24,7 @@ type publicPricingResponse struct {
 	Data           []publicPricingModel  `json:"data"`
 	Vendors        []model.PricingVendor `json:"vendors"`
 	GroupRatio     map[string]float64    `json:"group_ratio"`
+	UsableGroup    map[string]string     `json:"usable_group"`
 	PricingVersion string                `json:"pricing_version"`
 }
 
@@ -124,6 +126,7 @@ func GetPublicPricing(c *gin.Context) {
 		Data:           toPublicPricingModels(model.GetPricing()),
 		Vendors:        model.GetVendors(),
 		GroupRatio:     ratio_setting.GetGroupRatioCopy(),
+		UsableGroup:    setting.GetUserUsableGroupsCopy(),
 		PricingVersion: pricingResponseVersion,
 	})
 	if err != nil {

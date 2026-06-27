@@ -228,6 +228,7 @@ type PriceRow = {
 
 type GroupPricingRows = {
   ratio: number;
+  note: string;
   rows: PriceRow[];
 };
 
@@ -315,6 +316,10 @@ function comparePriceRows(a: PriceRow, b: PriceRow) {
 
 const DEV_SAMPLE_PRICING: ModelPricingData = {
   group_ratio: { claude: 1, codex: 0.6 },
+  usable_group: {
+    claude: "cc-Max(满血)-不限客户端",
+    codex: "cx-Pro(满血)-不限客户端",
+  },
   vendors: [
     { id: 1, name: "Anthropic" },
     { id: 2, name: "OpenAI" },
@@ -387,18 +392,15 @@ const GROUP_META: Record<
   PricingGroup,
   {
     label: string;
-    noteId: string;
     Logo: ComponentType<{ className?: string }>;
   }
 > = {
   claude: {
     label: "claude",
-    noteId: "Claude Code group. Best for Claude Code and Anthropic-compatible traffic.",
     Logo: ClaudeLogo,
   },
   codex: {
     label: "codex",
-    noteId: "Codex group. Best for Codex CLI and OpenAI-compatible traffic.",
     Logo: OpenAILogo,
   },
 };
@@ -415,8 +417,16 @@ function groupPricing(
   for (const vendor of source.vendors ?? [])
     vendorName.set(vendor.id, vendor.name);
   const grouped: Record<PricingGroup, GroupPricingRows> = {
-    claude: { ratio: source.group_ratio?.claude ?? 1, rows: [] },
-    codex: { ratio: source.group_ratio?.codex ?? 1, rows: [] },
+    claude: {
+      ratio: source.group_ratio?.claude ?? 1,
+      note: source.usable_group?.claude ?? "",
+      rows: [],
+    },
+    codex: {
+      ratio: source.group_ratio?.codex ?? 1,
+      note: source.usable_group?.codex ?? "",
+      rows: [],
+    },
   };
   for (const model of source.data ?? []) {
     const vendor =
@@ -451,6 +461,7 @@ function ModelPricingSection() {
                 data: res.data,
                 vendors: res.vendors,
                 group_ratio: res.group_ratio,
+                usable_group: res.usable_group,
               }
             : import.meta.env.DEV
               ? DEV_SAMPLE_PRICING
@@ -485,6 +496,7 @@ function ModelPricingSection() {
   if (providers.length === 0) return null;
 
   const rows = grouped[tab]?.rows ?? [];
+  const groupNote = (grouped[tab]?.note ?? "").trim();
 
   return (
     <section className="section model-pricing-section" id="model-pricing">
@@ -530,14 +542,14 @@ function ModelPricingSection() {
             </div>
           </div>
 
-          <div className="mp-group-note">
-            <span className="mp-group-note-label">
-              <T id="Group note" />
-            </span>
-            <span>
-              <T id={GROUP_META[tab].noteId} />
-            </span>
-          </div>
+          {groupNote ? (
+            <div className="mp-group-note">
+              <span className="mp-group-note-label">
+                <T id="Group note" />
+              </span>
+              <span>{groupNote}</span>
+            </div>
+          ) : null}
 
           <div className="mp-table-wrap">
             <table className="mp-table">
