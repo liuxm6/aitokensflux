@@ -1360,6 +1360,26 @@ h3 {
   box-shadow: 0 0 0 4px rgb(15 180 119 / 10%);
 }
 
+.mp-group-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.mp-group-note-label {
+  flex-shrink: 0;
+  color: var(--accent-ink);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
 .mp-table-wrap {
   height: min(430px, calc(100vh - 260px));
   min-height: 330px;
@@ -8666,6 +8686,14 @@ h3 {
     flex-shrink: 0;
     padding: 0 10px;
     font-size: 13px;
+  }
+
+  .mp-group-note {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 14px 0;
+    font-size: 12.5px;
   }
 
   .mp-table-wrap {

@@ -9,10 +9,16 @@ const customerRuTranslations = {
   "Model pricing": "Цены на модели",
   "Pay only for the tokens you use": "Платите только за использованные токены",
   "1M = 1,000,000 tokens": "1M = 1 000 000 токенов",
+  "Claude Code group. Best for Claude Code and Anthropic-compatible traffic.":
+    "Группа Claude Code. Для Claude Code и Anthropic-совместимого трафика.",
+  "Codex group. Best for Codex CLI and OpenAI-compatible traffic.":
+    "Группа Codex. Для Codex CLI и OpenAI-совместимого трафика.",
   Input: "Ввод",
   Output: "Вывод",
   "Cache read": "Чтение из кэша",
+  "Group note": "Примечание",
   "per request": "за запрос",
+  "Service status": "Статус сервиса",
   Referrals: "Реферальные бонусы",
   "Custom period": "Пользовательский период",
   "Daily reset": "Ежедневный сброс",

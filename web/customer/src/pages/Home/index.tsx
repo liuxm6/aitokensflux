@@ -387,14 +387,20 @@ const GROUP_META: Record<
   PricingGroup,
   {
     label: string;
+    noteId: string;
     Logo: ComponentType<{ className?: string }>;
   }
 > = {
   claude: {
     label: "claude",
+    noteId: "Claude Code group. Best for Claude Code and Anthropic-compatible traffic.",
     Logo: ClaudeLogo,
   },
-  codex: { label: "codex", Logo: OpenAILogo },
+  codex: {
+    label: "codex",
+    noteId: "Codex group. Best for Codex CLI and OpenAI-compatible traffic.",
+    Logo: OpenAILogo,
+  },
 };
 
 function formatGroupMultiplier(value: number): string {
@@ -522,6 +528,15 @@ function ModelPricingSection() {
                 <T id="1M = 1,000,000 tokens" />
               </span>
             </div>
+          </div>
+
+          <div className="mp-group-note">
+            <span className="mp-group-note-label">
+              <T id="Group note" />
+            </span>
+            <span>
+              <T id={GROUP_META[tab].noteId} />
+            </span>
           </div>
 
           <div className="mp-table-wrap">

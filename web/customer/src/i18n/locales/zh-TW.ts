@@ -3,8 +3,14 @@ export const zhTWTranslations = {
   "Model pricing": "模型價格",
   "Pay only for the tokens you use": "只為你用掉的 Token 付費",
   "1M = 1,000,000 tokens": "1M = 100萬 token",
+  "Claude Code group. Best for Claude Code and Anthropic-compatible traffic.":
+    "Claude Code 分組，適合 Claude Code 與 Anthropic 相容請求。",
+  "Codex group. Best for Codex CLI and OpenAI-compatible traffic.":
+    "Codex 分組，適合 Codex CLI 與 OpenAI 相容請求。",
   "Cache read": "快取讀取",
+  "Group note": "分組備註",
   "per request": "每次請求",
+  "Service status": "服務狀態",
   "30 days": "30 天",
   "7 days": "7 天",
   "90 days": "90 天",

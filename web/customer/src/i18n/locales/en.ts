@@ -2,8 +2,14 @@ export const enTranslations = {
   "Model pricing": "Model pricing",
   "Pay only for the tokens you use": "Pay only for the tokens you use",
   "1M = 1,000,000 tokens": "1M = 1,000,000 tokens",
+  "Claude Code group. Best for Claude Code and Anthropic-compatible traffic.":
+    "Claude Code group. Best for Claude Code and Anthropic-compatible traffic.",
+  "Codex group. Best for Codex CLI and OpenAI-compatible traffic.":
+    "Codex group. Best for Codex CLI and OpenAI-compatible traffic.",
   "Cache read": "Cache read",
+  "Group note": "Group note",
   "per request": "per request",
+  "Service status": "Service status",
   "30 days": "30 days",
   "7 days": "7 days",
   "90 days": "90 days",

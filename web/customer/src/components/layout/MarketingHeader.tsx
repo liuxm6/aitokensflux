@@ -66,6 +66,9 @@ export function MarketingHeader({ minimal = false }: { minimal?: boolean }) {
             <AppLink href="/setup">
               <T id="Docs" />
             </AppLink>
+            <a href="https://check.aitokensflux.com/group/TokenFlux">
+              <T id="Service status" />
+            </a>
           </nav>
         )}
         <div className="nav-right">
