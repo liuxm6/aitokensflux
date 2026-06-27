@@ -534,11 +534,22 @@ function ModelPricingSection() {
                 );
               })}
             </div>
-            <div className="mp-panel-unit">
-              <span aria-hidden="true" />
-              <span>
-                <T id="1M = 1,000,000 tokens" />
-              </span>
+            <div className="mp-panel-meta">
+              <div className="mp-panel-unit">
+                <span aria-hidden="true" />
+                <span>
+                  <T id="1M = 1,000,000 tokens" />
+                </span>
+              </div>
+              <a
+                className="mp-status-link"
+                href="https://check.aitokensflux.com/group/TokenFlux"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <Activity size={14} />
+                <T id="Service monitor" />
+              </a>
             </div>
           </div>
 

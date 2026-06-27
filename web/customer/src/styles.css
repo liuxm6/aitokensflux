@@ -1352,12 +1352,49 @@ h3 {
   white-space: nowrap;
 }
 
+.mp-panel-meta {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 12px;
+}
+
 .mp-panel-unit span:first-child {
   width: 8px;
   height: 8px;
   border-radius: 999px;
   background: var(--accent);
   box-shadow: 0 0 0 4px rgb(15 180 119 / 10%);
+}
+
+.mp-status-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  gap: 6px;
+  padding: 0 12px;
+  border: 1px solid rgb(15 180 119 / 16%);
+  border-radius: 999px;
+  background: rgb(15 180 119 / 8%);
+  color: var(--accent-ink);
+  font-size: 12px;
+  font-weight: 760;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease;
+}
+
+.mp-status-link:hover {
+  border-color: rgb(15 180 119 / 34%);
+  background: rgb(15 180 119 / 13%);
+  color: var(--accent-ink);
+}
+
+.mp-status-link svg {
+  flex-shrink: 0;
 }
 
 .mp-group-note {
@@ -8680,6 +8717,11 @@ h3 {
   .mp-tabs {
     max-width: calc(100vw - 32px);
     overflow-x: auto;
+  }
+
+  .mp-panel-meta {
+    justify-content: space-between;
+    width: 100%;
   }
 
   .mp-tab {

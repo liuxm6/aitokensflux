@@ -14,6 +14,7 @@ const customerRuTranslations = {
   "Cache read": "Чтение из кэша",
   "Group note": "Примечание",
   "per request": "за запрос",
+  "Service monitor": "Мониторинг",
   "Service status": "Статус сервиса",
   Referrals: "Реферальные бонусы",
   "Custom period": "Пользовательский период",
