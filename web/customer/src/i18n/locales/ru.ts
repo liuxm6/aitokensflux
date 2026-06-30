@@ -112,6 +112,12 @@ const customerRuTranslations = {
   Secure: "Безопасно",
   "Self-managed keys, instant revocation, no content retained.":
     "Ключами управляете вы: мгновенный отзыв и отсутствие хранения содержимого.",
+  "Support group bonus": "Бонус группы поддержки",
+  "Join the support group to claim daily $5":
+    "Вступите в группу поддержки и получайте $5 каждый день",
+  "Rewards are available every day in the group.":
+    "Способ получения доступен в группе каждый день.",
+  "Go to support group": "В группу поддержки",
   "Transparent pricing that scales down":
     "Прозрачные тарифы, которые дешевеют при росте использования",
   "See all plans": "Все тарифы",
@@ -281,6 +287,9 @@ const customerRuTranslations = {
   Examples: "Примеры",
   Export: "Экспорт",
   "Copy Base URL": "Скопировать Base URL",
+  "Copy email address": "Скопировать email",
+  "Copy failed": "Не удалось скопировать",
+  "Copy QQ group number": "Скопировать номер группы QQ",
   "Create key": "Создать ключ",
   "Failed to load API keys": "Не удалось загрузить API-ключи",
   "Failed to load groups": "Не удалось загрузить группы",
@@ -663,12 +672,16 @@ const customerRuTranslations = {
     "Обсуждения сообщества и опыт использования",
   "Email support for accounts, orders, and security":
     "Поддержка по email для аккаунтов, заказов и безопасности",
+  "Email address copied": "Email скопирован",
   Gmail: "Gmail",
   "mr.liuxm6@gmail.com": "mr.liuxm6@gmail.com",
   "Product updates and public announcements":
     "Новости продукта и публичные объявления",
+  "QQ group number copied": "Номер группы QQ скопирован",
   "QQ group: 826073513": "Группа QQ: 826073513",
   "QQ support group": "Группа поддержки QQ",
+  "ai token flux QQ group": "Группа QQ ai token flux",
+  "ai token flux QQ group: 826073513": "Группа QQ ai token flux: 826073513",
   "Real-time notices and international support":
     "Оперативные уведомления и международная поддержка",
   "Support & community": "Поддержка и сообщество",

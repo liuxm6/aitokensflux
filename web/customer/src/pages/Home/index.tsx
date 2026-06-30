@@ -91,6 +91,59 @@ function LinuxLogo({ className }: { className?: string }) {
   );
 }
 
+function SupportRewardMascot({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 96 96"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M25 39 16 21c-.9-1.9 1.1-3.8 3-2.9l18 9" fill="#f7b267" />
+      <path d="m71 39 9-18c.9-1.9-1.1-3.8-3-2.9l-18 9" fill="#f7b267" />
+      <path
+        d="M48 17c20.6 0 35 13.8 35 34.1C83 72 69.6 84 48 84S13 72 13 51.1C13 30.8 27.4 17 48 17Z"
+        fill="#ffcf8a"
+      />
+      <path
+        d="M20.7 47.8c0-14.8 9-25.4 23.3-28.8C25.8 20.8 13 33.8 13 51.1 13 72 26.4 84 48 84c5.3 0 10.1-.7 14.3-2.1-25.4.6-41.6-12.1-41.6-34.1Z"
+        fill="#f4a85f"
+        opacity=".55"
+      />
+      <path
+        d="M32 54.5c-3.2 0-5.7-2.5-5.7-5.8S28.8 43 32 43s5.7 2.5 5.7 5.7-2.5 5.8-5.7 5.8ZM64 54.5c-3.2 0-5.7-2.5-5.7-5.8S60.8 43 64 43s5.7 2.5 5.7 5.7-2.5 5.8-5.7 5.8Z"
+        fill="#172033"
+      />
+      <path
+        d="M45.5 58.2c1.5-1.4 3.5-1.4 5 0 .9.8.5 2.4-.7 2.8l-1.8.6-1.8-.6c-1.2-.4-1.6-2-.7-2.8Z"
+        fill="#172033"
+      />
+      <path
+        d="M40.5 65.4c2.2 3 5 4.5 7.5 4.5s5.3-1.5 7.5-4.5"
+        fill="none"
+        stroke="#172033"
+        strokeLinecap="round"
+        strokeWidth="4"
+      />
+      <path
+        d="M22.8 59.2c-4.7-.5-8.6-1.6-12.2-3.3M24.1 66.1c-4.4.8-8.3 2.2-11.8 4.5M73.2 59.2c4.7-.5 8.6-1.6 12.2-3.3M71.9 66.1c4.4.8 8.3 2.2 11.8 4.5"
+        fill="none"
+        stroke="#d9853f"
+        strokeLinecap="round"
+        strokeWidth="3.4"
+      />
+      <circle cx="69" cy="25" r="13" fill="#20c987" />
+      <path
+        d="M69 17.5v15M63.4 21.2c1.2-1.5 3.2-2.4 5.6-2.4 3.4 0 5.6 1.8 5.6 4.2 0 2.7-2 3.8-5.5 4.3-3.4.5-5.1 1.5-5.1 3.9 0 2.2 2 3.7 5.2 3.7 2.5 0 4.6-.8 6-2.5"
+        fill="none"
+        stroke="#fff"
+        strokeLinecap="round"
+        strokeWidth="2.6"
+      />
+    </svg>
+  );
+}
+
 function ClaudeLogo({ className }: { className?: string }) {
   return (
     <svg
@@ -724,6 +777,25 @@ export function createHomePage({
                   <T id={user ? "Open dashboard" : "Start now"} />
                 </AppLink>
               </div>
+              <AppLink className="support-reward-callout" href="/#support">
+                <span className="support-reward-mascot">
+                  <SupportRewardMascot />
+                </span>
+                <span className="support-reward-copy">
+                  <span className="support-reward-kicker">
+                    <T id="Support group bonus" />
+                  </span>
+                  <strong>
+                    <T id="Join the support group to claim daily $5" />
+                  </strong>
+                  <span>
+                    <T id="Rewards are available every day in the group." />
+                  </span>
+                </span>
+                <span className="support-reward-action">
+                  <T id="Go to support group" />
+                </span>
+              </AppLink>
             </div>
           </section>
 

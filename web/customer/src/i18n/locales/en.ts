@@ -108,7 +108,10 @@ export const enTranslations = {
   Contact: "Contact",
   "Contact us": "Contact us",
   "Copy Base URL": "Copy Base URL",
+  "Copy email address": "Copy email address",
+  "Copy failed": "Copy failed",
   "Copy link": "Copy link",
+  "Copy QQ group number": "Copy QQ group number",
   "Create an API key in the customer portal first. Replace every YOUR_API_KEY below with that real key.":
     "Create an API key in the customer portal first. Replace every YOUR_API_KEY below with that real key.",
   "Create first key": "Create first key",
@@ -694,15 +697,25 @@ export const enTranslations = {
     "Chinese support for top-ups, setup, and account issues",
   "Email support for accounts, orders, and security":
     "Email support for accounts, orders, and security",
+  "Email address copied": "Email address copied",
+  "ai token flux QQ group": "ai token flux QQ group",
+  "ai token flux QQ group: 826073513": "ai token flux QQ group: 826073513",
   Gmail: "Gmail",
   "mr.liuxm6@gmail.com": "mr.liuxm6@gmail.com",
   "Product updates and public announcements":
     "Product updates and public announcements",
+  "QQ group number copied": "QQ group number copied",
   "QQ group: 826073513": "QQ group: 826073513",
   "QQ support group": "QQ support group",
   "Real-time notices and international support":
     "Real-time notices and international support",
+  "Go to support group": "Go to support group",
+  "Join the support group to claim daily $5":
+    "Join the support group to claim daily $5",
+  "Rewards are available every day in the group.":
+    "Rewards are available every day in the group.",
   "Support & community": "Support & community",
+  "Support group bonus": "Support group bonus",
   "Support groups are best for real-time help. Email is best for account, order, and security issues.":
     "Support groups are best for real-time help. Email is best for account, order, and security issues.",
   "Telegram support group": "Telegram support group",

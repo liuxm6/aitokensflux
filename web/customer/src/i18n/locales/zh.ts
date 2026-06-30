@@ -107,7 +107,10 @@ export const zhTranslations = {
   Contact: "联系我们",
   "Contact us": "联系我们",
   "Copy Base URL": "复制 Base URL",
+  "Copy email address": "复制邮箱地址",
+  "Copy failed": "复制失败",
   "Copy link": "复制链接",
+  "Copy QQ group number": "复制 QQ 群号",
   "Create an API key in the customer portal first. Replace every YOUR_API_KEY below with that real key.":
     "先在客户门户创建一把 API 密钥。后续命令里的 YOUR_API_KEY 都要替换成这把真实密钥。",
   "Create first key": "创建第一个密钥",
@@ -666,13 +669,22 @@ export const zhTranslations = {
     "中文售后、充值与接入问题",
   "Email support for accounts, orders, and security":
     "账号、订单与安全问题邮件支持",
+  "Email address copied": "邮箱地址已复制",
+  "ai token flux QQ group": "ai token flux 交流群",
+  "ai token flux QQ group: 826073513": "ai token flux 交流群：826073513",
   Gmail: "Gmail",
   "mr.liuxm6@gmail.com": "mr.liuxm6@gmail.com",
   "Product updates and public announcements": "产品动态与公告更新",
+  "QQ group number copied": "QQ 群号已复制",
   "QQ group: 826073513": "QQ群：826073513",
   "QQ support group": "QQ 售后群",
   "Real-time notices and international support": "海外用户、服务通知与实时沟通",
+  "Go to support group": "去售后群",
+  "Join the support group to claim daily $5": "进售后群，每天可领 $5",
+  "Rewards are available every day in the group.":
+    "群内查看领取方式，售后和福利都在这里。",
   "Support & community": "售后与社区",
+  "Support group bonus": "售后群福利",
   "Support groups are best for real-time help. Email is best for account, order, and security issues.":
     "售后群适合即时沟通，邮件适合账号、订单和安全相关问题。",
   "Telegram support group": "Telegram 售后群",
