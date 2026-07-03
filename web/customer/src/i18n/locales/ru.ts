@@ -113,10 +113,10 @@ const customerRuTranslations = {
   "Self-managed keys, instant revocation, no content retained.":
     "Ключами управляете вы: мгновенный отзыв и отсутствие хранения содержимого.",
   "Support group bonus": "Бонус группы поддержки",
-  "Join the support group to claim daily $5":
-    "Вступите в группу поддержки и получайте $5 каждый день",
-  "Rewards are available every day in the group.":
-    "Способ получения доступен в группе каждый день.",
+  "Join the support group to claim benefits":
+    "Вступите в группу поддержки, чтобы получить бонусы",
+  "Check the group for support and benefit details.":
+    "В группе доступны поддержка и подробности о бонусах.",
   "Go to support group": "В группу поддержки",
   "Transparent pricing that scales down":
     "Прозрачные тарифы, которые дешевеют при росте использования",

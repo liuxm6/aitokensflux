@@ -710,10 +710,10 @@ export const enTranslations = {
   "Real-time notices and international support":
     "Real-time notices and international support",
   "Go to support group": "Go to support group",
-  "Join the support group to claim daily $5":
-    "Join the support group to claim daily $5",
-  "Rewards are available every day in the group.":
-    "Rewards are available every day in the group.",
+  "Join the support group to claim benefits":
+    "Join the support group to claim benefits",
+  "Check the group for support and benefit details.":
+    "Check the group for support and benefit details.",
   "Support & community": "Support & community",
   "Support group bonus": "Support group bonus",
   "Support groups are best for real-time help. Email is best for account, order, and security issues.":

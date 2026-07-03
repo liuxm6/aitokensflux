@@ -680,8 +680,8 @@ export const zhTWTranslations = {
   "QQ support group": "QQ 售後群",
   "Real-time notices and international support": "海外用戶、服務通知與即時溝通",
   "Go to support group": "去售後群",
-  "Join the support group to claim daily $5": "進售後群，每天可領 $5",
-  "Rewards are available every day in the group.":
+  "Join the support group to claim benefits": "進售後群，有福利可領",
+  "Check the group for support and benefit details.":
     "群內查看領取方式，售後和福利都在這裡。",
   "Support & community": "售後與社區",
   "Support group bonus": "售後群福利",

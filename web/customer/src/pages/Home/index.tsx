@@ -786,10 +786,10 @@ export function createHomePage({
                     <T id="Support group bonus" />
                   </span>
                   <strong>
-                    <T id="Join the support group to claim daily $5" />
+                    <T id="Join the support group to claim benefits" />
                   </strong>
                   <span>
-                    <T id="Rewards are available every day in the group." />
+                    <T id="Check the group for support and benefit details." />
                   </span>
                 </span>
                 <span className="support-reward-action">
