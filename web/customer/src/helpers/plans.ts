@@ -18,8 +18,6 @@ type CodingPlanPreset = {
   priceZh?: string;
   priceEn?: string;
   hideSuffix?: boolean;
-  originalPrice?: number;
-  savePercent?: number;
   saveZh?: string;
   saveEn?: string;
   ctaZh: string;
@@ -55,8 +53,6 @@ const CODING_PLAN_PRESETS: Record<
   pro: {
     variant: "pro",
     rank: 1,
-    originalPrice: 30,
-    savePercent: 30,
     ctaZh: "购买 Pro 版",
     ctaEn: "Buy Pro",
     tone: "",
@@ -76,8 +72,6 @@ const CODING_PLAN_PRESETS: Record<
   max: {
     variant: "max",
     rank: 2,
-    originalPrice: 80,
-    savePercent: 40,
     ctaZh: "购买 Max 版",
     ctaEn: "Buy Max",
     tone: "feat",
@@ -97,8 +91,6 @@ const CODING_PLAN_PRESETS: Record<
   ultra: {
     variant: "ultra",
     rank: 3,
-    originalPrice: 300,
-    savePercent: 50,
     ctaZh: "购买 Ultra 版",
     ctaEn: "Buy Ultra",
     tone: "tint-cream",
@@ -252,6 +244,36 @@ function getPlanSummary(
   };
 }
 
+function getCodingPlanValueMeta(
+  plan: SubscriptionPlan,
+  quota: { zh: string; en: string },
+  status?: CustomerStatus | null,
+) {
+  const paymentAmount = Number(plan.price_amount || 0);
+  const receivedAmount =
+    Number(plan.total_amount ?? 0) / getQuotaPerUnit(status);
+  if (
+    !Number.isFinite(paymentAmount) ||
+    !Number.isFinite(receivedAmount) ||
+    paymentAmount <= 0 ||
+    receivedAmount <= paymentAmount
+  ) {
+    return null;
+  }
+
+  const savePercent = Math.round(
+    ((receivedAmount - paymentAmount) / receivedAmount) * 100,
+  );
+  if (savePercent <= 0) return null;
+
+  return {
+    saveZh: `节省 ${savePercent}%`,
+    saveEn: `Save ${savePercent}%`,
+    originalPriceZh: `到账 ${quota.zh}`,
+    originalPriceEn: `Received ${quota.en}`,
+  };
+}
+
 function subscriptionPlanToPricePlan(
   record: SubscriptionPlanRecord,
   index: number,
@@ -264,6 +286,9 @@ function subscriptionPlanToPricePlan(
   const resetLabel = formatPlanResetPeriod(plan);
   const paymentLabel = formatPlanPaymentLabel(plan);
   const summary = getPlanSummary(plan, quotaLabel);
+  const codingValueMeta = codingPreset
+    ? getCodingPlanValueMeta(plan, quotaLabel, status)
+    : null;
   const subtitle = plan.subtitle?.trim() || "";
   const requiredQuota = Math.ceil(
     Number(plan.price_amount || 0) * getQuotaPerUnit(status),
@@ -290,22 +315,16 @@ function subscriptionPlanToPricePlan(
     hideSuffix: codingPreset?.hideSuffix,
     saveZh:
       codingPreset?.saveZh ??
-      (codingPreset?.savePercent
-        ? `节省 ${codingPreset.savePercent}%`
-        : summary.zh),
+      codingValueMeta?.saveZh ??
+      summary.zh,
     saveEn:
       codingPreset?.saveEn ??
-      (codingPreset?.savePercent
-        ? `Save ${codingPreset.savePercent}%`
-        : summary.en),
+      codingValueMeta?.saveEn ??
+      summary.en,
     promoZh: subtitle,
     promoEn: subtitle,
-    originalPriceZh: codingPreset?.originalPrice
-      ? `享原价 ${formatCurrencyAmount(codingPreset.originalPrice, plan.currency)}`
-      : undefined,
-    originalPriceEn: codingPreset?.originalPrice
-      ? `Original ${formatCurrencyAmount(codingPreset.originalPrice, plan.currency)}`
-      : undefined,
+    originalPriceZh: codingValueMeta?.originalPriceZh,
+    originalPriceEn: codingValueMeta?.originalPriceEn,
     hideDescription: Boolean(codingPreset),
     rate: "",
     ctaZh: codingPreset?.ctaZh ?? "立即购买",
