@@ -721,6 +721,7 @@ h3 {
   display: grid;
   width: min(100%, 500px);
   max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
   gap: 12px;
   padding: 34px 36px 26px;
   border: 1px solid rgb(255 255 255 / 78%);
@@ -881,6 +882,7 @@ h3 {
 .confirm-dialog-confirm {
   display: inline-flex;
   min-height: 44px;
+  min-width: 0;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -888,6 +890,10 @@ h3 {
   border-radius: 11px;
   font-size: 15px;
   font-weight: 850;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  text-align: center;
+  white-space: normal;
   transition:
     transform 0.12s,
     background 0.2s,
@@ -942,7 +948,7 @@ h3 {
   min-width: 0;
   min-height: 46px;
   align-items: center;
-  overflow: hidden;
+  overflow: visible;
   padding: 0 16px;
   border: 1px solid #ececef;
   border-radius: 12px;
@@ -950,8 +956,8 @@ h3 {
   color: #33343a;
   font-size: 16px;
   font-weight: 600;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .account-dialog-form {
@@ -2151,6 +2157,7 @@ h3 {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  min-width: 0;
   margin: 0 0 12px;
   padding: 9px 10px;
   border: 1px solid #c9f2d6;
@@ -2162,15 +2169,19 @@ h3 {
 }
 
 .price-received span {
+  min-width: 0;
   color: #079455;
   font-weight: 800;
+  overflow-wrap: anywhere;
 }
 
 .price-received b {
+  min-width: 0;
   color: #027a48;
   font-size: 16px;
   font-weight: 950;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  text-align: right;
 }
 
 .price-meta {
@@ -2281,7 +2292,9 @@ h3 {
 
 .payg-service-card {
   display: grid;
-  grid-template-columns: minmax(230px, 0.9fr) minmax(0, 1.45fr) auto;
+  grid-template-columns:
+    minmax(220px, 0.9fr) minmax(min(100%, 320px), 1.45fr)
+    auto;
   gap: 30px;
   align-items: center;
   padding: 30px 34px;
@@ -2304,10 +2317,12 @@ h3 {
 }
 
 .payg-service-amount {
+  min-width: 0;
   color: #050505;
   font-size: clamp(30px, 3vw, 42px);
   font-weight: 850;
   line-height: 1;
+  overflow-wrap: anywhere;
 }
 
 .payg-service-main p {
@@ -2592,9 +2607,9 @@ h3 {
   font: inherit;
   font-weight: 780;
   line-height: inherit;
-  overflow-wrap: normal;
+  overflow-wrap: anywhere;
   user-select: text;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .support-copy-value:hover,
@@ -5287,7 +5302,7 @@ h3 {
 }
 
 .usage-detail-panel {
-  overflow: hidden;
+  overflow: visible;
 }
 
 .usage-detail-panel .usage-toolbar {
@@ -5320,6 +5335,7 @@ h3 {
   grid-template-columns: 16px minmax(150px, 1fr) auto minmax(150px, 1fr);
   align-items: center;
   gap: 8px;
+  min-width: 0;
   padding: 0 11px;
 }
 
@@ -5412,7 +5428,10 @@ h3 {
 }
 
 .usage-table-wrap {
+  max-width: 100%;
   overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid #e4e7ec;
   border-radius: 12px;
   background: #fff;
@@ -5745,14 +5764,18 @@ h3 {
 }
 
 .api-access-head p {
+  min-width: 0;
   margin: 0;
   color: #101828;
   font-size: 16px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .api-access-head div {
   display: flex;
   gap: 8px;
+  min-width: 0;
 }
 
 .base-url-list {
@@ -5775,6 +5798,12 @@ h3 {
 .base-url-row strong {
   color: #6f7785;
   font-weight: 900;
+}
+
+.base-url-row .muted-url,
+.base-url-row b {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .base-url-row .muted-url {
@@ -5819,8 +5848,10 @@ h3 {
 }
 
 .key-row strong {
+  min-width: 0;
   color: #07090d;
   font-size: 16px;
+  overflow-wrap: anywhere;
 }
 
 .enabled-badge {
@@ -5842,8 +5873,10 @@ h3 {
 }
 
 .key-mask {
+  min-width: 0;
   color: #151922;
   font-size: 16px;
+  overflow-wrap: anywhere;
 }
 
 .key-meta {
@@ -5888,11 +5921,13 @@ h3 {
 }
 
 .key-action {
+  min-width: 0;
   white-space: nowrap;
 }
 
 .key-row-actions {
   display: flex;
+  min-width: 0;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 7px;
@@ -5922,6 +5957,7 @@ h3 {
 .key-create-panel {
   width: min(100%, 520px);
   max-height: min(760px, calc(100vh - 32px));
+  max-height: min(760px, calc(100dvh - 32px));
   overflow-y: auto;
 }
 
@@ -5931,12 +5967,12 @@ h3 {
 
 .key-create-head p {
   max-width: calc(100% - 44px);
-  overflow: hidden;
+  overflow: visible;
   color: #98a2b3;
   font-size: 13px;
   font-weight: 750;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .key-create-form {
@@ -6028,16 +6064,18 @@ h3 {
 
 .cc-switch-panel {
   width: min(100%, 500px);
+  max-height: min(760px, calc(100dvh - 32px));
+  overflow-y: auto;
 }
 
 .cc-switch-dialog .purchase-head p {
   max-width: calc(100% - 44px);
-  overflow: hidden;
+  overflow: visible;
   color: #98a2b3;
   font-size: 13px;
   font-weight: 750;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .required-dot {
@@ -6058,6 +6096,8 @@ h3 {
   display: grid;
   place-items: center;
   padding: 20px;
+  overflow: hidden auto;
+  overscroll-behavior: contain;
 }
 
 .purchase-backdrop {
@@ -6247,6 +6287,7 @@ h3 {
 .topup-dialog-panel {
   width: min(100%, 640px);
   max-height: min(760px, calc(100vh - 32px));
+  max-height: min(760px, calc(100dvh - 32px));
   overflow-y: auto;
   gap: 10px;
   padding: 20px 22px;
@@ -6379,7 +6420,7 @@ h3 {
 }
 
 .topup-dialog-panel .billing-methods {
-  grid-template-columns: minmax(0, 1fr) minmax(168px, 220px);
+  grid-template-columns: minmax(0, 1fr) minmax(150px, 200px);
   grid-template-areas:
     "label label"
     "methods action";
@@ -6392,7 +6433,7 @@ h3 {
 
 .topup-dialog-panel .billing-method-grid {
   grid-area: methods;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 8px;
 }
 
@@ -6422,7 +6463,7 @@ h3 {
 
 .topup-dialog-tools {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, auto);
   align-items: center;
   gap: 8px;
   padding-top: 0;
@@ -6447,11 +6488,15 @@ h3 {
 
 .topup-dialog-tools .billing-link-button {
   padding: 0 12px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .plan-purchase-panel {
   width: min(100%, 520px);
   max-height: min(700px, calc(100vh - 32px));
+  max-height: min(700px, calc(100dvh - 32px));
   overflow-y: auto;
 }
 
@@ -6783,6 +6828,7 @@ h3 {
 
   .plan-purchase-panel {
     max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
   }
 
   .plan-purchase-title-row,
@@ -6796,10 +6842,12 @@ h3 {
 
   .topup-dialog-panel {
     max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
   }
 
   .key-create-panel {
     max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
   }
 
   .key-create-grid {
@@ -7910,6 +7958,7 @@ h3 {
   z-index: 1;
   width: min(100%, 510px);
   max-height: min(720px, calc(100vh - 96px));
+  max-height: min(720px, calc(100dvh - 96px));
   overscroll-behavior: contain;
   animation: dialog-panel-in 210ms cubic-bezier(0.16, 1, 0.3, 1) both;
   transform-origin: center;
@@ -7935,6 +7984,7 @@ h3 {
   display: flex;
   width: min(100%, 510px);
   max-height: calc(100vh - 88px);
+  max-height: calc(100dvh - 88px);
   flex-direction: column;
   overflow: hidden;
   border: 1px solid rgb(255 255 255 / 88%);
@@ -8176,12 +8226,16 @@ h3 {
   display: inline-flex;
   width: 100%;
   min-height: 46px;
+  min-width: 0;
   align-items: center;
   justify-content: center;
   gap: 8px;
   border-radius: 10px;
   font-size: 15px;
   font-weight: 650;
+  line-height: 1.25;
+  text-align: center;
+  overflow-wrap: anywhere;
   transition:
     transform 0.12s ease,
     border-color 0.2s,
@@ -8243,7 +8297,13 @@ h3 {
 .auth-oauth {
   display: grid;
   gap: 8px;
-  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+}
+
+.auth-oauth .auth-secondary {
+  min-height: 44px;
+  padding: 9px 10px;
+  white-space: normal;
 }
 
 .github-mark {
@@ -9697,7 +9757,7 @@ h3 {
     padding: 14px 52px 14px 14px;
     font-size: 12px;
     line-height: 1.65;
-    overflow-x: hidden;
+    overflow-x: auto;
     overflow-wrap: anywhere;
     white-space: pre-wrap;
   }
@@ -9850,6 +9910,7 @@ h3 {
   }
 
   .api-access-head div {
+    width: 100%;
     flex-wrap: wrap;
   }
 
@@ -9871,7 +9932,7 @@ h3 {
 
   .base-url-row {
     min-height: auto;
-    gap: 7px;
+    gap: 8px;
     padding: 12px;
   }
 
@@ -9879,9 +9940,9 @@ h3 {
   .base-url-row b {
     display: block;
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    white-space: normal;
   }
 
   .base-url-row svg {
@@ -9900,15 +9961,23 @@ h3 {
 
   .key-row strong,
   .key-mask,
-  .key-meta,
-  .key-quota,
   .key-group,
   .key-expiry {
     min-width: 0;
-    overflow: hidden;
+    overflow: visible;
     text-align: left;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .key-mask {
+    font-size: 14px;
+  }
+
+  .key-meta,
+  .key-quota {
+    min-width: 0;
+    text-align: left;
   }
 
   .key-meta {
@@ -9922,7 +9991,18 @@ h3 {
   }
 
   .key-row-actions {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     justify-content: flex-start;
+  }
+
+  .key-row-actions .key-action {
+    width: 100%;
+    justify-content: center;
+    padding-right: 10px;
+    padding-left: 10px;
+    white-space: normal;
   }
 
   .invite-hero {
@@ -9963,7 +10043,9 @@ h3 {
   }
 
   .settings-list .set-item .sv {
+    min-width: 0;
     grid-column: 2;
+    overflow-wrap: anywhere;
     white-space: normal;
   }
 
@@ -9976,6 +10058,7 @@ h3 {
   .topup-dialog-panel,
   .plan-purchase-panel {
     width: 100%;
+    max-height: calc(100dvh - 28px);
   }
 
   .topup-dialog-head {
@@ -9993,7 +10076,7 @@ h3 {
 
   .topup-dialog-panel .billing-preset-grid,
   .topup-dialog-panel .billing-method-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(142px, 1fr));
   }
 
   .topup-dialog-panel .billing-methods {
@@ -10020,6 +10103,7 @@ h3 {
   .billing-method span,
   .billing-creem-product strong,
   .billing-creem-product span {
+    overflow-wrap: anywhere;
     white-space: normal;
   }
 }
@@ -10074,6 +10158,13 @@ h3 {
   }
 
   .topup-redemption-inline {
+    grid-template-columns: 1fr;
+  }
+
+  .topup-dialog-panel .billing-preset-grid,
+  .topup-dialog-panel .billing-method-grid,
+  .payment-method-grid,
+  .epay-payment-row {
     grid-template-columns: 1fr;
   }
 
@@ -10142,6 +10233,9 @@ h3 {
 
   .usage-date-time-range {
     grid-template-columns: 16px minmax(0, 1fr);
+    min-height: auto;
+    padding-top: 9px;
+    padding-bottom: 9px;
   }
 
   .usage-date-time-range > span {
@@ -10150,6 +10244,7 @@ h3 {
 
   .usage-date-time-range input {
     grid-column: 2;
+    min-height: 34px;
   }
 
   .usage-filter-actions .btn {
@@ -10174,6 +10269,10 @@ h3 {
 
   .usage-stat-pills span {
     flex: 1 1 96px;
+    min-width: 0;
+    padding: 6px 9px;
+    overflow-wrap: anywhere;
+    text-align: center;
   }
 
   .usage-detail-panel .usage-pagination {
