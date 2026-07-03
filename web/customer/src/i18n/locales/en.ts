@@ -93,6 +93,8 @@ export const enTranslations = {
   "Clean old config": "Clean old config",
   "Clean old settings and configure env vars":
     "Clean old settings and configure env vars",
+  "Click a URL below to copy the matching address.":
+    "Click a URL below to copy the matching address.",
   "CLI / VS Code / desktop app": "CLI / VS Code / desktop app",
   Close: "Close",
   "Codex / OpenAI-compatible values": "Codex / OpenAI-compatible values",
@@ -358,6 +360,7 @@ export const enTranslations = {
     "Use npm to install the latest Claude Code CLI. If permissions fail, use sudo as prompted.",
   "Use the following Base URL instead of official endpoints with your API key":
     "Use the following Base URL instead of official endpoints with your API key",
+  "URL copied": "URL copied",
   "Valid until": "Valid until",
   "Validity period": "Validity period",
   "Verify Codex": "Verify Codex",

@@ -2085,6 +2085,15 @@ h3 {
   margin: 0 auto;
 }
 
+.pricing-note {
+  max-width: 520px;
+  margin: 12px auto 0;
+  color: var(--customer-muted);
+  font-size: 15px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
 .pricing-all-link {
   position: absolute;
   right: 0;
@@ -5820,6 +5829,13 @@ h3 {
   overflow-wrap: anywhere;
 }
 
+.api-access-hint {
+  display: block;
+  margin-top: 4px;
+  color: var(--customer-muted-soft);
+  font-size: 13px;
+}
+
 .api-access-head div {
   display: flex;
   gap: 8px;
@@ -5849,7 +5865,7 @@ h3 {
 }
 
 .base-url-row .muted-url,
-.base-url-row b {
+.base-url-copy {
   min-width: 0;
   overflow-wrap: anywhere;
 }
@@ -5862,10 +5878,32 @@ h3 {
   color: var(--customer-muted-soft);
 }
 
-.base-url-row b {
+.base-url-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
   color: var(--customer-accent-ink);
+  font-family: inherit;
   font-size: 14px;
   font-weight: 900;
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+}
+
+.base-url-copy:hover,
+.base-url-copy:focus-visible {
+  color: var(--customer-accent);
+}
+
+.base-url-copy span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .key-panel {
@@ -10022,7 +10060,7 @@ h3 {
   }
 
   .base-url-row .muted-url,
-  .base-url-row b {
+  .base-url-copy {
     display: block;
     min-width: 0;
     overflow: visible;

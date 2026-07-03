@@ -846,6 +846,9 @@ export function createHomePage({
                   <h2 className="h-sec">
                     <T id="Transparent pricing that scales down" />
                   </h2>
+                  <p className="pricing-note">
+                    <T id="CNY and USD are settled 1:1." />
+                  </p>
                 </div>
                 <AppLink
                   className="btn btn-ghost pricing-all-link"

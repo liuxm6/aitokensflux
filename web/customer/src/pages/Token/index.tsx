@@ -140,7 +140,7 @@ export function ApiKeysPage() {
   const [tokenTotal, setTokenTotal] = useState(0);
   const [loadingTokens, setLoadingTokens] = useState(true);
   const [tokenMessage, setTokenMessage] = useState("");
-  const [baseCopied, setBaseCopied] = useState(false);
+  const [copiedBaseUrl, setCopiedBaseUrl] = useState("");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [createForm, setCreateForm] = useState<ApiKeyCreateForm>(() =>
     getDefaultApiKeyCreateForm(),
@@ -583,10 +583,19 @@ export function ApiKeysPage() {
     setTokenMessage(localizeKey(language, "Opening CC Switch..."));
   };
 
-  const copyBaseUrl = async () => {
-    await navigator.clipboard?.writeText(openaiGatewayUrl);
-    setBaseCopied(true);
-    window.setTimeout(() => setBaseCopied(false), 1200);
+  const copyUrl = async (url: string) => {
+    if (!navigator.clipboard) {
+      setTokenMessage(localizeKey(language, "Copy failed"));
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedBaseUrl(url);
+      setTokenMessage(localizeKey(language, "URL copied"));
+      window.setTimeout(() => setCopiedBaseUrl(""), 1200);
+    } catch {
+      setTokenMessage(localizeKey(language, "Copy failed"));
+    }
   };
 
   useEffect(() => {
@@ -620,30 +629,29 @@ export function ApiKeysPage() {
         <div className="api-access-head">
           <p>
             <T id="Use the following Base URL instead of official endpoints with your API key" />
+            <span className="api-access-hint">
+              <T id="Click a URL below to copy the matching address." />
+            </span>
           </p>
           <div>
             <AppLink className="btn btn-ghost btn-sm" href="/setup">
               <T id="Examples" />
             </AppLink>
-            <button
-              className="btn btn-ghost btn-sm"
-              type="button"
-              onClick={() => void copyBaseUrl()}
-            >
-              {baseCopied ? <Check size={15} /> : <Copy size={15} />}
-              <T id="Copy Base URL" />
-            </button>
           </div>
         </div>
         <div className="base-url-list">
           <BaseUrlSwapRow
+            copied={copiedBaseUrl === openaiGatewayUrl}
             from="https://api.openai.com"
             label="OpenAI"
+            onCopy={() => void copyUrl(openaiGatewayUrl)}
             to={openaiGatewayUrl}
           />
           <BaseUrlSwapRow
+            copied={copiedBaseUrl === gatewayOrigin}
             from="https://api.anthropic.com"
             label="Claude"
+            onCopy={() => void copyUrl(gatewayOrigin)}
             to={gatewayOrigin}
           />
         </div>
@@ -1638,12 +1646,16 @@ function getApiKeyExpiryLabel(
 }
 
 function BaseUrlSwapRow({
+  copied,
   label,
   from,
+  onCopy,
   to,
 }: {
+  copied: boolean;
   label: string;
   from: string;
+  onCopy: () => void;
   to: string;
 }) {
   return (
@@ -1651,7 +1663,10 @@ function BaseUrlSwapRow({
       <strong className="mono">{label}</strong>
       <span className="mono muted-url">{from}</span>
       <ArrowRight size={16} />
-      <b className="mono">{to}</b>
+      <button className="mono base-url-copy" type="button" onClick={onCopy}>
+        <span>{to}</span>
+        {copied ? <Check size={15} /> : <Copy size={15} />}
+      </button>
     </div>
   );
 }

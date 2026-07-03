@@ -285,11 +285,14 @@ const customerRuTranslations = {
   "Use the following Base URL instead of official endpoints with your API key":
     "Используйте этот Base URL вместо официальных адресов вместе с вашим API-ключом",
   Examples: "Примеры",
+  "Click a URL below to copy the matching address.":
+    "Нажмите на URL ниже, чтобы скопировать нужный адрес.",
   Export: "Экспорт",
   "Copy Base URL": "Скопировать Base URL",
   "Copy email address": "Скопировать email",
   "Copy failed": "Не удалось скопировать",
   "Copy QQ group number": "Скопировать номер группы QQ",
+  "URL copied": "URL скопирован",
   "Create key": "Создать ключ",
   "Failed to load API keys": "Не удалось загрузить API-ключи",
   "Failed to load groups": "Не удалось загрузить группы",

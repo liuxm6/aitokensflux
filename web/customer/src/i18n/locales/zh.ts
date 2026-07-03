@@ -92,6 +92,8 @@ export const zhTranslations = {
     "Claude Code 需要 Node.js。Windows 可用 winget 安装 LTS 版本，也可以下载官方安装包。",
   "Clean old config": "清理旧配置",
   "Clean old settings and configure env vars": "清理旧配置并设置环境变量",
+  "Click a URL below to copy the matching address.":
+    "点击下面的 URL 复制对应地址。",
   "CLI / VS Code / desktop app": "CLI / VS Code / 桌面应用",
   Close: "关闭",
   "Codex / OpenAI-compatible values": "Codex / OpenAI-compatible 参数",
@@ -346,6 +348,7 @@ export const zhTranslations = {
     "如果之前使用过 Claude CLI，建议先删除旧配置，再把网关地址和密钥写入当前 shell 配置文件。",
   "Use the following Base URL instead of official endpoints with your API key":
     "使用以下 Base URL 取代官方地址，搭配下方密钥使用",
+  "URL copied": "URL 已复制",
   "Valid until": "方案有效期",
   "Validity period": "有效期",
   "Verify Codex": "验证 Codex",

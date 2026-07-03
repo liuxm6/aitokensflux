@@ -92,6 +92,8 @@ export const zhTWTranslations = {
     "Claude Code 需要 Node.js。Windows 可用 winget 安裝 LTS 版本，也可以下載官方安裝包。",
   "Clean old config": "清理舊配置",
   "Clean old settings and configure env vars": "清理舊配置並設置環境變量",
+  "Click a URL below to copy the matching address.":
+    "點擊下方 URL 複製對應地址。",
   "CLI / VS Code / desktop app": "CLI / VS Code / 桌面應用",
   Close: "關閉",
   "Codex / OpenAI-compatible values": "Codex / OpenAI-compatible 參數",
@@ -346,6 +348,7 @@ export const zhTWTranslations = {
     "如果之前使用過 Claude CLI，建議先刪除舊配置，再把網關地址和密鑰寫入當前 shell 配置文件。",
   "Use the following Base URL instead of official endpoints with your API key":
     "使用以下 Base URL 取代官方地址，搭配下方密鑰使用",
+  "URL copied": "URL 已複製",
   "Valid until": "方案有效期",
   "Validity period": "有效期",
   "Verify Codex": "驗證 Codex",
@@ -680,7 +683,7 @@ export const zhTWTranslations = {
   "QQ support group": "QQ 售後群",
   "Real-time notices and international support": "海外用戶、服務通知與即時溝通",
   "Go to support group": "去售後群",
-  "Join the support group to claim benefits": "進售後群，有福利可領",
+  "Join the support group to claim benefits": "加入售後群，有福利可領取",
   "Check the group for support and benefit details.":
     "群內查看領取方式，售後和福利都在這裡。",
   "Support & community": "售後與社區",
