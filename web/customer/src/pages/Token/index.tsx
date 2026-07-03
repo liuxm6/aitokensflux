@@ -8,7 +8,7 @@ import {
   LoaderCircle,
   X,
 } from "lucide-react";
-import { type FormEvent, useContext, useEffect, useState } from "react";
+import { type FormEvent, useContext, useEffect, useRef, useState } from "react";
 import { AppLink } from "../../components/common/AppLink";
 import { EmptyState } from "../../components/common/EmptyState";
 import { SectionLabel } from "../../components/common/SectionLabel";
@@ -164,6 +164,11 @@ export function ApiKeysPage() {
     [],
   );
   const [ccSwitchModelsLoading, setCcSwitchModelsLoading] = useState(false);
+  const tokenKeyCacheRef = useRef<Record<number, string>>({});
+  const tokenKeyPendingRef = useRef<Record<number, Promise<string | null>>>({});
+  const [readingTokenKeys, setReadingTokenKeys] = useState<
+    Record<number, boolean>
+  >({});
   useToastMessage(tokenMessage);
   useToastMessage(createMessage);
   const gatewayOrigin = getConfiguredServerAddress(status);
@@ -475,18 +480,44 @@ export function ApiKeysPage() {
   };
 
   const readTokenKey = async (token: CustomerToken) => {
-    setTokenMessage(localizeKey(language, "Reading key..."));
-    const response = await apiRequest<{ key: string }>(
-      `/api/token/${token.id}/key`,
-      { method: "POST" },
-    );
-    if (!response.success || !response.data?.key) {
-      setTokenMessage(
-        response.message || localizeKey(language, "Failed to read key"),
-      );
-      return null;
-    }
-    return formatApiKey(response.data.key);
+    const cachedKey = tokenKeyCacheRef.current[token.id];
+    if (cachedKey) return cachedKey;
+
+    const pendingKey = tokenKeyPendingRef.current[token.id];
+    if (pendingKey) return pendingKey;
+
+    const request = (async () => {
+      setReadingTokenKeys((prev) => ({ ...prev, [token.id]: true }));
+      setTokenMessage(localizeKey(language, "Reading key..."));
+
+      try {
+        const response = await apiRequest<{ key: string }>(
+          `/api/token/${token.id}/key`,
+          { method: "POST" },
+        );
+        if (!response.success || !response.data?.key) {
+          setTokenMessage(
+            response.message || localizeKey(language, "Failed to read key"),
+          );
+          return null;
+        }
+
+        const apiKey = formatApiKey(response.data.key);
+        tokenKeyCacheRef.current[token.id] = apiKey;
+        setTokenMessage("");
+        return apiKey;
+      } finally {
+        delete tokenKeyPendingRef.current[token.id];
+        setReadingTokenKeys((prev) => {
+          const next = { ...prev };
+          delete next[token.id];
+          return next;
+        });
+      }
+    })();
+
+    tokenKeyPendingRef.current[token.id] = request;
+    return request;
   };
 
   const copyToken = async (token: CustomerToken) => {
@@ -639,6 +670,7 @@ export function ApiKeysPage() {
                 token.expired_time,
                 language,
               );
+              const isReadingKey = Boolean(readingTokenKeys[token.id]);
               return (
                 <div className="key-row" key={token.id}>
                   <strong>{token.name || "default"}</strong>
@@ -681,9 +713,15 @@ export function ApiKeysPage() {
                     className="inline-copy"
                     type="button"
                     aria-label={localizeKey(language, "Copy key")}
+                    disabled={isReadingKey}
+                    aria-busy={isReadingKey}
                     onClick={() => void copyToken(token)}
                   >
-                    <Copy size={16} />
+                    {isReadingKey ? (
+                      <LoaderCircle size={16} className="spin" />
+                    ) : (
+                      <Copy size={16} />
+                    )}
                   </button>
                   <div className="key-row-actions">
                     <button
@@ -697,6 +735,7 @@ export function ApiKeysPage() {
                     <button
                       className="btn btn-ghost btn-sm key-action"
                       type="button"
+                      disabled={isReadingKey}
                       onClick={() => void openCcSwitchDialog(token)}
                     >
                       <ArrowRightLeft size={15} />
