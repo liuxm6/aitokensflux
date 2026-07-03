@@ -1549,7 +1549,7 @@ function formatTokenGroupLabel(
 function buildCcSwitchUsageScript() {
   return `({
   request: {
-    url: "{{baseUrl}}/api/token/usage",
+    url: "{{baseUrl}}/api/usage/token/",
     method: "GET",
     headers: {
       "Authorization": "Bearer {{apiKey}}",
