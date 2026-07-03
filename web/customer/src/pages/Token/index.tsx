@@ -488,7 +488,6 @@ export function ApiKeysPage() {
 
     const request = (async () => {
       setReadingTokenKeys((prev) => ({ ...prev, [token.id]: true }));
-      setTokenMessage(localizeKey(language, "Reading key..."));
 
       try {
         const response = await apiRequest<{ key: string }>(
@@ -504,7 +503,6 @@ export function ApiKeysPage() {
 
         const apiKey = formatApiKey(response.data.key);
         tokenKeyCacheRef.current[token.id] = apiKey;
-        setTokenMessage("");
         return apiKey;
       } finally {
         delete tokenKeyPendingRef.current[token.id];
@@ -523,8 +521,16 @@ export function ApiKeysPage() {
   const copyToken = async (token: CustomerToken) => {
     const apiKey = await readTokenKey(token);
     if (!apiKey) return;
-    await navigator.clipboard?.writeText(apiKey);
-    setTokenMessage(localizeKey(language, "Key copied"));
+    if (!navigator.clipboard) {
+      setTokenMessage(localizeKey(language, "Copy failed"));
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(apiKey);
+      setTokenMessage(localizeKey(language, "Key copied"));
+    } catch {
+      setTokenMessage(localizeKey(language, "Copy failed"));
+    }
   };
 
   const loadCcSwitchModels = async () => {
