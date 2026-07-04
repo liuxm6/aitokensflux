@@ -530,6 +530,7 @@ export const zhTWTranslations = {
   "Use backup code": "使用備用碼",
   "Use verification code": "使用驗證碼",
   Username: "使用者名稱",
+  "User ID": "使用者 ID",
   "Verification code": "驗證碼",
   "Verify and sign in": "驗證並登入",
   "WeChat QR code is not configured": "未配置微信 QR 碼",
@@ -653,6 +654,7 @@ export const zhTWTranslations = {
   "{{start}}-{{end}} of {{total}}": "第 {{start}}-{{end}} 條，共 {{total}} 條",
   "{{title}} is not configured": "管理員未設置{{title}}內容",
   Copy: "複製",
+  Copied: "已複製",
   "Copy key": "複製密鑰",
   "CNY and USD are settled 1:1.": "人民幣與美元按 1:1 結算。",
   "Customer navigation": "客戶導航",
@@ -673,6 +675,7 @@ export const zhTWTranslations = {
   "Email support for accounts, orders, and security":
     "賬號、訂單與安全問題郵件支持",
   "Email address copied": "郵箱地址已複製",
+  "User ID copied": "使用者 ID 已複製",
   "ai token flux QQ group": "ai token flux 交流群",
   "ai token flux QQ group: 826073513": "ai token flux 交流群：826073513",
   Gmail: "Gmail",

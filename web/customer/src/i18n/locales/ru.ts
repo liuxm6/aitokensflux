@@ -595,6 +595,7 @@ const customerRuTranslations = {
   "Use verification code": "Использовать код подтверждения",
   "Use backup code": "Использовать резервный код",
   Username: "Имя пользователя",
+  "User ID": "ID пользователя",
   "Back to password sign in": "Вернуться ко входу по паролю",
   "WeChat sign in": "Вход через WeChat",
   "Scan the QR code, follow the account, and enter the verification code.":
@@ -650,6 +651,7 @@ const customerRuTranslations = {
   "{{start}}-{{end}} of {{total}}": "{{start}}-{{end}} из {{total}}",
   "{{title}} is not configured": "{{title}} не настроено",
   Copy: "Копировать",
+  Copied: "Скопировано",
   "Copy key": "Скопировать ключ",
   "CNY and USD are settled 1:1.": "CNY и USD рассчитываются 1:1.",
   "Customer navigation": "Навигация клиента",
@@ -676,6 +678,7 @@ const customerRuTranslations = {
   "Email support for accounts, orders, and security":
     "Поддержка по email для аккаунтов, заказов и безопасности",
   "Email address copied": "Email скопирован",
+  "User ID copied": "ID пользователя скопирован",
   Gmail: "Gmail",
   "mr.liuxm6@gmail.com": "mr.liuxm6@gmail.com",
   "Product updates and public announcements":

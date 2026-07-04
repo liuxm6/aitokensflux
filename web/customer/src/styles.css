@@ -7188,6 +7188,10 @@ h3 {
   margin-left: auto;
 }
 
+.settings-list .set-item .btn svg {
+  flex: 0 0 auto;
+}
+
 .settings-list .set-item.danger .btn {
   border-color: #ef4444;
   background: #ef4444;

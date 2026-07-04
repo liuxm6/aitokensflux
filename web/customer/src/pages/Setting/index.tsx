@@ -1,4 +1,14 @@
-import { FileText, Globe2, Lock, LogOut, Mail, UserRound } from "lucide-react";
+import {
+  Check,
+  Copy,
+  FileText,
+  Fingerprint,
+  Globe2,
+  Lock,
+  LogOut,
+  Mail,
+  UserRound,
+} from "lucide-react";
 import type { ComponentType } from "react";
 import { useContext, useState } from "react";
 import { SectionLabel } from "../../components/common/SectionLabel";
@@ -15,6 +25,7 @@ import {
   getAccountIdentifier,
   getBoundEmail,
 } from "../../helpers/account";
+import { useToast } from "../../context/Toast";
 import { localizeKey } from "../../i18n/localization";
 import { languageOptions } from "../../i18n/languages";
 import type { AccountDialogMode, CustomerUser } from "../../types";
@@ -35,11 +46,14 @@ export function createSettingsPage({
   return function SettingsPage() {
     const { user, setUser, signOut } = useContext(AuthContext);
     const { language, setLanguage } = useContext(LanguageContext);
+    const notify = useToast();
     const [dialogMode, setDialogMode] = useState<AccountDialogMode | null>(
       null,
     );
+    const [copiedUserId, setCopiedUserId] = useState(false);
     const boundEmail = getBoundEmail(user);
     const accountIdentifier = getAccountIdentifier(user);
+    const userId = user?.id ? String(user.id) : "-";
     const currentLanguage =
       languageOptions.find((item) => item.value === language) ??
       languageOptions[0];
@@ -66,6 +80,23 @@ export function createSettingsPage({
         }),
       );
     };
+    const copyUserId = async () => {
+      if (!user?.id) return;
+      try {
+        await writeClipboard(String(user.id));
+        setCopiedUserId(true);
+        notify({
+          type: "success",
+          message: localizeKey(language, "User ID copied"),
+        });
+        window.setTimeout(() => setCopiedUserId(false), 1400);
+      } catch {
+        notify({
+          type: "error",
+          message: localizeKey(language, "Copy failed"),
+        });
+      }
+    };
 
     return (
       <CustomerShell crumbId="Settings" page="settings">
@@ -75,6 +106,14 @@ export function createSettingsPage({
             icon={UserRound}
             labelId="Username"
             value={user?.username || "-"}
+          />
+          <SettingsRow
+            actionIcon={copiedUserId ? Check : Copy}
+            actionId={copiedUserId ? "Copied" : "Copy"}
+            icon={Fingerprint}
+            labelId="User ID"
+            onAction={() => void copyUserId()}
+            value={userId}
           />
           <SettingsRow
             actionId={boundEmail ? "Edit" : "Bind"}
@@ -160,6 +199,7 @@ function SettingsRow({
   labelId,
   value,
   actionId,
+  actionIcon: ActionIcon,
   onAction,
   danger = false,
 }: {
@@ -167,6 +207,7 @@ function SettingsRow({
   labelId: string;
   value: string;
   actionId?: string;
+  actionIcon?: LucideIcon;
   onAction?: () => void;
   danger?: boolean;
 }) {
@@ -183,9 +224,28 @@ function SettingsRow({
           type="button"
           onClick={onAction}
         >
+          {ActionIcon ? <ActionIcon size={15} /> : null}
           {localizeKey(language, actionId ?? "Edit")}
         </button>
       ) : null}
     </div>
   );
+}
+
+async function writeClipboard(value: string) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = value;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.top = "-1000px";
+  document.body.appendChild(textarea);
+  textarea.select();
+  const copied = document.execCommand("copy");
+  textarea.remove();
+  if (!copied) throw new Error("copy failed");
 }

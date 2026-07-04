@@ -557,6 +557,7 @@ export const enTranslations = {
   "Use backup code": "Use backup code",
   "Use verification code": "Use verification code",
   Username: "Username",
+  "User ID": "User ID",
   "Verification code": "Verification code",
   "Verify and sign in": "Verify and sign in",
   "WeChat QR code is not configured": "WeChat QR code is not configured",
@@ -680,6 +681,7 @@ export const enTranslations = {
   "{{start}}-{{end}} of {{total}}": "{{start}}-{{end}} of {{total}}",
   "{{title}} is not configured": "{{title}} is not configured",
   Copy: "Copy",
+  Copied: "Copied",
   "Copy key": "Copy key",
   "CNY and USD are settled 1:1.": "CNY and USD are settled 1:1.",
   "Customer navigation": "Customer navigation",
@@ -701,6 +703,7 @@ export const enTranslations = {
   "Email support for accounts, orders, and security":
     "Email support for accounts, orders, and security",
   "Email address copied": "Email address copied",
+  "User ID copied": "User ID copied",
   "ai token flux QQ group": "ai token flux QQ group",
   "ai token flux QQ group: 826073513": "ai token flux QQ group: 826073513",
   Gmail: "Gmail",
