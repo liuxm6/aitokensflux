@@ -550,6 +550,7 @@ function ModelPricingSection() {
 
   const rows = grouped[tab]?.rows ?? [];
   const groupNote = (grouped[tab]?.note ?? "").trim();
+  const TabLogo = GROUP_META[tab].Logo;
 
   return (
     <section className="section model-pricing-section" id="model-pricing">
@@ -638,8 +639,11 @@ function ModelPricingSection() {
                   <tr key={row.name}>
                     <td className="mp-col-model">
                       <span className="mp-model-cell">
-                        <span className="mp-model-mark" aria-hidden="true">
-                          {row.name.slice(0, 1)}
+                        <span
+                          className={`mp-model-mark ${tab}`}
+                          aria-hidden="true"
+                        >
+                          <TabLogo className="mp-model-logo" />
                         </span>
                         <span className="mp-model-name">{row.name}</span>
                       </span>

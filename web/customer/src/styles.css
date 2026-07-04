@@ -1243,32 +1243,11 @@ h3 {
 
 .mp-panel {
   position: relative;
-  max-width: 940px;
-  margin: 28px auto 0;
-  overflow: hidden;
-  border: 1px solid rgb(11 12 14 / 8%);
-  border-radius: 24px;
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 96%), rgb(248 249 246 / 96%)),
-    var(--surface);
-  box-shadow:
-    0 1px 0 rgb(255 255 255 / 80%) inset,
-    0 24px 64px rgb(16 18 20 / 8%);
-}
-
-.mp-panel::before {
-  position: absolute;
-  top: 0;
-  right: 24px;
-  left: 24px;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgb(15 180 119 / 42%),
-    transparent
-  );
-  content: "";
+  max-width: 880px;
+  margin: 30px auto 0;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
 }
 
 .mp-panel-top {
@@ -1276,63 +1255,48 @@ h3 {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 16px 16px 12px;
-  border-bottom: 1px solid rgb(11 12 14 / 6%);
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 80%), rgb(255 255 255 / 38%)),
-    rgb(255 255 255 / 55%);
-  backdrop-filter: blur(14px);
+  padding: 20px 24px 18px;
 }
 
 .mp-tabs {
   display: flex;
   justify-content: flex-start;
   width: fit-content;
-  padding: 4px;
   gap: 4px;
-  border: 1px solid rgb(11 12 14 / 8%);
-  border-radius: 999px;
-  background: rgb(245 246 243 / 88%);
-  box-shadow:
-    0 1px 0 rgb(255 255 255 / 72%) inset,
-    0 10px 26px rgb(16 18 20 / 5%);
 }
 
 .mp-tab {
   display: inline-flex;
   align-items: center;
-  min-height: 38px;
+  min-height: 34px;
   gap: 7px;
-  padding: 0 14px;
-  border: 0;
+  padding: 0 13px;
+  border: 1px solid transparent;
   border-radius: 999px;
   background: transparent;
   color: var(--muted);
   font-size: 14px;
-  font-weight: 720;
+  font-weight: 640;
   cursor: pointer;
   transition:
-    color 0.18s ease,
-    box-shadow 0.18s ease,
-    background 0.18s ease;
+    color 0.16s ease,
+    border-color 0.16s ease,
+    background 0.16s ease;
 }
 
 .mp-tab:hover {
   color: var(--ink);
-  background: rgb(255 255 255 / 78%);
 }
 
 .mp-tab.active {
-  background: var(--ink);
-  color: #fff;
-  box-shadow:
-    0 8px 18px rgb(11 12 14 / 16%),
-    0 1px 0 rgb(255 255 255 / 14%) inset;
+  border-color: var(--line-2);
+  background: var(--surface-2);
+  color: var(--ink);
 }
 
 .mp-tab-logo {
-  width: 17px;
-  height: 17px;
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
 }
 
@@ -1343,42 +1307,35 @@ h3 {
 
 .mp-tab-logo.openai,
 .mp-tab-logo.codex {
-  color: #0d0d0d;
-}
-
-.mp-tab.active .mp-tab-logo.openai,
-.mp-tab.active .mp-tab-logo.codex {
-  color: #fff;
+  color: var(--ink);
 }
 
 .mp-tab-rate {
   display: inline-flex;
   align-items: center;
-  height: 20px;
-  padding: 0 7px;
+  height: 19px;
+  padding: 0 6px;
   border-radius: 999px;
-  background: rgb(15 180 119 / 11%);
-  color: var(--accent-ink);
+  color: var(--muted-2);
+  font-family: var(--mono);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
 }
 
 .mp-tab.active .mp-tab-rate {
-  background: rgb(255 255 255 / 16%);
-  color: rgb(255 255 255 / 88%);
+  color: var(--accent-ink);
 }
 
 .mp-panel-unit {
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
-  gap: 8px;
-  padding: 0 4px;
-  color: var(--muted);
+  gap: 7px;
+  color: var(--muted-2);
   font-family: var(--mono);
   font-size: 12px;
-  font-weight: 720;
+  font-weight: 600;
   letter-spacing: 0;
   white-space: nowrap;
 }
@@ -1387,40 +1344,29 @@ h3 {
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
-  gap: 12px;
+  gap: 14px;
 }
 
 .mp-panel-unit span:first-child {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 999px;
   background: var(--accent);
-  box-shadow: 0 0 0 4px rgb(15 180 119 / 10%);
 }
 
 .mp-status-link {
   display: inline-flex;
   align-items: center;
-  min-height: 30px;
   gap: 6px;
-  padding: 0 12px;
-  border: 1px solid rgb(15 180 119 / 16%);
-  border-radius: 999px;
-  background: rgb(15 180 119 / 8%);
-  color: var(--accent-ink);
+  color: var(--muted);
   font-size: 12px;
-  font-weight: 760;
+  font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
-  transition:
-    border-color 0.18s ease,
-    background 0.18s ease,
-    color 0.18s ease;
+  transition: color 0.16s ease;
 }
 
 .mp-status-link:hover {
-  border-color: rgb(15 180 119 / 34%);
-  background: rgb(15 180 119 / 13%);
   color: var(--accent-ink);
 }
 
@@ -1432,7 +1378,8 @@ h3 {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 18px 0;
+  padding: 14px 24px;
+  border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: 13px;
   line-height: 1.5;
@@ -1440,18 +1387,18 @@ h3 {
 
 .mp-group-note-label {
   flex-shrink: 0;
-  color: var(--accent-ink);
+  color: var(--muted-2);
   font-family: var(--mono);
   font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .mp-table-wrap {
   height: min(430px, calc(100vh - 260px));
   min-height: 330px;
-  padding: 12px;
+  padding: 4px 12px 12px;
   overflow: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -1459,83 +1406,56 @@ h3 {
 
 .mp-table {
   width: 100%;
-  min-width: 660px;
-  border-collapse: separate;
-  border-spacing: 0 7px;
+  min-width: 620px;
+  border-collapse: collapse;
   font-size: 14px;
 }
 
 .mp-table th,
 .mp-table td {
-  padding: 12px 18px;
+  padding: 0 12px;
   text-align: right;
   white-space: nowrap;
 }
 
 .mp-table th {
-  padding-top: 7px;
-  padding-bottom: 7px;
-  background: rgb(255 255 255 / 52%);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  height: 40px;
+  background: var(--surface);
   color: var(--muted-2);
-  font-weight: 760;
-  font-size: 12px;
-  letter-spacing: 0.02em;
-}
-
-.mp-table th:first-child {
-  border-radius: 12px 0 0 12px;
-}
-
-.mp-table th:last-child {
-  border-radius: 0 12px 12px 0;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--line);
 }
 
 .mp-table .mp-col-model {
   text-align: left;
-  width: 44%;
+  width: 46%;
 }
 
 .mp-table tbody td {
+  height: 56px;
   color: var(--ink-2);
   font-variant-numeric: tabular-nums;
-  background: rgb(255 255 255 / 78%);
-  border-top: 1px solid rgb(11 12 14 / 6%);
-  border-bottom: 1px solid rgb(11 12 14 / 6%);
-  transition:
-    background 0.18s ease,
-    border-color 0.18s ease,
-    color 0.18s ease,
-    box-shadow 0.18s ease;
-}
-
-.mp-table tbody td:first-child {
-  border-left: 1px solid rgb(11 12 14 / 6%);
-  border-radius: 15px 0 0 15px;
-}
-
-.mp-table tbody td:last-child {
-  border-right: 1px solid rgb(11 12 14 / 6%);
-  border-radius: 0 15px 15px 0;
+  border-bottom: 1px solid var(--line);
+  transition: color 0.16s ease;
 }
 
 .mp-table tbody tr:last-child td {
-  border-bottom: 1px solid rgb(11 12 14 / 6%);
+  border-bottom: 0;
 }
 
 .mp-table tbody tr:hover td {
-  background: #fff;
-  border-color: rgb(15 180 119 / 18%);
-  box-shadow: 0 10px 24px rgb(16 18 20 / 5%);
-}
-
-.mp-table tbody tr:hover .mp-model-mark {
-  background: var(--accent);
-  color: #fff;
+  background: var(--surface-2);
 }
 
 .mp-table td.mp-col-model {
   font-size: 14.5px;
-  font-weight: 760;
+  font-weight: 640;
   color: var(--ink);
 }
 
@@ -1543,27 +1463,30 @@ h3 {
   display: inline-flex;
   align-items: center;
   max-width: 100%;
-  gap: 10px;
+  gap: 11px;
 }
 
 .mp-model-mark {
   display: inline-flex;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  border: 1px solid rgb(11 12 14 / 7%);
-  border-radius: 9px;
-  background: var(--surface-2);
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 820;
-  text-transform: uppercase;
-  transition:
-    background 0.18s ease,
-    border-color 0.18s ease,
-    color 0.18s ease;
+}
+
+.mp-model-logo {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.mp-model-mark.claude .mp-model-logo {
+  color: #d97757;
+}
+
+.mp-model-mark.codex .mp-model-logo {
+  color: var(--ink);
 }
 
 .mp-model-name {
@@ -1588,14 +1511,22 @@ h3 {
   gap: 4px;
   color: var(--ink);
   font-family: var(--mono);
-  font-weight: 760;
-  letter-spacing: 0;
+  font-size: 14.5px;
+  font-weight: 640;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.mp-table td.mp-muted .mp-price {
+  color: var(--muted);
+  font-weight: 560;
 }
 
 .mp-unit {
   color: var(--muted-2);
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0;
 }
 
 .hero-tagline {
@@ -1860,7 +1791,8 @@ h3 {
 }
 
 .model-pricing-section {
-  padding-top: 30px;
+  padding-top: 40px;
+  padding-bottom: 84px;
 }
 
 .showcase {
@@ -9051,7 +8983,8 @@ h3 {
   }
 
   .model-pricing-section {
-    padding-top: 22px;
+    padding-top: 44px;
+    padding-bottom: 56px;
   }
 
   .model-pricing-section .h-sec {
@@ -9090,25 +9023,24 @@ h3 {
     align-items: flex-start;
     flex-direction: column;
     gap: 4px;
-    padding: 10px 14px 0;
+    padding: 12px 16px;
     font-size: 12.5px;
   }
 
   .mp-table-wrap {
     height: min(380px, 58vh);
     min-height: 280px;
-    padding: 6px 8px 10px;
+    padding: 2px 10px 10px;
   }
 
   .mp-table {
     min-width: 560px;
-    border-spacing: 0 6px;
     font-size: 13px;
   }
 
   .mp-table th,
   .mp-table td {
-    padding: 10px 12px;
+    padding: 0 12px;
   }
 
   .mp-table td.mp-col-model {
@@ -9117,10 +9049,14 @@ h3 {
   }
 
   .mp-model-mark {
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
     border-radius: 8px;
-    font-size: 11px;
+  }
+
+  .mp-model-logo {
+    width: 15px;
+    height: 15px;
   }
 
   .legal-page {
