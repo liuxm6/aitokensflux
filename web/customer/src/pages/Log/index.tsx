@@ -146,18 +146,6 @@ function getStringValue(other: LogOther, key: string) {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
-function getEffectiveGroupRatio(other: LogOther) {
-  const userGroupRatio = getNumberValue(other, "user_group_ratio");
-  if (userGroupRatio && userGroupRatio > 0) return userGroupRatio;
-  const groupRatio = getNumberValue(other, "group_ratio");
-  return groupRatio && groupRatio > 0 ? groupRatio : undefined;
-}
-
-function formatRatio(value?: number) {
-  if (!value || !Number.isFinite(value)) return "";
-  return `${value.toFixed(3).replace(/\.?0+$/, "")}x`;
-}
-
 function getCacheReadTokens(other: LogOther) {
   return getNumberValue(other, "cache_tokens") ?? 0;
 }
@@ -212,15 +200,6 @@ function getLogTypeMeta(type: number) {
   if (type === 6) return { labelId: "Refund", tone: "warning" };
   if (type === 1) return { labelId: "Top-up", tone: "info" };
   return { labelId: "Other", tone: "muted" };
-}
-
-function getTokenSubline(log: UsageLog, other: LogOther) {
-  const parts = [log.group || getStringValue(other, "billing_source")].filter(
-    Boolean,
-  );
-  const ratio = formatRatio(getEffectiveGroupRatio(other));
-  if (ratio) parts.push(ratio);
-  return parts.join(" · ");
 }
 
 function getCacheSummary(other: LogOther, language: Language) {
@@ -339,13 +318,6 @@ function buildBillingSegments(
     });
     const cacheSummary = getCacheSummary(other, language);
     if (cacheSummary) segments.push({ text: cacheSummary, muted: true });
-  } else {
-    const ratio = formatRatio(getEffectiveGroupRatio(other));
-    if (ratio) {
-      segments.push({
-        text: `${localizeKey(language, "Group ratio")} ${ratio}`,
-      });
-    }
   }
 
   if (getStringValue(other, "billing_source") === "subscription") {
@@ -630,7 +602,6 @@ export function UsagePage() {
                   const firstResponseTone =
                     getFirstResponseTone(firstResponseSeconds);
                   const cacheTokenLine = getCacheTokenLine(other, language);
-                  const tokenSubline = getTokenSubline(log, other);
                   const modelSubline = getMappedModelSubline(other, language);
                   const detailSegments = buildBillingSegments(
                     log,
@@ -663,11 +634,6 @@ export function UsagePage() {
                           <KeyRound size={14} />
                           <span className="mono">{log.token_name || "-"}</span>
                         </div>
-                        {tokenSubline ? (
-                          <div className="usage-cell-subtle">
-                            {tokenSubline}
-                          </div>
-                        ) : null}
                       </td>
                       <td>
                         <div className="usage-model-pill">
