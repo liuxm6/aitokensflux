@@ -16,6 +16,7 @@ import (
 // UserBase struct remains the same as it represents the cached data structure
 type UserBase struct {
 	Id       int    `json:"id"`
+	Role     int    `json:"role"`
 	Group    string `json:"group"`
 	Email    string `json:"email"`
 	Quota    int    `json:"quota"`
@@ -94,7 +95,12 @@ func GetUserCache(userId int) (userCache *UserBase, err error) {
 	// Try getting from Redis first
 	userCache, err = cacheGetUserBase(userId)
 	if err == nil {
-		return userCache, nil
+		if common.IsValidateRole(userCache.Role) && userCache.Role != common.RoleGuestUser {
+			return userCache, nil
+		}
+		// Older cache entries do not contain Role. Force a DB reload so
+		// session auth cannot keep using stale privileges.
+		_ = invalidateUserCache(userId)
 	}
 
 	// If Redis fails, get from DB
@@ -107,6 +113,7 @@ func GetUserCache(userId int) (userCache *UserBase, err error) {
 	// Create cache object from user data
 	userCache = &UserBase{
 		Id:       user.Id,
+		Role:     user.Role,
 		Group:    user.Group,
 		Quota:    user.Quota,
 		Status:   user.Status,

@@ -22,6 +22,8 @@ import (
 	"gorm.io/gorm"
 )
 
+var loadUserAuthCache = model.GetUserCache
+
 func validUserInfo(username string, role int) bool {
 	// check username is empty
 	if strings.TrimSpace(username) == "" {
@@ -33,12 +35,42 @@ func validUserInfo(username string, role int) bool {
 	return true
 }
 
+func refreshSessionUserAuth(c *gin.Context, session sessions.Session, id int) (username string, role int, status int, group string, ok bool) {
+	userCache, err := loadUserAuthCache(id)
+	if err != nil {
+		common.SysLog(fmt.Sprintf("UserAuth GetUserCache error for user %d: %v", id, err))
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": common.TranslateMessage(c, i18n.MsgDatabaseError),
+		})
+		c.Abort()
+		return "", 0, 0, "", false
+	}
+	if !validUserInfo(userCache.Username, userCache.Role) {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": common.TranslateMessage(c, i18n.MsgAuthUserInfoInvalid),
+		})
+		c.Abort()
+		return "", 0, 0, "", false
+	}
+	session.Set("username", userCache.Username)
+	session.Set("role", userCache.Role)
+	session.Set("status", userCache.Status)
+	session.Set("group", userCache.Group)
+	if err := session.Save(); err != nil {
+		common.SysLog(fmt.Sprintf("failed to refresh auth session for user %d: %v", id, err))
+	}
+	return userCache.Username, userCache.Role, userCache.Status, userCache.Group, true
+}
+
 func authHelper(c *gin.Context, minRole int) {
 	session := sessions.Default(c)
 	username := session.Get("username")
 	role := session.Get("role")
 	id := session.Get("id")
 	status := session.Get("status")
+	group := session.Get("group")
 	useAccessToken := false
 	if username == nil {
 		// Check access token
@@ -82,6 +114,7 @@ func authHelper(c *gin.Context, minRole int) {
 			role = user.Role
 			id = user.Id
 			status = user.Status
+			group = user.Group
 			useAccessToken = true
 		} else {
 			c.JSON(http.StatusOK, gin.H{
@@ -111,6 +144,25 @@ func authHelper(c *gin.Context, minRole int) {
 		c.Abort()
 		return
 
+	}
+	if !useAccessToken {
+		sessionUserId, ok := id.(int)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"success": false,
+				"message": common.TranslateMessage(c, i18n.MsgAuthUserIdFormatError),
+			})
+			c.Abort()
+			return
+		}
+		refreshedUsername, refreshedRole, refreshedStatus, refreshedGroup, ok := refreshSessionUserAuth(c, session, sessionUserId)
+		if !ok {
+			return
+		}
+		username = refreshedUsername
+		role = refreshedRole
+		status = refreshedStatus
+		group = refreshedGroup
 	}
 	if id != apiUserId {
 		c.JSON(http.StatusUnauthorized, gin.H{
@@ -149,8 +201,8 @@ func authHelper(c *gin.Context, minRole int) {
 	c.Set("username", username)
 	c.Set("role", role)
 	c.Set("id", id)
-	c.Set("group", session.Get("group"))
-	c.Set("user_group", session.Get("group"))
+	c.Set("group", group)
+	c.Set("user_group", group)
 	c.Set("use_access_token", useAccessToken)
 
 	c.Next()
@@ -196,11 +248,34 @@ func TokenOrUserAuth() func(c *gin.Context) {
 		// Try session auth first (dashboard users)
 		session := sessions.Default(c)
 		if id := session.Get("id"); id != nil {
-			if status, ok := session.Get("status").(int); ok && status == common.UserStatusEnabled {
-				c.Set("id", id)
-				c.Next()
+			userId, ok := id.(int)
+			if !ok {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"success": false,
+					"message": common.TranslateMessage(c, i18n.MsgAuthUserIdFormatError),
+				})
+				c.Abort()
 				return
 			}
+			username, role, status, group, ok := refreshSessionUserAuth(c, session, userId)
+			if !ok {
+				return
+			}
+			if status != common.UserStatusEnabled {
+				c.JSON(http.StatusOK, gin.H{
+					"success": false,
+					"message": common.TranslateMessage(c, i18n.MsgAuthUserBanned),
+				})
+				c.Abort()
+				return
+			}
+			c.Set("id", userId)
+			c.Set("username", username)
+			c.Set("role", role)
+			c.Set("group", group)
+			c.Set("user_group", group)
+			c.Next()
+			return
 		}
 		// Fall back to token auth (API clients)
 		TokenAuth()(c)

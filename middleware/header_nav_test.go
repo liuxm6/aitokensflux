@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/QuantumNous/new-api/common"
+	"github.com/QuantumNous/new-api/model"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -36,6 +37,21 @@ func withHeaderNavModules(t *testing.T, raw string) {
 
 func performHeaderNavRequest(t *testing.T, handler gin.HandlerFunc, authenticated bool) *httptest.ResponseRecorder {
 	t.Helper()
+
+	previousLoader := loadUserAuthCache
+	loadUserAuthCache = func(id int) (*model.UserBase, error) {
+		require.Equal(t, 1, id)
+		return &model.UserBase{
+			Id:       1,
+			Role:     common.RoleCommonUser,
+			Group:    "default",
+			Status:   common.UserStatusEnabled,
+			Username: "tester",
+		}, nil
+	}
+	t.Cleanup(func() {
+		loadUserAuthCache = previousLoader
+	})
 
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
