@@ -61,7 +61,7 @@ export default defineConfig(({ envMode }) => {
     server: {
       base: adminAssetPrefix,
       host: '0.0.0.0',
-      strictPort: true,
+      strictPort: false,
       proxy: devProxy,
     },
     output: {

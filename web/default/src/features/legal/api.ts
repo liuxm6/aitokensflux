@@ -18,6 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import i18next from 'i18next'
 import { api } from '@/lib/api'
+
 import type { LegalDocumentResponse } from './types'
 
 export async function getUserAgreement() {

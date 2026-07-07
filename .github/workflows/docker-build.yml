@@ -158,6 +158,7 @@ jobs:
     permissions:
       packages: write
       contents: read
+      id-token: write
 
     steps:
       - name: Set version
@@ -209,6 +210,14 @@ jobs:
             -t calciumion/new-api:latest \
             calciumion/new-api:latest-amd64 \
             calciumion/new-api:latest-arm64
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Sign manifests with cosign
+        run: |
+          cosign sign --yes calciumion/new-api:${TAG}
+          cosign sign --yes calciumion/new-api:latest
 
       - name: Manifest summary
         run: |
