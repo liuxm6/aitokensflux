@@ -1,3 +1,4 @@
+import { XAI } from "@lobehub/icons";
 import {
   Activity,
   BookOpen,
@@ -176,6 +177,22 @@ function OpenAILogo({ className }: { className?: string }) {
   );
 }
 
+function GrokLogo({ className }: { className?: string }) {
+  return <XAI aria-hidden="true" className={className} focusable="false" />;
+}
+
+const HERO_MODELS = [
+  { id: "claude", label: "Claude Code", Logo: ClaudeLogo },
+  { id: "openai", label: "OpenAI Codex", Logo: OpenAILogo },
+  { id: "grok", label: "Grok Code", Logo: GrokLogo },
+] as const;
+
+const HERO_MODEL_PAIRS = [
+  [HERO_MODELS[0], HERO_MODELS[1]],
+  [HERO_MODELS[1], HERO_MODELS[2]],
+  [HERO_MODELS[2], HERO_MODELS[0]],
+] as const;
+
 function FeatureColumn({
   icon: Icon,
   titleId,
@@ -269,7 +286,7 @@ function SupportSection() {
   );
 }
 
-type PricingGroup = "claude" | "codex";
+type PricingGroup = "claude" | "codex" | "grok";
 
 type PriceRow = {
   name: string;
@@ -286,7 +303,7 @@ type GroupPricingRows = {
 };
 
 const RATIO_TO_USD_PER_M = 2;
-const PRICING_GROUP_ORDER: PricingGroup[] = ["claude", "codex"];
+const PRICING_GROUP_ORDER: PricingGroup[] = ["claude", "codex", "grok"];
 
 function classifyFallbackGroup(
   modelName: string,
@@ -296,8 +313,10 @@ function classifyFallbackGroup(
   const vendor = `${vendorName ?? ""} ${ownerBy ?? ""}`.toLowerCase();
   if (vendor.includes("anthropic")) return "claude";
   if (vendor.includes("openai")) return "codex";
+  if (vendor.includes("xai") || vendor.includes("grok")) return "grok";
   const name = modelName.toLowerCase();
   if (name.includes("claude")) return "claude";
+  if (name.includes("grok") || name.includes("xai")) return "grok";
   if (
     /^(gpt|chatgpt|codex|o1|o3|o4|text-embedding|dall-e|whisper|davinci|babbage|tts)/.test(
       name,
@@ -368,14 +387,16 @@ function comparePriceRows(a: PriceRow, b: PriceRow) {
 }
 
 const DEV_SAMPLE_PRICING: ModelPricingData = {
-  group_ratio: { claude: 1, codex: 0.6 },
+  group_ratio: { claude: 1, codex: 0.6, grok: 1 },
   usable_group: {
     claude: "cc-Max(满血)-不限客户端",
     codex: "cx-Pro(满血)-不限客户端",
+    grok: "",
   },
   vendors: [
     { id: 1, name: "Anthropic" },
     { id: 2, name: "OpenAI" },
+    { id: 3, name: "xAI" },
   ],
   data: [
     {
@@ -438,6 +459,36 @@ const DEV_SAMPLE_PRICING: ModelPricingData = {
       vendor_id: 2,
       enable_groups: ["codex"],
     },
+    {
+      model_name: "grok-3-fast-beta",
+      quota_type: 0,
+      model_ratio: 2.5,
+      model_price: 0,
+      completion_ratio: 5,
+      cache_ratio: 0.25,
+      vendor_id: 3,
+      enable_groups: ["grok"],
+    },
+    {
+      model_name: "grok-3-beta",
+      quota_type: 0,
+      model_ratio: 1.5,
+      model_price: 0,
+      completion_ratio: 5,
+      cache_ratio: 0.25,
+      vendor_id: 3,
+      enable_groups: ["grok"],
+    },
+    {
+      model_name: "grok-3-mini-beta",
+      quota_type: 0,
+      model_ratio: 0.15,
+      model_price: 0,
+      completion_ratio: 5 / 3,
+      cache_ratio: 0.25,
+      vendor_id: 3,
+      enable_groups: ["grok"],
+    },
   ],
 };
 
@@ -455,6 +506,10 @@ const GROUP_META: Record<
   codex: {
     label: "codex",
     Logo: OpenAILogo,
+  },
+  grok: {
+    label: "grok",
+    Logo: GrokLogo,
   },
 };
 
@@ -478,6 +533,11 @@ function groupPricing(
     codex: {
       ratio: source.group_ratio?.codex ?? 1,
       note: source.usable_group?.codex ?? "",
+      rows: [],
+    },
+    grok: {
+      ratio: source.group_ratio?.grok ?? 1,
+      note: source.usable_group?.grok ?? "",
       rows: [],
     },
   };
@@ -741,18 +801,33 @@ export function createHomePage({
               <h1>
                 <T id="Get started, effortlessly" />
               </h1>
-              <div className="hero-sub hero-brands">
-                <span className="brand-group">
-                  <ClaudeLogo className="brand-logo claude" />
-                  <span>Claude Code</span>
-                </span>
-                <span className="brand-sep" aria-hidden="true">
-                  /
-                </span>
-                <span className="brand-group">
-                  <OpenAILogo className="brand-logo openai" />
-                  <span>OpenAI Codex</span>
-                </span>
+              <div
+                aria-label="Claude Code, OpenAI Codex, Grok Code"
+                className="hero-sub hero-model-switcher"
+                role="group"
+              >
+                {HERO_MODEL_PAIRS.map((pair) => (
+                  <span
+                    aria-hidden="true"
+                    className="hero-model-pair"
+                    key={`${pair[0].id}-${pair[1].id}`}
+                  >
+                    {pair.map(({ id, label, Logo }, index) => (
+                      <span className={`hero-model-item ${id}`} key={id}>
+                        {index > 0 ? (
+                          <span
+                            className="hero-model-separator"
+                            aria-hidden="true"
+                          >
+                            /
+                          </span>
+                        ) : null}
+                        <Logo className={`brand-logo ${id}`} />
+                        <span>{label}</span>
+                      </span>
+                    ))}
+                  </span>
+                ))}
               </div>
               <p className="hero-tagline">
                 <T id="A stable AI coding solution" />
