@@ -13,6 +13,7 @@ const focusableSelector = [
 let openDialogCount = 0;
 let rootAriaHidden: string | null = null;
 let rootWasInert = false;
+const dialogStack: symbol[] = [];
 
 function lockApplicationRoot() {
   const root = document.getElementById("root");
@@ -71,6 +72,7 @@ export function AccessibleDialog({
   onClose: () => void;
 }) {
   const panelRef = useRef<HTMLElement>(null);
+  const dialogIdRef = useRef(Symbol("accessible-dialog"));
 
   useLayoutEffect(() => {
     const previouslyFocused =
@@ -84,6 +86,8 @@ export function AccessibleDialog({
     const previousBodyOverscroll = body.style.overscrollBehavior;
     const previousRootOverscroll = root.style.overscrollBehavior;
 
+    const dialogId = dialogIdRef.current;
+    dialogStack.push(dialogId);
     lockApplicationRoot();
     body.style.overflow = "hidden";
     root.style.overflow = "hidden";
@@ -98,6 +102,8 @@ export function AccessibleDialog({
     focusTarget?.focus();
 
     return () => {
+      const stackIndex = dialogStack.lastIndexOf(dialogId);
+      if (stackIndex >= 0) dialogStack.splice(stackIndex, 1);
       body.style.overflow = previousBodyOverflow;
       root.style.overflow = previousRootOverflow;
       body.style.overscrollBehavior = previousBodyOverscroll;
@@ -109,6 +115,7 @@ export function AccessibleDialog({
 
   useLayoutEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (dialogStack.at(-1) !== dialogIdRef.current) return;
       if (event.key === "Escape") {
         if (closeDisabled) return;
         event.preventDefault();

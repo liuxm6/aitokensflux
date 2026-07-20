@@ -15,6 +15,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -22,6 +23,7 @@ import {
 import { AuthInput } from "../../components/auth/AuthInput";
 import { AppLink } from "../../components/common/AppLink";
 import { Brand } from "../../components/common/Brand";
+import { AccessibleDialog } from "../../components/common/ui/Dialog";
 import { LanguageButton } from "../../components/layout/LanguageButton";
 import { AuthContext } from "../../context/Auth";
 import { LanguageContext, T } from "../../context/Language";
@@ -211,6 +213,10 @@ export function AuthPage({
   const closeTimerRef = useRef<number | null>(null);
   const modeExitTimerRef = useRef<number | null>(null);
   const modeEnterTimerRef = useRef<number | null>(null);
+  const authCloseButtonRef = useRef<HTMLButtonElement>(null);
+  const wechatCloseButtonRef = useRef<HTMLButtonElement>(null);
+  const wechatTitleId = useId();
+  const wechatDescriptionId = useId();
   const [activeMode, setActiveMode] = useState<AuthMode>(() =>
     ["/register", "/sign-up"].includes(window.location.pathname)
       ? "register"
@@ -317,15 +323,6 @@ export function AuthPage({
       }
     };
   }, []);
-
-  useEffect(() => {
-    if (!modal) return;
-    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.key === "Escape") requestClose();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [modal, requestClose]);
 
   useEffect(() => {
     let mounted = true;
@@ -1121,21 +1118,19 @@ export function AuthPage({
   ) => {
     if (modal) {
       return (
-        <div
+        <AccessibleDialog
+          ariaLabel={label}
+          backdropClassName="auth-overlay-backdrop"
           className={`auth-overlay${isClosing ? " closing" : ""}`}
-          role="dialog"
-          aria-modal="true"
-          aria-label={label}
+          closeDisabled={isClosing}
+          closeLabel={localizeKey(language, "Close")}
+          initialFocusRef={authCloseButtonRef}
+          panelClassName="auth-overlay-panel"
+          onClose={requestClose}
         >
-          <button
-            className="auth-overlay-backdrop"
-            type="button"
-            onClick={requestClose}
-            aria-label={localizeKey(language, "Close")}
-          />
           {content}
           {extra}
-        </div>
+        </AccessibleDialog>
       );
     }
 
@@ -1168,6 +1163,7 @@ export function AuthPage({
       <>
         <section className="auth-modal" aria-label={copy.twoFaTitle}>
           <button
+            ref={authCloseButtonRef}
             className="auth-close"
             type="button"
             onClick={requestClose}
@@ -1234,6 +1230,7 @@ export function AuthPage({
         aria-label={copy.title}
       >
         <button
+          ref={authCloseButtonRef}
           className="auth-close"
           type="button"
           onClick={requestClose}
@@ -1378,48 +1375,52 @@ export function AuthPage({
       </section>
     </>,
     wechatOpen ? (
-      <div className="auth-dialog">
-        <div
-          className="auth-dialog-backdrop"
+      <AccessibleDialog
+        ariaDescribedBy={wechatDescriptionId}
+        ariaLabelledBy={wechatTitleId}
+        backdropClassName="auth-dialog-backdrop"
+        className="auth-dialog"
+        closeLabel={localizeKey(language, "Close")}
+        initialFocusRef={wechatCloseButtonRef}
+        panelClassName="auth-dialog-panel"
+        onClose={() => setWeChatOpen(false)}
+      >
+        <button
+          ref={wechatCloseButtonRef}
+          className="auth-close"
+          type="button"
           onClick={() => setWeChatOpen(false)}
+          aria-label={localizeKey(language, "Close")}
+        >
+          <X size={22} />
+        </button>
+        <h2 id={wechatTitleId}>{copy.wechatTitle}</h2>
+        {wechatQrCode ? (
+          <img className="wechat-qr" src={wechatQrCode} alt="WeChat QR" />
+        ) : (
+          <div className="wechat-empty">{copy.noWechatQr}</div>
+        )}
+        <p id={wechatDescriptionId}>{copy.wechatHelp}</p>
+        <AuthInput
+          autoComplete="one-time-code"
+          label={copy.verificationCode}
+          placeholder={copy.wechatPlaceholder}
+          value={wechatCode}
+          onChange={setWeChatCode}
         />
-        <section className="auth-dialog-panel">
-          <button
-            className="auth-close"
-            type="button"
-            onClick={() => setWeChatOpen(false)}
-            aria-label={localizeKey(language, "Close")}
-          >
-            <X size={22} />
-          </button>
-          <h2>{copy.wechatTitle}</h2>
-          {wechatQrCode ? (
-            <img className="wechat-qr" src={wechatQrCode} alt="WeChat QR" />
+        <button
+          className="auth-submit"
+          disabled={oauthLoading === "wechat"}
+          type="button"
+          onClick={() => void handleWeChatSubmit()}
+        >
+          {oauthLoading === "wechat" ? (
+            <LoaderCircle className="spin" size={18} />
           ) : (
-            <div className="wechat-empty">{copy.noWechatQr}</div>
+            copy.submitWechat
           )}
-          <p>{copy.wechatHelp}</p>
-          <AuthInput
-            autoComplete="one-time-code"
-            label={copy.verificationCode}
-            placeholder={copy.wechatPlaceholder}
-            value={wechatCode}
-            onChange={setWeChatCode}
-          />
-          <button
-            className="auth-submit"
-            disabled={oauthLoading === "wechat"}
-            type="button"
-            onClick={() => void handleWeChatSubmit()}
-          >
-            {oauthLoading === "wechat" ? (
-              <LoaderCircle className="spin" size={18} />
-            ) : (
-              copy.submitWechat
-            )}
-          </button>
-        </section>
-      </div>
+        </button>
+      </AccessibleDialog>
     ) : null,
     true,
   );

@@ -34,6 +34,45 @@ function DialogHarness({ closeDisabled = false }: { closeDisabled?: boolean }) {
   );
 }
 
+function NestedDialogHarness() {
+  const [outerOpen, setOuterOpen] = useState(false);
+  const [innerOpen, setInnerOpen] = useState(false);
+
+  return (
+    <>
+      <button type="button" onClick={() => setOuterOpen(true)}>
+        Open outer dialog
+      </button>
+      {outerOpen ? (
+        <AccessibleDialog
+          ariaLabel="Outer dialog"
+          backdropClassName="backdrop"
+          className="dialog"
+          closeLabel="Close outer dialog"
+          panelClassName="panel"
+          onClose={() => setOuterOpen(false)}
+        >
+          <button type="button" onClick={() => setInnerOpen(true)}>
+            Open inner dialog
+          </button>
+          {innerOpen ? (
+            <AccessibleDialog
+              ariaLabel="Inner dialog"
+              backdropClassName="backdrop"
+              className="dialog"
+              closeLabel="Close inner dialog"
+              panelClassName="panel"
+              onClose={() => setInnerOpen(false)}
+            >
+              <button type="button">Inner action</button>
+            </AccessibleDialog>
+          ) : null}
+        </AccessibleDialog>
+      ) : null}
+    </>
+  );
+}
+
 test("dialog traps focus, closes with Escape, and restores the trigger", async () => {
   const user = userEvent.setup({ document });
   const root = document.createElement("div");
@@ -84,4 +123,21 @@ test("dialog ignores backdrop and Escape while closing is disabled", async () =>
   expect((backdrop as HTMLButtonElement).disabled).toBe(true);
   await user.click(backdrop);
   expect(screen.getByRole("dialog")).toBeTruthy();
+});
+
+test("Escape closes only the topmost nested dialog", async () => {
+  const user = userEvent.setup({ document });
+  const root = document.createElement("div");
+  root.id = "root";
+  document.body.append(root);
+  render(<NestedDialogHarness />, { container: root });
+
+  await user.click(screen.getByRole("button", { name: "Open outer dialog" }));
+  await user.click(screen.getByRole("button", { name: "Open inner dialog" }));
+
+  await user.keyboard("{Escape}");
+
+  expect(screen.queryByRole("dialog", { name: "Inner dialog" })).toBeNull();
+  expect(screen.getByRole("dialog", { name: "Outer dialog" })).toBeTruthy();
+  expect(root.hasAttribute("inert")).toBe(true);
 });

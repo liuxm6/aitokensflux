@@ -315,30 +315,6 @@ function App() {
         ? setupBackgroundPage
         : page,
   );
-  const overlayScrollLocked = authOverlayOpen || setupOverlayOpen;
-
-  useEffect(() => {
-    if (!overlayScrollLocked) return;
-
-    const body = document.body;
-    const root = document.documentElement;
-    const previousBodyOverflow = body.style.overflow;
-    const previousRootOverflow = root.style.overflow;
-    const previousBodyOverscroll = body.style.overscrollBehavior;
-    const previousRootOverscroll = root.style.overscrollBehavior;
-
-    body.style.overflow = "hidden";
-    root.style.overflow = "hidden";
-    body.style.overscrollBehavior = "none";
-    root.style.overscrollBehavior = "none";
-
-    return () => {
-      body.style.overflow = previousBodyOverflow;
-      root.style.overflow = previousRootOverflow;
-      body.style.overscrollBehavior = previousBodyOverscroll;
-      root.style.overscrollBehavior = previousRootOverscroll;
-    };
-  }, [overlayScrollLocked]);
 
   return (
     <LanguageContext.Provider value={languageContextValue}>
