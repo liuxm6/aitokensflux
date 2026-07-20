@@ -14,6 +14,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { AppLink } from "../../components/common/AppLink";
@@ -534,12 +535,16 @@ function ModelPricingSection() {
   > | null>(null);
   const [pricingError, setPricingError] = useState(false);
   const [tab, setTab] = useState<PricingGroup>("claude");
+  const pricingRequestRef = useRef(0);
 
   const loadPricing = useCallback(() => {
+    const requestId = pricingRequestRef.current + 1;
+    pricingRequestRef.current = requestId;
     setGrouped(null);
     setPricingError(false);
     void fetchModelPricing()
       .then((res) => {
+        if (pricingRequestRef.current !== requestId) return;
         if (!res.success) {
           setPricingError(true);
           return;
@@ -554,12 +559,16 @@ function ModelPricingSection() {
         );
       })
       .catch(() => {
+        if (pricingRequestRef.current !== requestId) return;
         setPricingError(true);
       });
   }, []);
 
   useEffect(() => {
     loadPricing();
+    return () => {
+      pricingRequestRef.current += 1;
+    };
   }, [loadPricing]);
 
   const providers = useMemo(
