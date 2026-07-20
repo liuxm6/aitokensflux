@@ -76,6 +76,25 @@
   font-size: 13px;
 }
 
+@media (min-width: 681px) and (max-width: 900px) {
+  .model-pricing-section .mp-panel-top {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 18px;
+  }
+
+  .model-pricing-section .mp-tabs {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .model-pricing-section .mp-panel-meta {
+    justify-content: space-between;
+    width: 100%;
+  }
+}
+
 @media (max-width: 760px) {
   .support-benefit-section {
     padding: 0 16px 18px;
