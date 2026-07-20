@@ -1,0 +1,59 @@
+:root {
+  color-scheme: light;
+  --ink: #0b0c0e;
+  --ink-2: #23262b;
+  --muted: #6b7280;
+  --muted-2: #9aa0a8;
+  --paper: #fbfbf9;
+  --surface: #ffffff;
+  --surface-2: #f5f6f3;
+  --surface-3: #eff1ec;
+  --line: #e7e8e4;
+  --line-2: #dbdcd7;
+  --accent: #0fb477;
+  --accent-ink: #03301f;
+  --accent-soft: #eaf6f0;
+  --warn: #c2871a;
+  --warn-soft: #fbf3df;
+  --danger: #e5484d;
+  --font: var(--sans);
+  --customer-bg: #f4f6f8;
+  --customer-panel: #ffffff;
+  --customer-panel-muted: #f8fafb;
+  --customer-panel-subtle: #fbfcfd;
+  --customer-ink: #101828;
+  --customer-ink-strong: #07090d;
+  --customer-muted: #667085;
+  --customer-muted-soft: #98a2b3;
+  --customer-line: #e4e7ec;
+  --customer-line-strong: #d9dee6;
+  --customer-accent: #0fb477;
+  --customer-accent-hover: #0aa668;
+  --customer-accent-soft: #ecfdf3;
+  --customer-accent-line: #abefc6;
+  --customer-accent-ink: #067647;
+  --customer-blue: #1570ef;
+  --customer-warning: #b54708;
+  --customer-danger: #d92d20;
+  --customer-radius-card: 14px;
+  --customer-radius-control: 9px;
+  --customer-radius-field: 10px;
+  --customer-radius-dialog: 22px;
+  --customer-shadow-card: 0 1px 2px rgb(16 24 40 / 4%);
+  --customer-shadow-hover: 0 10px 24px rgb(16 24 40 / 7%);
+  --customer-focus: 0 0 0 3px rgb(15 180 119 / 13%);
+  --sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", Roboto, Helvetica, Arial, sans-serif;
+  --mono:
+    ui-monospace, "SF Mono", "JetBrains Mono", "Roboto Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+  --r-sm: 8px;
+  --r: 12px;
+  --r-lg: 16px;
+  --r-xl: 22px;
+  --shadow-sm: 0 1px 2px rgb(16 18 20 / 3%);
+  --shadow: 0 2px 10px rgb(16 18 20 / 4%);
+  --shadow-lg: 0 12px 36px rgb(16 18 20 / 7%);
+  --maxw: 1200px;
+}
