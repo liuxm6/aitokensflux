@@ -102,6 +102,35 @@
   margin-top: 0;
 }
 
+.home-page .mp-table-wrap-adaptive {
+  height: auto;
+  min-height: 0;
+  max-height: min(430px, calc(100dvh - 260px));
+}
+
+.home-page .pricing-section-empty {
+  padding-block: 52px 58px;
+}
+
+.home-page .pricing-section-empty .pricing-section-head {
+  min-height: 0;
+  margin-bottom: 16px;
+}
+
+.home-page .pricing-section-empty .empty-state {
+  min-height: 96px;
+  padding-block: 12px;
+}
+
+.home-page .pricing-section-empty .payg-service-section {
+  margin-top: 28px;
+  padding-top: 22px;
+}
+
+.home-page .pricing-section-empty .payg-service-divider {
+  margin-bottom: 16px;
+}
+
 @media (min-width: 681px) and (max-width: 900px) {
   .model-pricing-section .mp-panel-top {
     align-items: stretch;

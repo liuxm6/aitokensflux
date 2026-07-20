@@ -3,6 +3,7 @@ import {
   HERO_MODELS,
   HOME_DESTINATIONS,
   HOME_HERO_COPY,
+  HOME_PRICING_LAYOUT,
   HOME_SECTION_HEADINGS,
   HOME_SECTION_ORDER,
 } from "../src/pages/Home";
@@ -50,4 +51,11 @@ test("homepage destinations and original presentation copy remain stable", () =>
   expect(HOME_SECTION_HEADINGS.modelRates).not.toBe(
     HOME_SECTION_HEADINGS.plansBalance,
   );
+});
+
+test("homepage pricing layout adapts table height and empty plan spacing", () => {
+  expect(HOME_PRICING_LAYOUT).toEqual({
+    tableClassName: "mp-table-wrap mp-table-wrap-adaptive",
+    emptyPlansClassName: "pricing-section-empty",
+  });
 });

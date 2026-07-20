@@ -239,6 +239,11 @@ export const HOME_SECTION_HEADINGS = {
   plansBalance: "Transparent pricing that scales down",
 } as const;
 
+export const HOME_PRICING_LAYOUT = {
+  tableClassName: "mp-table-wrap mp-table-wrap-adaptive",
+  emptyPlansClassName: "pricing-section-empty",
+} as const;
+
 function FeatureColumn({
   icon: Icon,
   titleId,
@@ -824,7 +829,7 @@ function ModelPricingSection() {
 
           <div
             aria-labelledby="model-pricing-caption"
-            className="mp-table-wrap"
+            className={HOME_PRICING_LAYOUT.tableClassName}
             role="region"
             tabIndex={0}
           >
@@ -949,6 +954,8 @@ export function createHomePage({
       () => recordsToPricePlans(plans, status),
       [plans, status],
     );
+    const showEmptyPlans =
+      !plansLoading && !plansError && displayPlans.length === 0;
 
     const handleOpenTopup = () => {
       if (!user?.id) {
@@ -1096,7 +1103,11 @@ export function createHomePage({
           <ModelPricingSection />
 
           <section
-            className="section surface-band pricing-section"
+            className={`section surface-band pricing-section${
+              showEmptyPlans
+                ? ` ${HOME_PRICING_LAYOUT.emptyPlansClassName}`
+                : ""
+            }`}
             data-home-section="plans-balance"
           >
             <div className="wrap">
