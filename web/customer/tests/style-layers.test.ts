@@ -92,3 +92,21 @@ test("homepage polish keeps stable layout constraints and safe transitions", () 
   expect(transitionDeclarations).toHaveLength(3);
   expect(transitionDeclarations.at(-1)).toBe("none");
 });
+
+test("adaptive pricing table releases its max height at 700px and below", () => {
+  const marketingStyles = readFileSync(
+    new URL("../src/styles/marketing.css", import.meta.url),
+    "utf8",
+  );
+  const mobileMediaStart = marketingStyles.indexOf("@media (max-width: 700px)");
+  const nextMediaStart = marketingStyles.indexOf(
+    "@media (max-width: 680px)",
+    mobileMediaStart,
+  );
+
+  expect(mobileMediaStart).toBeGreaterThanOrEqual(0);
+  expect(nextMediaStart).toBeGreaterThan(mobileMediaStart);
+  expect(marketingStyles.slice(mobileMediaStart, nextMediaStart)).toMatch(
+    /\.home-page \.mp-table-wrap-adaptive\s*\{\s*max-height:\s*none;\s*\}/,
+  );
+});

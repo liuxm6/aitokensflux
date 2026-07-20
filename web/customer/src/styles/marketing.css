@@ -281,6 +281,12 @@
   }
 }
 
+@media (max-width: 700px) {
+  .home-page .mp-table-wrap-adaptive {
+    max-height: none;
+  }
+}
+
 @media (max-width: 680px) {
   .home-page .cta-wrap {
     padding-block: 48px;
