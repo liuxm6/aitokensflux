@@ -14,7 +14,7 @@ import { AuthInput } from "../auth/AuthInput";
 import { LanguageContext } from "../../context/Language";
 import { useToastMessage } from "../../context/Toast";
 import { getBoundEmail } from "../../helpers/account";
-import { localizeCopy } from "../../i18n/localization";
+import { localizeCopy, localizeKey } from "../../i18n/localization";
 import {
   apiRequest,
   buildQuery,
@@ -57,6 +57,11 @@ export function AccountActionDialog({
   const currentEmail = getBoundEmail(user);
   const closeTimerRef = useRef<number | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const currentPasswordInputRef = useRef<HTMLInputElement>(null);
+  const newPasswordInputRef = useRef<HTMLInputElement>(null);
+  const confirmPasswordInputRef = useRef<HTMLInputElement>(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const codeInputRef = useRef<HTMLInputElement>(null);
   const titleId = useId();
   const descriptionId = useId();
   const [status, setStatus] = useState<CustomerStatus | null>(null);
@@ -66,6 +71,9 @@ export function AccountActionDialog({
     type: "info" | "error" | "success";
     text: string;
   } | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<"current" | "next" | "confirm" | "email" | "code", string>>
+  >({});
   useToastMessage(message);
   const [loading, setLoading] = useState(false);
   const [codeLoading, setCodeLoading] = useState(false);
@@ -166,12 +174,30 @@ export function AccountActionDialog({
     value: string,
   ) => {
     setPasswordForm((current) => ({ ...current, [key]: value }));
+    setFieldErrors((current) => ({ ...current, [key]: undefined }));
     setMessage(null);
   };
 
   const updateEmailValue = (key: keyof typeof emailForm, value: string) => {
     setEmailForm((current) => ({ ...current, [key]: value }));
+    setFieldErrors((current) => ({ ...current, [key]: undefined }));
     setMessage(null);
+  };
+
+  const showFieldError = (
+    field: "current" | "next" | "confirm" | "email" | "code",
+    text: string,
+  ) => {
+    setFieldErrors({ [field]: text });
+    setMessage(null);
+    const fieldRefs = {
+      current: currentPasswordInputRef,
+      next: newPasswordInputRef,
+      confirm: confirmPasswordInputRef,
+      email: emailInputRef,
+      code: codeInputRef,
+    };
+    fieldRefs[field].current?.focus();
   };
 
   const closeAfterSuccess = () => {
@@ -183,21 +209,22 @@ export function AccountActionDialog({
     const currentPassword = passwordForm.current;
     const nextPassword = passwordForm.next;
     if (!currentPassword) {
-      setMessage({ type: "error", text: copy.currentRequired });
+      showFieldError("current", copy.currentRequired);
       return;
     }
     if (nextPassword.length < 8 || nextPassword.length > 20) {
-      setMessage({ type: "error", text: copy.passwordRule });
+      showFieldError("next", copy.passwordRule);
       return;
     }
     if (currentPassword === nextPassword) {
-      setMessage({ type: "error", text: copy.passwordSame });
+      showFieldError("next", copy.passwordSame);
       return;
     }
     if (nextPassword !== passwordForm.confirm) {
-      setMessage({ type: "error", text: copy.passwordMismatch });
+      showFieldError("confirm", copy.passwordMismatch);
       return;
     }
+    setFieldErrors({});
     setLoading(true);
     const response = await apiRequest("/api/user/self", {
       method: "PUT",
@@ -221,11 +248,11 @@ export function AccountActionDialog({
   const handleSendEmailCode = async () => {
     const email = emailForm.email.trim();
     if (!isValidEmail(email)) {
-      setMessage({ type: "error", text: copy.emailRule });
+      showFieldError("email", copy.emailRule);
       return;
     }
     if (currentEmail && email === currentEmail) {
-      setMessage({ type: "error", text: copy.sameEmail });
+      showFieldError("email", copy.sameEmail);
       return;
     }
     if (!statusLoaded) {
@@ -236,6 +263,7 @@ export function AccountActionDialog({
       setMessage({ type: "error", text: copy.turnstileRequired });
       return;
     }
+    setFieldErrors((current) => ({ ...current, email: undefined }));
     setCodeLoading(true);
     const response = await apiRequest(
       `/api/verification${buildQuery({
@@ -260,17 +288,18 @@ export function AccountActionDialog({
     const email = emailForm.email.trim();
     const code = emailForm.code.trim();
     if (!isValidEmail(email)) {
-      setMessage({ type: "error", text: copy.emailRule });
+      showFieldError("email", copy.emailRule);
       return;
     }
     if (currentEmail && email === currentEmail) {
-      setMessage({ type: "error", text: copy.sameEmail });
+      showFieldError("email", copy.sameEmail);
       return;
     }
     if (!code) {
-      setMessage({ type: "error", text: copy.codeRequired });
+      showFieldError("code", copy.codeRequired);
       return;
     }
+    setFieldErrors({});
     setLoading(true);
     const response = await apiRequest("/api/oauth/email/bind", {
       method: "POST",
@@ -322,6 +351,8 @@ export function AccountActionDialog({
         <form className="account-dialog-form" onSubmit={handleEmailSubmit}>
           <AuthInput
             autoComplete="email"
+            error={fieldErrors.email}
+            inputRef={emailInputRef}
             label={copy.newEmail}
             maxLength={50}
             placeholder={copy.newEmailPlaceholder}
@@ -344,6 +375,8 @@ export function AccountActionDialog({
               </button>
             }
             autoComplete="one-time-code"
+            error={fieldErrors.code}
+            inputRef={codeInputRef}
             label={copy.code}
             placeholder={copy.codePlaceholder}
             value={emailForm.code}
@@ -383,14 +416,17 @@ export function AccountActionDialog({
               <button
                 type="button"
                 onClick={() => setShowCurrentPassword((value) => !value)}
-                aria-label={
-                  showCurrentPassword ? "Hide password" : "Show password"
-                }
+                aria-label={localizeKey(
+                  language,
+                  showCurrentPassword ? "Hide password" : "Show password",
+                )}
               >
                 {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             }
             autoComplete="current-password"
+            error={fieldErrors.current}
+            inputRef={currentPasswordInputRef}
             label={copy.currentPassword}
             placeholder={copy.currentPasswordPlaceholder}
             type={showCurrentPassword ? "text" : "password"}
@@ -402,12 +438,17 @@ export function AccountActionDialog({
               <button
                 type="button"
                 onClick={() => setShowNewPassword((value) => !value)}
-                aria-label={showNewPassword ? "Hide password" : "Show password"}
+                aria-label={localizeKey(
+                  language,
+                  showNewPassword ? "Hide password" : "Show password",
+                )}
               >
                 {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             }
             autoComplete="new-password"
+            error={fieldErrors.next}
+            inputRef={newPasswordInputRef}
             label={copy.newPassword}
             placeholder={copy.newPasswordPlaceholder}
             type={showNewPassword ? "text" : "password"}
@@ -419,14 +460,17 @@ export function AccountActionDialog({
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword((value) => !value)}
-                aria-label={
-                  showConfirmPassword ? "Hide password" : "Show password"
-                }
+                aria-label={localizeKey(
+                  language,
+                  showConfirmPassword ? "Hide password" : "Show password",
+                )}
               >
                 {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             }
             autoComplete="new-password"
+            error={fieldErrors.confirm}
+            inputRef={confirmPasswordInputRef}
             label={copy.confirmPassword}
             placeholder={copy.confirmPasswordPlaceholder}
             type={showConfirmPassword ? "text" : "password"}

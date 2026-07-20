@@ -3,6 +3,8 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ComponentProps, ReactNode } from "react";
 import { createSetupPage } from "../src/components/setup/SetupPage";
+import { LanguageContext } from "../src/context/Language";
+import { ToastProvider } from "../src/context/Toast";
 import { AuthPage } from "../src/pages/Auth";
 
 const originalMatchMedia = window.matchMedia;
@@ -94,4 +96,37 @@ test("modal setup uses the shared dialog without changing wizard stages", async 
 
   await userEvent.setup({ document }).keyboard("{Escape}");
   await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+});
+
+test("auth validation renders beside the first invalid field and moves focus", async () => {
+  installReducedMotion();
+  installStatusResponse();
+  window.history.replaceState(null, "", "/sign-in");
+  const root = createRoot();
+
+  render(
+    <LanguageContext.Provider
+      value={{
+        language: "en",
+        setLanguage: () => undefined,
+        translationVersion: 0,
+      }}
+    >
+      <ToastProvider>
+        <AuthPage modal onClose={() => undefined} />
+      </ToastProvider>
+    </LanguageContext.Provider>,
+    { container: root },
+  );
+
+  await userEvent
+    .setup({ document })
+    .click(screen.getByRole("button", { name: "Sign in" }));
+
+  const accountInput = screen.getByLabelText("Email / username");
+  expect(screen.getByRole("alert").textContent).toBe(
+    "Enter your email or username, up to 50 characters",
+  );
+  expect(accountInput.getAttribute("aria-invalid")).toBe("true");
+  expect(document.activeElement).toBe(accountInput);
 });

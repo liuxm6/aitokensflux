@@ -2,6 +2,7 @@ import { Check, Copy, KeyRound, LoaderCircle } from "lucide-react";
 import { useContext, useState } from "react";
 import { AppLink } from "../../components/common/AppLink";
 import { Brand } from "../../components/common/Brand";
+import { FormField } from "../../components/common/ui/FormField";
 import { LanguageButton } from "../../components/layout/LanguageButton";
 import { LanguageContext } from "../../context/Language";
 import { useToast } from "../../context/Toast";
@@ -104,28 +105,24 @@ export function ResetPasswordPage() {
             </p>
           </div>
 
-          {!isValidResetLink ? (
-            <div className="auth-message error">{copy.invalidLink}</div>
-          ) : null}
-
-          <label className="auth-field">
-            <span>{copy.email}</span>
-            <div className="auth-input">
-              <KeyRound size={18} />
-              <input
-                readOnly
-                value={email}
-                placeholder={copy.emailPlaceholder}
-                type="email"
-              />
-            </div>
-          </label>
+          <FormField
+            className="auth-field"
+            controlClassName="auth-input"
+            error={!isValidResetLink ? copy.invalidLink : undefined}
+            label={copy.email}
+            prefix={<KeyRound size={18} />}
+          >
+            <input
+              readOnly
+              placeholder={copy.emailPlaceholder}
+              type="email"
+              value={email}
+            />
+          </FormField>
 
           {newPassword ? (
-            <label className="auth-field">
-              <span>{copy.newPassword}</span>
-              <div className="auth-input with-action">
-                <input readOnly className="mono" value={newPassword} />
+            <FormField
+              action={
                 <button
                   aria-label={copy.copy}
                   type="button"
@@ -133,8 +130,13 @@ export function ResetPasswordPage() {
                 >
                   {copied ? <Check size={18} /> : <Copy size={18} />}
                 </button>
-              </div>
-            </label>
+              }
+              className="auth-field"
+              controlClassName="auth-input with-action"
+              label={copy.newPassword}
+            >
+              <input readOnly className="mono" value={newPassword} />
+            </FormField>
           ) : (
             <button
               className="auth-submit"

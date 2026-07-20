@@ -168,6 +168,9 @@ type AuthPageProps = {
   successPath?: string;
 };
 
+type AuthFieldName =
+  "email" | "password" | "verificationCode" | "twoFaCode" | "wechatCode";
+
 function GitHubMark() {
   return (
     <svg className="github-mark" viewBox="0 0 24 24" aria-hidden="true">
@@ -215,6 +218,11 @@ export function AuthPage({
   const modeEnterTimerRef = useRef<number | null>(null);
   const authCloseButtonRef = useRef<HTMLButtonElement>(null);
   const wechatCloseButtonRef = useRef<HTMLButtonElement>(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const passwordInputRef = useRef<HTMLInputElement>(null);
+  const verificationCodeInputRef = useRef<HTMLInputElement>(null);
+  const twoFaCodeInputRef = useRef<HTMLInputElement>(null);
+  const wechatCodeInputRef = useRef<HTMLInputElement>(null);
   const wechatTitleId = useId();
   const wechatDescriptionId = useId();
   const [activeMode, setActiveMode] = useState<AuthMode>(() =>
@@ -236,6 +244,9 @@ export function AuthPage({
     type: "info" | "error" | "success";
     text: string;
   } | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<AuthFieldName, string>>
+  >({});
   useToastMessage(message);
   const [loading, setLoading] = useState(false);
   const [codeLoading, setCodeLoading] = useState(false);
@@ -448,6 +459,7 @@ export function AuthPage({
         nextMode === "register" ? "/register" : "/sign-in",
       );
       setMessage(null);
+      setFieldErrors({});
       setUseBackupCode(false);
       setTwoFaCode("");
       setValues((current) => ({
@@ -478,29 +490,40 @@ export function AuthPage({
 
   const updateValue = (key: keyof AuthFormValues, value: string) => {
     setValues((current) => ({ ...current, [key]: value }));
+    setFieldErrors((current) => ({ ...current, [key]: undefined }));
     setMessage(null);
+  };
+
+  const showFieldError = (field: AuthFieldName, text: string) => {
+    setFieldErrors({ [field]: text });
+    setMessage(null);
+    const fieldRefs: Record<AuthFieldName, typeof emailInputRef> = {
+      email: emailInputRef,
+      password: passwordInputRef,
+      verificationCode: verificationCodeInputRef,
+      twoFaCode: twoFaCodeInputRef,
+      wechatCode: wechatCodeInputRef,
+    };
+    fieldRefs[field].current?.focus();
+    return false;
   };
 
   const validateBase = () => {
     const account = values.email.trim();
     if (isRegister && !isValidEmail(account)) {
-      setMessage({ type: "error", text: copy.emailRule });
-      return false;
+      return showFieldError("email", copy.emailRule);
     }
     if (!isRegister && (account.length === 0 || account.length > 50)) {
-      setMessage({ type: "error", text: copy.accountRule });
-      return false;
+      return showFieldError("email", copy.accountRule);
     }
     if (
       isRegister &&
       (values.password.length < 8 || values.password.length > 20)
     ) {
-      setMessage({ type: "error", text: copy.passwordRule });
-      return false;
+      return showFieldError("password", copy.passwordRule);
     }
     if (!isRegister && values.password.length === 0) {
-      setMessage({ type: "error", text: copy.loginPasswordRule });
-      return false;
+      return showFieldError("password", copy.loginPasswordRule);
     }
     if (requiresLegalConsent && !agreed) {
       setMessage({ type: "error", text: copy.agreementRequired });
@@ -510,17 +533,16 @@ export function AuthPage({
       setMessage({ type: "error", text: copy.turnstileRequired });
       return false;
     }
+    setFieldErrors({});
     return true;
   };
 
   const validateEmailCodeLogin = () => {
     if (!isValidEmail(values.email)) {
-      setMessage({ type: "error", text: copy.emailRule });
-      return false;
+      return showFieldError("email", copy.emailRule);
     }
     if (!values.verificationCode.trim()) {
-      setMessage({ type: "error", text: copy.codeRequired });
-      return false;
+      return showFieldError("verificationCode", copy.codeRequired);
     }
     if (requiresLegalConsent && !agreed) {
       setMessage({ type: "error", text: copy.agreementRequired });
@@ -530,6 +552,7 @@ export function AuthPage({
       setMessage({ type: "error", text: copy.turnstileRequired });
       return false;
     }
+    setFieldErrors({});
     return true;
   };
 
@@ -613,7 +636,7 @@ export function AuthPage({
     }
     if (!validateBase()) return;
     if (emailVerificationRequired && !values.verificationCode.trim()) {
-      setMessage({ type: "error", text: copy.codeRequired });
+      showFieldError("verificationCode", copy.codeRequired);
       return;
     }
 
@@ -673,7 +696,7 @@ export function AuthPage({
 
   const handleSendCode = async () => {
     if (!isValidEmail(values.email)) {
-      setMessage({ type: "error", text: copy.emailRule });
+      showFieldError("email", copy.emailRule);
       return;
     }
     if (!isEmailCodeLogin && !emailVerificationRequired) {
@@ -684,6 +707,7 @@ export function AuthPage({
       setMessage({ type: "error", text: copy.turnstileRequired });
       return;
     }
+    setFieldErrors((current) => ({ ...current, email: undefined }));
     setCodeLoading(true);
     const response = await apiRequest(
       `/api/verification${buildQuery({
@@ -712,10 +736,10 @@ export function AuthPage({
 
   const handleForgotPassword = async () => {
     if (!isValidEmail(values.email)) {
-      setMessage({
-        type: "error",
-        text: values.email.trim() ? copy.emailRule : copy.resetNeedEmail,
-      });
+      showFieldError(
+        "email",
+        values.email.trim() ? copy.emailRule : copy.resetNeedEmail,
+      );
       return;
     }
     if (!turnstileReady) {
@@ -847,7 +871,7 @@ export function AuthPage({
       return;
     }
     if (!wechatCode.trim()) {
-      setMessage({ type: "error", text: copy.codeRequired });
+      showFieldError("wechatCode", copy.codeRequired);
       return;
     }
     if (!turnstileReady) {
@@ -910,7 +934,7 @@ export function AuthPage({
   const handleTwoFaSubmit = async () => {
     const code = twoFaCode.trim();
     if (useBackupCode ? code.length !== 8 : !/^\d{6}$/.test(code)) {
-      setMessage({ type: "error", text: copy.codeRequired });
+      showFieldError("twoFaCode", copy.codeRequired);
       return;
     }
     setLoading(true);
@@ -1176,11 +1200,19 @@ export function AuthPage({
             <p className="auth-note">{copy.twoFaText}</p>
             <AuthInput
               autoComplete="one-time-code"
+              error={fieldErrors.twoFaCode}
               icon={KeyRound}
+              inputRef={twoFaCodeInputRef}
               label={copy.twoFaCode}
               placeholder={copy.twoFaPlaceholder}
               value={twoFaCode}
-              onChange={setTwoFaCode}
+              onChange={(value) => {
+                setTwoFaCode(value);
+                setFieldErrors((current) => ({
+                  ...current,
+                  twoFaCode: undefined,
+                }));
+              }}
             />
             <button
               className="auth-submit"
@@ -1243,6 +1275,8 @@ export function AuthPage({
             <h1>{copy.title}</h1>
           </div>
           <AuthInput
+            error={fieldErrors.email}
+            inputRef={emailInputRef}
             label={copy.email}
             maxLength={50}
             placeholder={copy.emailPlaceholder}
@@ -1269,6 +1303,8 @@ export function AuthPage({
               placeholder={copy.passwordPlaceholder}
               type={showPassword ? "text" : "password"}
               autoComplete={isRegister ? "new-password" : "current-password"}
+              error={fieldErrors.password}
+              inputRef={passwordInputRef}
               value={values.password}
               onChange={(value) => updateValue("password", value)}
             />
@@ -1291,6 +1327,8 @@ export function AuthPage({
                     </button>
                   }
                   autoComplete="one-time-code"
+                  error={fieldErrors.verificationCode}
+                  inputRef={verificationCodeInputRef}
                   label={copy.verificationCode}
                   placeholder={copy.verificationPlaceholder}
                   value={values.verificationCode}
@@ -1321,6 +1359,8 @@ export function AuthPage({
                 </button>
               }
               autoComplete="one-time-code"
+              error={fieldErrors.verificationCode}
+              inputRef={verificationCodeInputRef}
               label={copy.verificationCode}
               placeholder={copy.verificationPlaceholder}
               value={values.verificationCode}
@@ -1406,10 +1446,18 @@ export function AuthPage({
         <p id={wechatDescriptionId}>{copy.wechatHelp}</p>
         <AuthInput
           autoComplete="one-time-code"
+          error={fieldErrors.wechatCode}
+          inputRef={wechatCodeInputRef}
           label={copy.verificationCode}
           placeholder={copy.wechatPlaceholder}
           value={wechatCode}
-          onChange={setWeChatCode}
+          onChange={(value) => {
+            setWeChatCode(value);
+            setFieldErrors((current) => ({
+              ...current,
+              wechatCode: undefined,
+            }));
+          }}
         />
         <button
           className="auth-submit"
