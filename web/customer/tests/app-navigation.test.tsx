@@ -220,4 +220,43 @@ describe("route code splitting", () => {
       console.error = originalConsoleError;
     }
   });
+
+  test("reloads the route when the bundler caches a rejected chunk", async () => {
+    let attempts = 0;
+    const reloadPage = mock(() => undefined);
+    const chunkError = new Error("Loading chunk route failed");
+    chunkError.name = "ChunkLoadError";
+    const CachedChunkPage = createLazyPage(() => {
+      attempts += 1;
+      return Promise.reject(chunkError);
+    }, reloadPage);
+    const originalConsoleError = console.error;
+    console.error = mock(() => undefined);
+
+    try {
+      render(
+        <LanguageContext.Provider
+          value={{
+            language: "en",
+            setLanguage: () => undefined,
+            translationVersion: 0,
+          }}
+        >
+          <Suspense fallback={<RouteLoadingState />}>
+            <CachedChunkPage />
+          </Suspense>
+        </LanguageContext.Provider>,
+      );
+
+      await screen.findByText("Failed to load page");
+      await userEvent
+        .setup({ document })
+        .click(screen.getByRole("button", { name: "Try again" }));
+
+      expect(reloadPage).toHaveBeenCalledTimes(1);
+      expect(attempts).toBe(1);
+    } finally {
+      console.error = originalConsoleError;
+    }
+  });
 });

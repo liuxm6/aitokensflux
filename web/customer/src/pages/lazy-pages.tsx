@@ -24,25 +24,38 @@ import { fetchCustomerStatus } from "../services/customer-api";
 import type { PageKey } from "../types";
 
 class LazyPageErrorBoundary extends Component<
-  { children: ReactNode; onRetry: () => void },
-  { failed: boolean }
+  { children: ReactNode; onRetry: (error: unknown) => void },
+  { failure: { error: unknown } | null }
 > {
-  state = { failed: false };
+  state: { failure: { error: unknown } | null } = { failure: null };
 
-  static getDerivedStateFromError() {
-    return { failed: true };
+  static getDerivedStateFromError(error: unknown) {
+    return { failure: { error } };
   }
 
+  retry = () => this.props.onRetry(this.state.failure?.error);
+
   render() {
-    if (this.state.failed) {
-      return <ErrorState id="Failed to load page" onRetry={this.props.onRetry} />;
+    if (this.state.failure) {
+      return <ErrorState id="Failed to load page" onRetry={this.retry} />;
     }
     return this.props.children;
   }
 }
 
+function isChunkLoadError(error: unknown) {
+  return (
+    error instanceof Error &&
+    (error.name === "ChunkLoadError" ||
+      /Loading (?:CSS )?chunk|Failed to fetch dynamically imported module/i.test(
+        error.message,
+      ))
+  );
+}
+
 export function createLazyPage<PageComponent extends ComponentType<any>>(
   loader: () => Promise<{ default: PageComponent }>,
+  reloadPage = () => window.location.reload(),
 ) {
   const InitialLazyPage = lazy(loader);
 
@@ -51,7 +64,11 @@ export function createLazyPage<PageComponent extends ComponentType<any>>(
     const lazyPageRef = useRef(InitialLazyPage);
     const LazyPage = lazyPageRef.current;
 
-    const retry = () => {
+    const retry = (error: unknown) => {
+      if (isChunkLoadError(error)) {
+        reloadPage();
+        return;
+      }
       lazyPageRef.current = lazy(loader);
       setAttempt((current) => current + 1);
     };
