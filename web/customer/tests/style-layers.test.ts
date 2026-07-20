@@ -59,3 +59,30 @@ test("homepage source scopes polish and observes minimal navigation", () => {
   expect(headerSource).toContain("IntersectionObserver");
   expect(headerSource).not.toContain('window.addEventListener("scroll"');
 });
+
+test("homepage polish keeps stable layout constraints and safe transitions", () => {
+  const marketingStyles = readFileSync(
+    new URL("../src/styles/marketing.css", import.meta.url),
+    "utf8",
+  );
+  const transitionDeclarations = Array.from(
+    marketingStyles.matchAll(/transition:\s*([^;]+);/g),
+    ([, declaration]) => declaration.replace(/\s+/g, " ").trim(),
+  );
+
+  expect(marketingStyles).toContain("min-height: 100dvh");
+  expect(marketingStyles).toContain("width: min(720px, 100%)");
+  expect(marketingStyles).toContain("@media (max-width: 900px)");
+  expect(marketingStyles).toContain("@media (max-width: 560px)");
+  expect(
+    transitionDeclarations
+      .slice(0, -1)
+      .every((declaration) =>
+        declaration
+          .split(",")
+          .every((item) => /^(transform|opacity)\b/.test(item.trim())),
+      ),
+  ).toBe(true);
+  expect(transitionDeclarations).toHaveLength(3);
+  expect(transitionDeclarations.at(-1)).toBe("none");
+});
