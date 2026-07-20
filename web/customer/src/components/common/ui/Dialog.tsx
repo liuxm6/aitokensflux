@@ -13,6 +13,13 @@ const focusableSelector = [
 let openDialogCount = 0;
 let rootAriaHidden: string | null = null;
 let rootWasInert = false;
+let scrollLockCount = 0;
+let scrollLockSnapshot: {
+  bodyOverflow: string;
+  bodyOverscroll: string;
+  rootOverflow: string;
+  rootOverscroll: string;
+} | null = null;
 const dialogStack: Array<{
   ariaHidden: string | null;
   element: HTMLDivElement;
@@ -61,6 +68,35 @@ function unlockApplicationRoot() {
   rootWasInert = false;
 }
 
+function lockPageScroll() {
+  const body = document.body;
+  const root = document.documentElement;
+  if (scrollLockCount === 0) {
+    scrollLockSnapshot = {
+      bodyOverflow: body.style.overflow,
+      bodyOverscroll: body.style.overscrollBehavior,
+      rootOverflow: root.style.overflow,
+      rootOverscroll: root.style.overscrollBehavior,
+    };
+    body.style.overflow = "hidden";
+    root.style.overflow = "hidden";
+    body.style.overscrollBehavior = "none";
+    root.style.overscrollBehavior = "none";
+  }
+  scrollLockCount += 1;
+}
+
+function unlockPageScroll() {
+  scrollLockCount = Math.max(0, scrollLockCount - 1);
+  if (scrollLockCount > 0 || !scrollLockSnapshot) return;
+  document.body.style.overflow = scrollLockSnapshot.bodyOverflow;
+  document.documentElement.style.overflow = scrollLockSnapshot.rootOverflow;
+  document.body.style.overscrollBehavior = scrollLockSnapshot.bodyOverscroll;
+  document.documentElement.style.overscrollBehavior =
+    scrollLockSnapshot.rootOverscroll;
+  scrollLockSnapshot = null;
+}
+
 function getFocusableElements(panel: HTMLElement) {
   return Array.from(
     panel.querySelectorAll<HTMLElement>(focusableSelector),
@@ -103,12 +139,6 @@ export function AccessibleDialog({
       document.activeElement instanceof HTMLElement
         ? document.activeElement
         : null;
-    const body = document.body;
-    const root = document.documentElement;
-    const previousBodyOverflow = body.style.overflow;
-    const previousRootOverflow = root.style.overflow;
-    const previousBodyOverscroll = body.style.overscrollBehavior;
-    const previousRootOverscroll = root.style.overscrollBehavior;
 
     const dialogId = dialogIdRef.current;
     const dialog = dialogRef.current;
@@ -122,10 +152,7 @@ export function AccessibleDialog({
       syncDialogLayers();
     }
     lockApplicationRoot();
-    body.style.overflow = "hidden";
-    root.style.overflow = "hidden";
-    body.style.overscrollBehavior = "none";
-    root.style.overscrollBehavior = "none";
+    lockPageScroll();
 
     const panel = panelRef.current;
     const focusTarget =
@@ -143,10 +170,7 @@ export function AccessibleDialog({
         if (removedLayer) restoreDialogLayer(removedLayer);
         syncDialogLayers();
       }
-      body.style.overflow = previousBodyOverflow;
-      root.style.overflow = previousRootOverflow;
-      body.style.overscrollBehavior = previousBodyOverscroll;
-      root.style.overscrollBehavior = previousRootOverscroll;
+      unlockPageScroll();
       unlockApplicationRoot();
       previouslyFocused?.focus();
     };

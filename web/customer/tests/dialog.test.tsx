@@ -57,6 +57,9 @@ function NestedDialogHarness() {
           <button type="button" onClick={() => setInnerOpen(true)}>
             Open inner dialog
           </button>
+          <button type="button" onClick={() => setOuterOpen(false)}>
+            Close all dialogs
+          </button>
           {innerOpen ? (
             <AccessibleDialog
               ariaLabel="Inner dialog"
@@ -203,6 +206,36 @@ test("nested dialogs expose and restore only the topmost layer", async () => {
   expect(document.activeElement).toBe(
     screen.getByRole("button", { name: "Open inner dialog" }),
   );
+});
+
+test("nested dialogs restore the first scroll styles when unmounted together", async () => {
+  const user = userEvent.setup({ document });
+  const root = document.createElement("div");
+  root.id = "root";
+  document.body.append(root);
+  document.body.style.overflow = "scroll";
+  document.documentElement.style.overflow = "auto";
+  document.body.style.overscrollBehavior = "contain";
+  document.documentElement.style.overscrollBehavior = "auto";
+  render(<NestedDialogHarness />, { container: root });
+
+  await user.click(screen.getByRole("button", { name: "Open outer dialog" }));
+  await user.click(screen.getByRole("button", { name: "Open inner dialog" }));
+  await user.click(
+    screen.getByRole("button", { name: "Close all dialogs", hidden: true }),
+  );
+
+  expect(screen.queryByRole("dialog", { hidden: true })).toBeNull();
+  expect(document.body.style.overflow).toBe("scroll");
+  expect(document.documentElement.style.overflow).toBe("auto");
+  expect(document.body.style.overscrollBehavior).toBe("contain");
+  expect(document.documentElement.style.overscrollBehavior).toBe("auto");
+  expect(root.hasAttribute("inert")).toBe(false);
+
+  document.body.style.overflow = "";
+  document.documentElement.style.overflow = "";
+  document.body.style.overscrollBehavior = "";
+  document.documentElement.style.overscrollBehavior = "";
 });
 
 test("dialog toasts stay exposed outside the inert application root", async () => {
