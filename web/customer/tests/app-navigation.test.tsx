@@ -1,13 +1,20 @@
 import { describe, expect, mock, test } from "bun:test";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { Suspense } from "react";
 import { RouteFocus } from "../src/components/common/RouteFocus";
+import { LanguageContext } from "../src/context/Language";
 import {
   getPageKey,
   isInternalPath,
   shouldPreserveScroll,
 } from "../src/helpers/navigation";
 import { scrollToPosition } from "../src/helpers/motion";
+import {
+  createLazyPage,
+  isLazyPageKey,
+  RouteLoadingState,
+} from "../src/pages/lazy-pages";
 
 describe("customer route contract", () => {
   test("maps public, protected, alias, and unknown routes", () => {
@@ -83,5 +90,34 @@ describe("route focus and metadata", () => {
       value: originalMatchMedia,
     });
     window.scrollTo = originalScrollTo;
+  });
+});
+
+describe("route code splitting", () => {
+  test("keeps Home eager and marks non-home routes for lazy loading", () => {
+    expect(isLazyPageKey("home")).toBe(false);
+    expect(isLazyPageKey("dashboard")).toBe(true);
+    expect(isLazyPageKey("signin")).toBe(true);
+  });
+
+  test("shows a localized route loading state while a page module resolves", () => {
+    const PendingPage = createLazyPage(
+      () => new Promise<never>(() => undefined),
+    );
+    render(
+      <LanguageContext.Provider
+        value={{
+          language: "en",
+          setLanguage: () => undefined,
+          translationVersion: 0,
+        }}
+      >
+        <Suspense fallback={<RouteLoadingState />}>
+          <PendingPage />
+        </Suspense>
+      </LanguageContext.Provider>,
+    );
+
+    expect(screen.getByRole("status").textContent).toContain("Loading page");
   });
 });

@@ -745,6 +745,7 @@ const customerRuTranslations = {
   "Failed to load plans": "Не удалось загрузить тарифы",
   "Failed to load dashboard data": "Не удалось загрузить данные панели",
   "Usage records": "Записи использования",
+  "Loading page": "Загрузка страницы",
   X: "X",
 } satisfies Record<string, string>;
 

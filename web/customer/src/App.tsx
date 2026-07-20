@@ -1,38 +1,34 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { protectedPages } from "./constants/navigation";
 import { AuthContext } from "./context/Auth";
 import { ConfirmActionContext } from "./context/ConfirmAction";
-import { LanguageContext, T } from "./context/Language";
+import { LanguageContext } from "./context/Language";
 import { ToastProvider } from "./context/Toast";
-import { AccountActionDialog } from "./components/account/AccountActionDialog";
-import { AppLink } from "./components/common/AppLink";
-import { CodeBlock } from "./components/common/CodeBlock";
 import { ConfirmActionDialog } from "./components/common/ConfirmActionDialog";
-import { Pill } from "./components/common/Pill";
 import { RouteFocus } from "./components/common/RouteFocus";
 import { MarketingHeader } from "./components/layout/MarketingHeader";
 import { TopupDialog } from "./components/topup/TopupDialog";
 import { createHomePage } from "./pages/Home";
-import { AuthPage } from "./pages/Auth";
-import { createDashboardPage } from "./pages/Dashboard";
-import { createFathersDayPage } from "./pages/FathersDay";
-import { InvitePage } from "./pages/Invite";
-import { UsagePage } from "./pages/Log";
-import { createNotFoundPage } from "./pages/NotFound";
-import { OAuthCallbackPage } from "./pages/OAuth";
-import { ResetPasswordPage } from "./pages/ResetPassword";
-import { ATFSwitchConnectPage } from "./pages/ATFSwitchConnect";
-import { createSettingsPage } from "./pages/Setting";
-import { createSetupPage } from "./pages/Setup";
-import { createSubscribePage } from "./pages/Subscription";
-import { ApiKeysPage } from "./pages/Token";
-import { TopupPage } from "./pages/TopUp";
-import { createLegalPage } from "./pages/UserAgreement";
-import { apiRequest, shouldClearStoredUser } from "./services/api";
 import {
-  fetchCustomerSelf,
-  fetchCustomerStatus,
-} from "./services/customer-api";
+  LazyApiKeysPage,
+  LazyATFSwitchConnectPage,
+  LazyAuthPage,
+  LazyDashboardPage,
+  LazyFathersDayPage,
+  LazyInvitePage,
+  LazyLegalPage,
+  LazyNotFoundPage,
+  LazyOAuthCallbackPage,
+  LazyResetPasswordPage,
+  LazySettingsPage,
+  LazySetupPage,
+  LazySubscribePage,
+  LazyTopupPage,
+  LazyUsagePage,
+  RouteLoadingState,
+} from "./pages/lazy-pages";
+import { apiRequest, shouldClearStoredUser } from "./services/api";
+import { fetchCustomerSelf } from "./services/customer-api";
 import { persistUser, readStoredUser } from "./helpers/account";
 import { getAuthRedirectFromSearch } from "./helpers/auth-redirect";
 import {
@@ -48,7 +44,6 @@ import {
   detectCustomerLanguage,
 } from "./i18n/languages";
 import { getPageKey, navigateTo } from "./helpers/navigation";
-import { getConfiguredServerAddress } from "./helpers/server-address";
 import type {
   Language,
   PageKey,
@@ -72,23 +67,7 @@ function isConnectRoute(page: PageKey) {
   return page === "atfSwitchConnect";
 }
 
-const SubscribePage = createSubscribePage({ MarketingHeader, TopupDialog });
-const FathersDayPage = createFathersDayPage({ MarketingHeader, TopupDialog });
-const DashboardPage = createDashboardPage({ TopupDialog });
-const SetupPage = createSetupPage({
-  MarketingHeader,
-  Pill,
-  T,
-  AppLink,
-  CodeBlock,
-  fetchCustomerStatus,
-  getConfiguredServerAddress,
-  navigateTo,
-});
 const HomePage = createHomePage({ MarketingHeader, TopupDialog });
-const LegalPage = createLegalPage({ MarketingHeader });
-const NotFoundPage = createNotFoundPage({ MarketingHeader });
-const SettingsPage = createSettingsPage({ AccountActionDialog });
 
 function App() {
   const [language, setLanguageState] = useState<Language>(
@@ -251,38 +230,38 @@ function App() {
       case "home":
         return <HomePage />;
       case "dashboard":
-        return <DashboardPage />;
+        return <LazyDashboardPage />;
       case "topup":
-        return <TopupPage />;
+        return <LazyTopupPage />;
       case "usage":
-        return <UsagePage />;
+        return <LazyUsagePage />;
       case "apikeys":
-        return <ApiKeysPage />;
+        return <LazyApiKeysPage />;
       case "invite":
-        return <InvitePage />;
+        return <LazyInvitePage />;
       case "settings":
-        return <SettingsPage />;
+        return <LazySettingsPage />;
       case "atfSwitchConnect":
-        return <ATFSwitchConnectPage />;
+        return <LazyATFSwitchConnectPage />;
       case "subscribe":
-        return <SubscribePage />;
+        return <LazySubscribePage />;
       case "fathersDay":
-        return <FathersDayPage />;
+        return <LazyFathersDayPage />;
       case "setup":
         return <HomePage />;
       case "signin":
       case "signup":
         return <HomePage />;
       case "oauthCallback":
-        return <OAuthCallbackPage />;
+        return <LazyOAuthCallbackPage />;
       case "resetPassword":
-        return <ResetPasswordPage />;
+        return <LazyResetPasswordPage />;
       case "userAgreement":
-        return <LegalPage type="userAgreement" />;
+        return <LazyLegalPage type="userAgreement" />;
       case "privacyPolicy":
-        return <LegalPage type="privacyPolicy" />;
+        return <LazyLegalPage type="privacyPolicy" />;
       case "notFound":
-        return <NotFoundPage />;
+        return <LazyNotFoundPage />;
     }
   };
 
@@ -322,30 +301,32 @@ function App() {
       <ToastProvider>
         <ConfirmActionContext.Provider value={confirmContextValue}>
           <AuthContext.Provider value={authContextValue}>
-            <RouteFocus
-              focusRoute={!authOverlayOpen && !setupOverlayOpen}
-              language={language}
-              page={page}
-            >
-              {content}
-            </RouteFocus>
-            {authOverlayOpen ? (
-              <AuthPage
-                modal
-                onClose={() =>
-                  navigateTo(getAuthReturnTarget(), { preserveScroll: true })
-                }
-                successPath={getAuthReturnTarget()}
-              />
-            ) : null}
-            {setupOverlayOpen ? (
-              <SetupPage
-                modal
-                onClose={() =>
-                  navigateTo(getAuthReturnTarget(), { preserveScroll: true })
-                }
-              />
-            ) : null}
+            <Suspense fallback={<RouteLoadingState />}>
+              <RouteFocus
+                focusRoute={!authOverlayOpen && !setupOverlayOpen}
+                language={language}
+                page={page}
+              >
+                {content}
+              </RouteFocus>
+              {authOverlayOpen ? (
+                <LazyAuthPage
+                  modal
+                  onClose={() =>
+                    navigateTo(getAuthReturnTarget(), { preserveScroll: true })
+                  }
+                  successPath={getAuthReturnTarget()}
+                />
+              ) : null}
+              {setupOverlayOpen ? (
+                <LazySetupPage
+                  modal
+                  onClose={() =>
+                    navigateTo(getAuthReturnTarget(), { preserveScroll: true })
+                  }
+                />
+              ) : null}
+            </Suspense>
             {confirmAction ? (
               <ConfirmActionDialog
                 config={confirmAction}

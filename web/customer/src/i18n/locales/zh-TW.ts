@@ -744,5 +744,6 @@ export const zhTWTranslations = {
   "Failed to load plans": "套餐載入失敗",
   "Failed to load dashboard data": "控制台資料載入失敗",
   "Usage records": "用量記錄",
+  "Loading page": "正在載入頁面",
   X: "X",
 } as const;

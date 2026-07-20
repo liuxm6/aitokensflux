@@ -776,5 +776,6 @@ export const enTranslations = {
   "Failed to load plans": "Failed to load plans",
   "Failed to load dashboard data": "Failed to load dashboard data",
   "Usage records": "Usage records",
+  "Loading page": "Loading page",
   X: "X",
 } as const;
