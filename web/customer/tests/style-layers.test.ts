@@ -93,6 +93,17 @@ test("homepage polish keeps stable layout constraints and safe transitions", () 
   expect(transitionDeclarations.at(-1)).toBe("none");
 });
 
+test("homepage green actions bind accessible ink to scoped selectors", () => {
+  const marketingStyles = readFileSync(
+    new URL("../src/styles/marketing.css", import.meta.url),
+    "utf8",
+  );
+
+  expect(marketingStyles).toMatch(
+    /\.home-page \.btn-flux,\s*\.home-page \.support-reward-action\s*\{\s*color:\s*var\(--accent-ink\);\s*\}/,
+  );
+});
+
 test("adaptive pricing table releases its max height at 760px and below", () => {
   const marketingStyles = readFileSync(
     new URL("../src/styles/marketing.css", import.meta.url),
