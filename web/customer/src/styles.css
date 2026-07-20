@@ -77,6 +77,28 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.skip-link {
+  position: fixed;
+  z-index: 20000;
+  top: 12px;
+  left: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--customer-accent-line);
+  border-radius: var(--customer-radius-control);
+  background: var(--customer-panel);
+  box-shadow: var(--customer-shadow-hover);
+  color: var(--customer-accent-ink);
+  font-weight: 800;
+  transform: translateY(calc(-100% - 24px));
+  transition: transform 140ms ease;
+}
+
+.skip-link:focus {
+  outline: none;
+  box-shadow: var(--customer-focus), var(--customer-shadow-hover);
+  transform: translateY(0);
+}
+
 .toast-viewport {
   position: fixed;
   z-index: 10000;
@@ -2750,6 +2772,10 @@ h3 {
   gap: 10px;
   padding: 0 18px 0 22px;
   border-bottom: 1px solid #e4e7ec;
+}
+
+.side-close {
+  display: none;
 }
 
 .console-badge {
@@ -7891,6 +7917,14 @@ h3 {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .skip-link {
+    transition: none;
+  }
+
   .account-dialog-backdrop,
   .account-dialog-panel,
   .auth-dialog-backdrop,
@@ -9701,6 +9735,27 @@ h3 {
 
   .console-app .side.open {
     transform: translateX(0);
+  }
+
+  .side-close {
+    position: absolute;
+    top: 18px;
+    right: 14px;
+    display: grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    padding: 0;
+    border: 1px solid var(--customer-line);
+    border-radius: var(--customer-radius-control);
+    background: var(--customer-panel-muted);
+    color: var(--customer-muted);
+  }
+
+  .side-close:hover {
+    border-color: var(--customer-line-strong);
+    background: var(--customer-panel);
+    color: var(--customer-ink);
   }
 
   .side-backdrop.show {

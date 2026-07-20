@@ -694,5 +694,47 @@ export const zhTWTranslations = {
   "Support groups are best for real-time help. Email is best for account, order, and security issues.":
     "售後群適合即時溝通，郵件適合賬號、訂單和安全相關問題。",
   "Telegram support group": "Telegram 售後群",
+  "AI API gateway": "AI API 閘道",
+  "Connect ATF Switch": "連接 ATF Switch",
+  "Father's Day special": "父親節特惠",
+  "Page not found": "找不到頁面",
+  "Skip to content": "跳到主要內容",
+  "Show password": "顯示密碼",
+  "Hide password": "隱藏密碼",
+  "Unified access to Claude, Codex, Grok, and Gemini with one balance.":
+    "使用一個餘額統一存取 Claude、Codex、Grok 和 Gemini。",
+  "View your balance, subscription, usage, and account shortcuts.":
+    "查看餘額、訂閱、用量和常用賬號操作。",
+  "Manage plans, balance top-ups, payments, and billing records.":
+    "管理套餐、餘額充值、支付方式和賬單記錄。",
+  "Review request usage, token counts, and billing details.":
+    "查看請求用量、Token 數量和計費明細。",
+  "Create and manage API keys for your applications.":
+    "為應用建立和管理 API 密鑰。",
+  "Track invitations, rewards, and referral records.":
+    "查看邀請、獎勵和推廣記錄。",
+  "Manage language, account security, and profile settings.":
+    "管理語言、賬號安全和個人設定。",
+  "Authorize the desktop app without copying an API key manually.":
+    "無需手動複製 API 密鑰即可授權桌面應用。",
+  "Compare available plans and choose how to add balance.":
+    "比較可用套餐並選擇餘額補充方式。",
+  "View the current seasonal offer and purchase options.":
+    "查看目前節日優惠和購買方式。",
+  "Configure Claude Code or Codex for the unified gateway.":
+    "為統一閘道配置 Claude Code 或 Codex。",
+  "Sign in to manage your gateway account and API access.":
+    "登入後管理閘道賬號和 API 接入。",
+  "Create an account for gateway access and usage billing.":
+    "建立賬號以使用閘道和按量計費。",
+  "Complete the external account sign-in process.": "完成外部賬號登入流程。",
+  "Confirm a password reset request for your account.":
+    "確認賬號密碼重置請求。",
+  "Review the terms that apply to this service.":
+    "查看適用於本服務的使用條款。",
+  "Review how account and usage data are handled.":
+    "查看賬號和用量資料的處理方式。",
+  "The requested customer portal page could not be found.":
+    "找不到請求的客戶入口網站頁面。",
   X: "X",
 } as const;

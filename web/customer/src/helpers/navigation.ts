@@ -1,4 +1,5 @@
 import { customerRoutes } from "../constants/navigation";
+import { scrollToPosition } from "./motion";
 import type { PageKey } from "../types";
 
 const scrollPreservedPaths = new Set([
@@ -26,7 +27,7 @@ export function navigateTo(
   window.dispatchEvent(new PopStateEvent("popstate"));
   const url = new URL(path, window.location.origin);
   if (!options.preserveScroll && !shouldPreserveScroll(url.pathname)) {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    scrollToPosition(0);
   }
 }
 

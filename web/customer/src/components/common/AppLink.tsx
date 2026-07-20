@@ -1,52 +1,68 @@
-import type { MouseEvent, ReactNode } from "react";
+import {
+  forwardRef,
+  type AnchorHTMLAttributes,
+  type MouseEvent,
+  type ReactNode,
+} from "react";
 import { isInternalPath, shouldPreserveScroll } from "../../helpers/navigation";
+import { scrollElementIntoView, scrollToPosition } from "../../helpers/motion";
 
-export function AppLink({
-  href,
-  className,
-  children,
-  onNavigate,
-}: {
+type AppLinkProps = Omit<
+  AnchorHTMLAttributes<HTMLAnchorElement>,
+  "children" | "href"
+> & {
   href: string;
-  className?: string;
   children: ReactNode;
   onNavigate?: () => void;
-}) {
-  const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    if (
-      event.defaultPrevented ||
-      event.metaKey ||
-      event.altKey ||
-      event.ctrlKey ||
-      event.shiftKey ||
-      !isInternalPath(href)
-    ) {
-      return;
-    }
+};
 
-    const url = new URL(href, window.location.origin);
-    event.preventDefault();
-    window.history.pushState(
-      null,
-      "",
-      `${url.pathname}${url.search}${url.hash}`,
+export const AppLink = forwardRef<HTMLAnchorElement, AppLinkProps>(
+  function AppLink(
+    { href, className, children, onClick, onNavigate, ...anchorProps },
+    ref,
+  ) {
+    const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
+      onClick?.(event);
+      if (
+        event.defaultPrevented ||
+        event.metaKey ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        !isInternalPath(href)
+      ) {
+        return;
+      }
+
+      const url = new URL(href, window.location.origin);
+      event.preventDefault();
+      window.history.pushState(
+        null,
+        "",
+        `${url.pathname}${url.search}${url.hash}`,
+      );
+      window.dispatchEvent(new PopStateEvent("popstate"));
+      if (url.hash) {
+        window.setTimeout(() => {
+          const target = document.querySelector(url.hash);
+          if (target) scrollElementIntoView(target);
+        });
+      } else if (!shouldPreserveScroll(url.pathname)) {
+        scrollToPosition(0);
+      }
+      onNavigate?.();
+    };
+
+    return (
+      <a
+        {...anchorProps}
+        className={className}
+        href={href}
+        ref={ref}
+        onClick={handleClick}
+      >
+        {children}
+      </a>
     );
-    window.dispatchEvent(new PopStateEvent("popstate"));
-    if (url.hash) {
-      window.setTimeout(() => {
-        document
-          .querySelector(url.hash)
-          ?.scrollIntoView({ behavior: "smooth" });
-      });
-    } else if (!shouldPreserveScroll(url.pathname)) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-    onNavigate?.();
-  };
-
-  return (
-    <a className={className} href={href} onClick={handleClick}>
-      {children}
-    </a>
-  );
-}
+  },
+);

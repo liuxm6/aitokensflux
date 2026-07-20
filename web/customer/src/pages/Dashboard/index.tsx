@@ -25,6 +25,7 @@ import {
   formatPlanResetPeriod,
   formatSubscriptionPeriod,
 } from "../../helpers/plans";
+import { scrollElementIntoView } from "../../helpers/motion";
 import { localizeText, localizeKey } from "../../i18n/localization";
 import {
   fetchCustomerSelf,
@@ -90,10 +91,8 @@ export function createDashboardPage({
       if (loading || window.location.hash !== "#dashboard-wallet") return;
 
       const timer = window.setTimeout(() => {
-        document.getElementById("dashboard-wallet")?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
+        const wallet = document.getElementById("dashboard-wallet");
+        if (wallet) scrollElementIntoView(wallet);
       }, 80);
 
       return () => window.clearTimeout(timer);

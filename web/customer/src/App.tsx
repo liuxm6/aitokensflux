@@ -9,6 +9,7 @@ import { AppLink } from "./components/common/AppLink";
 import { CodeBlock } from "./components/common/CodeBlock";
 import { ConfirmActionDialog } from "./components/common/ConfirmActionDialog";
 import { Pill } from "./components/common/Pill";
+import { RouteFocus } from "./components/common/RouteFocus";
 import { MarketingHeader } from "./components/layout/MarketingHeader";
 import { TopupDialog } from "./components/topup/TopupDialog";
 import { createHomePage } from "./pages/Home";
@@ -321,7 +322,13 @@ function App() {
       <ToastProvider>
         <ConfirmActionContext.Provider value={confirmContextValue}>
           <AuthContext.Provider value={authContextValue}>
-            {content}
+            <RouteFocus
+              focusRoute={!authOverlayOpen && !setupOverlayOpen}
+              language={language}
+              page={page}
+            >
+              {content}
+            </RouteFocus>
             {authOverlayOpen ? (
               <AuthPage
                 modal

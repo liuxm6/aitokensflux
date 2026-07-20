@@ -725,5 +725,48 @@ export const enTranslations = {
   "Support groups are best for real-time help. Email is best for account, order, and security issues.":
     "Support groups are best for real-time help. Email is best for account, order, and security issues.",
   "Telegram support group": "Telegram support group",
+  "AI API gateway": "AI API gateway",
+  "Connect ATF Switch": "Connect ATF Switch",
+  "Father's Day special": "Father's Day special",
+  "Page not found": "Page not found",
+  "Skip to content": "Skip to content",
+  "Show password": "Show password",
+  "Hide password": "Hide password",
+  "Unified access to Claude, Codex, Grok, and Gemini with one balance.":
+    "Unified access to Claude, Codex, Grok, and Gemini with one balance.",
+  "View your balance, subscription, usage, and account shortcuts.":
+    "View your balance, subscription, usage, and account shortcuts.",
+  "Manage plans, balance top-ups, payments, and billing records.":
+    "Manage plans, balance top-ups, payments, and billing records.",
+  "Review request usage, token counts, and billing details.":
+    "Review request usage, token counts, and billing details.",
+  "Create and manage API keys for your applications.":
+    "Create and manage API keys for your applications.",
+  "Track invitations, rewards, and referral records.":
+    "Track invitations, rewards, and referral records.",
+  "Manage language, account security, and profile settings.":
+    "Manage language, account security, and profile settings.",
+  "Authorize the desktop app without copying an API key manually.":
+    "Authorize the desktop app without copying an API key manually.",
+  "Compare available plans and choose how to add balance.":
+    "Compare available plans and choose how to add balance.",
+  "View the current seasonal offer and purchase options.":
+    "View the current seasonal offer and purchase options.",
+  "Configure Claude Code or Codex for the unified gateway.":
+    "Configure Claude Code or Codex for the unified gateway.",
+  "Sign in to manage your gateway account and API access.":
+    "Sign in to manage your gateway account and API access.",
+  "Create an account for gateway access and usage billing.":
+    "Create an account for gateway access and usage billing.",
+  "Complete the external account sign-in process.":
+    "Complete the external account sign-in process.",
+  "Confirm a password reset request for your account.":
+    "Confirm a password reset request for your account.",
+  "Review the terms that apply to this service.":
+    "Review the terms that apply to this service.",
+  "Review how account and usage data are handled.":
+    "Review how account and usage data are handled.",
+  "The requested customer portal page could not be found.":
+    "The requested customer portal page could not be found.",
   X: "X",
 } as const;

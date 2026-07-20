@@ -1,8 +1,9 @@
 import { ChevronDown, LayoutDashboard, Lock, LogOut, Mail } from "lucide-react";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { AccountActionDialog } from "../account/AccountActionDialog";
 import { AppLink } from "../common/AppLink";
 import { Brand } from "../common/Brand";
+import { DropdownMenu } from "../common/ui/DropdownMenu";
 import { LanguageButton } from "./LanguageButton";
 import { AuthContext } from "../../context/Auth";
 import { LanguageContext, T } from "../../context/Language";
@@ -16,7 +17,6 @@ export function MarketingHeader({ minimal = false }: { minimal?: boolean }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<AccountDialogMode | null>(null);
   const [navScrolled, setNavScrolled] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
   const userLabel = getUserLabel(user);
   const avatarText = userLabel.trim().slice(0, 1).toUpperCase() || "A";
   const showAccountMenu = Boolean(user && !authChecking);
@@ -28,17 +28,6 @@ export function MarketingHeader({ minimal = false }: { minimal?: boolean }) {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [minimal]);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const handlePointerDown = (event: globalThis.MouseEvent) => {
-      if (!menuRef.current?.contains(event.target as Node)) {
-        setMenuOpen(false);
-      }
-    };
-    window.addEventListener("mousedown", handlePointerDown);
-    return () => window.removeEventListener("mousedown", handlePointerDown);
-  }, [menuOpen]);
 
   useEffect(() => {
     if (showAccountMenu) return;
@@ -80,71 +69,58 @@ export function MarketingHeader({ minimal = false }: { minimal?: boolean }) {
                   <T id="My invites" />
                 </AppLink>
               )}
-              <div className="account-menu-wrap" ref={menuRef}>
+              <DropdownMenu
+                className="account-menu-wrap"
+                menuClassName="account-menu"
+                menuLabel={localizeKey(language, "Account")}
+                open={menuOpen}
+                triggerAriaLabel={localizeKey(language, "Account")}
+                triggerClassName="account-trigger"
+                triggerContent={
+                  <>
+                    <span className="account-avatar">{avatarText}</span>
+                    <span className="account-label">{userLabel}</span>
+                    <ChevronDown size={15} />
+                  </>
+                }
+                onOpenChange={setMenuOpen}
+              >
+                <AppLink className="account-menu-item" href="/dashboard">
+                  <LayoutDashboard size={17} />
+                  <T id="Dashboard" />
+                </AppLink>
                 <button
-                  className="account-trigger"
+                  className="account-menu-item"
                   type="button"
-                  aria-expanded={menuOpen}
-                  onClick={() => setMenuOpen((value) => !value)}
+                  onClick={() => setDialogMode("password")}
                 >
-                  <span className="account-avatar">{avatarText}</span>
-                  <span className="account-label">{userLabel}</span>
-                  <ChevronDown size={15} />
+                  <Lock size={17} />
+                  <T id="Change password" />
                 </button>
-                {menuOpen ? (
-                  <div className="account-menu" role="menu">
-                    <AppLink
-                      className="account-menu-item"
-                      href="/dashboard"
-                      onNavigate={() => setMenuOpen(false)}
-                    >
-                      <LayoutDashboard size={17} />
-                      Dashboard
-                    </AppLink>
-                    <button
-                      className="account-menu-item"
-                      type="button"
-                      onClick={() => {
-                        setDialogMode("password");
-                        setMenuOpen(false);
-                      }}
-                    >
-                      <Lock size={17} />
-                      <T id="Change password" />
-                    </button>
-                    <button
-                      className="account-menu-item"
-                      type="button"
-                      onClick={() => {
-                        setDialogMode("email");
-                        setMenuOpen(false);
-                      }}
-                    >
-                      <Mail size={17} />
-                      <T id="Change email" />
-                    </button>
-                    <a
-                      className="account-menu-item"
-                      href={buildSupportMailto("aitokensflux support")}
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      <Mail size={17} />
-                      <T id="Contact us" />
-                    </a>
-                    <button
-                      className="account-menu-item danger"
-                      type="button"
-                      onClick={() => {
-                        setMenuOpen(false);
-                        void signOut();
-                      }}
-                    >
-                      <LogOut size={17} />
-                      <T id="Sign out" />
-                    </button>
-                  </div>
-                ) : null}
-              </div>
+                <button
+                  className="account-menu-item"
+                  type="button"
+                  onClick={() => setDialogMode("email")}
+                >
+                  <Mail size={17} />
+                  <T id="Change email" />
+                </button>
+                <a
+                  className="account-menu-item"
+                  href={buildSupportMailto("aitokensflux support")}
+                >
+                  <Mail size={17} />
+                  <T id="Contact us" />
+                </a>
+                <button
+                  className="account-menu-item danger"
+                  type="button"
+                  onClick={() => void signOut()}
+                >
+                  <LogOut size={17} />
+                  <T id="Sign out" />
+                </button>
+              </DropdownMenu>
               {dialogMode ? (
                 <AccountActionDialog
                   mode={dialogMode}
