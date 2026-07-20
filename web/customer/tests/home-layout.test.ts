@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { expect, test } from "bun:test";
 import {
   HERO_MODELS,
@@ -58,4 +59,25 @@ test("homepage pricing layout adapts table height and empty plan spacing", () =>
     tableClassName: "mp-table-wrap mp-table-wrap-adaptive",
     emptyPlansClassName: "pricing-section-empty",
   });
+});
+
+test("only the homepage requests the compact desktop marketing header", () => {
+  const homeSource = readFileSync(
+    new URL("../src/pages/Home/index.tsx", import.meta.url),
+    "utf8",
+  );
+  const connectSource = readFileSync(
+    new URL("../src/pages/ATFSwitchConnect/index.tsx", import.meta.url),
+    "utf8",
+  );
+  const fathersDaySource = readFileSync(
+    new URL("../src/pages/FathersDay/index.tsx", import.meta.url),
+    "utf8",
+  );
+
+  expect(homeSource).toContain("<MarketingHeader minimal homePage />");
+  expect(connectSource).toContain("<MarketingHeader minimal />");
+  expect(connectSource).not.toContain("homePage");
+  expect(fathersDaySource).toContain("<MarketingHeader minimal />");
+  expect(fathersDaySource).not.toContain("homePage");
 });

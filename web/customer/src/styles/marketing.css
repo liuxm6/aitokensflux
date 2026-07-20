@@ -248,7 +248,7 @@
 }
 
 @media (min-width: 681px) {
-  .nav.minimal-nav .nav-inner {
+  .nav.minimal-nav.home-nav .nav-inner {
     height: 80px;
   }
 }

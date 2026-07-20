@@ -914,7 +914,10 @@ export function createHomePage({
   MarketingHeader,
   TopupDialog,
 }: {
-  MarketingHeader: ComponentType<{ minimal?: boolean }>;
+  MarketingHeader: ComponentType<{
+    minimal?: boolean;
+    homePage?: boolean;
+  }>;
   TopupDialog: ComponentType<{ onClose: () => void }>;
 }) {
   return function HomePage() {
@@ -969,7 +972,7 @@ export function createHomePage({
       <>
         <FathersDayGifts />
         <FathersDayGiftEntry />
-        <MarketingHeader minimal />
+        <MarketingHeader minimal homePage />
         <main className="home-page">
           <section className="hero-mesh home-hero" data-home-section="hero">
             <div className="wrap hero-inner center">

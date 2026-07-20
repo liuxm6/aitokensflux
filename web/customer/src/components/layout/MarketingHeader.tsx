@@ -11,7 +11,13 @@ import { buildSupportMailto, getUserLabel } from "../../helpers/account";
 import { localizeKey } from "../../i18n/localization";
 import type { AccountDialogMode, CustomerUser } from "../../types";
 
-export function MarketingHeader({ minimal = false }: { minimal?: boolean }) {
+export function MarketingHeader({
+  minimal = false,
+  homePage = false,
+}: {
+  minimal?: boolean;
+  homePage?: boolean;
+}) {
   const { user, authChecking, setUser, signOut } = useContext(AuthContext);
   const { language } = useContext(LanguageContext);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -50,7 +56,7 @@ export function MarketingHeader({ minimal = false }: { minimal?: boolean }) {
     <>
       {minimalSentinel}
       <header
-        className={`nav${minimal ? " minimal-nav" : ""}${navScrolled ? " nav-scrolled" : ""}`}
+        className={`nav${minimal ? " minimal-nav" : ""}${homePage ? " home-nav" : ""}${navScrolled ? " nav-scrolled" : ""}`}
       >
         <div className="nav-inner">
           <Brand />

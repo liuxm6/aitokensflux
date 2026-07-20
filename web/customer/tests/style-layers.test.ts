@@ -64,6 +64,12 @@ test("homepage source scopes polish and observes minimal navigation", () => {
   expect(headerSource).toContain('className="minimal-nav-sentinel"');
   expect(headerSource).toContain("IntersectionObserver");
   expect(headerSource).not.toContain('window.addEventListener("scroll"');
+  expect(homeSource).toMatch(
+    /MarketingHeader:\s*ComponentType<\{\s*minimal\?: boolean;\s*homePage\?: boolean;\s*\}>;/,
+  );
+  expect(homeSource).toContain("<MarketingHeader minimal homePage />");
+  expect(headerSource).toContain("homePage = false");
+  expect(headerSource).toContain('homePage ? " home-nav" : ""');
 });
 
 test("homepage polish keeps stable layout constraints and safe transitions", () => {
@@ -143,9 +149,14 @@ test("desktop homepage frame binds nav height and hero top padding", () => {
   }
 
   expect(desktopMediaEnd).toBeGreaterThan(desktopMediaOpen);
-  expect(marketingStyles.slice(desktopMediaStart, desktopMediaEnd)).toMatch(
-    /\.nav\.minimal-nav \.nav-inner\s*\{\s*height:\s*80px;\s*\}/,
+  const desktopMedia = marketingStyles.slice(
+    desktopMediaStart,
+    desktopMediaEnd,
   );
+  expect(desktopMedia).toMatch(
+    /\.nav\.minimal-nav\.home-nav \.nav-inner\s*\{\s*height:\s*80px;\s*\}/,
+  );
+  expect(desktopMedia).not.toMatch(/\.nav\.minimal-nav \.nav-inner/);
 });
 
 test("adaptive pricing table releases its max height at 760px and below", () => {
