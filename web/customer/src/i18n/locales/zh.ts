@@ -762,5 +762,8 @@ export const zhTranslations = {
   "Choose the model. Keep the workflow.": "选择模型，工作流保持不变。",
   "Create one account, follow the setup guide once, and manage every request from the same dashboard.":
     "创建一个账号，只需完成一次接入，所有请求都在同一控制台管理。",
+  "Account overview": "账户概览",
+  "Common actions": "常用操作",
+  "Request count": "请求次数",
   X: "X",
 } as const;

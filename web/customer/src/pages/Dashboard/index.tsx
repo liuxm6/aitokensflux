@@ -1,21 +1,29 @@
-import { CircleDollarSign, FileText, KeyRound } from "lucide-react";
+import {
+  Activity,
+  BookOpen,
+  CircleDollarSign,
+  FileText,
+  KeyRound,
+  Layers3,
+  Wallet,
+} from "lucide-react";
 import type { ComponentType } from "react";
 import { useContext, useEffect, useState } from "react";
 import { AppLink } from "../../components/common/AppLink";
+import { ConsoleSummary } from "../../components/common/ConsoleSummary";
 import {
   ErrorState,
   LoadingState,
 } from "../../components/common/ui/AsyncState";
 import { SectionLabel } from "../../components/common/SectionLabel";
 import { TutorialCard } from "../../components/dashboard/TutorialCard";
-import {
-  ConsolePageTitle,
-  CustomerShell,
-} from "../../components/layout/CustomerShell";
+import { CustomerShell } from "../../components/layout/CustomerShell";
+import { ConsolePageHeader } from "../../components/layout/ConsolePageHeader";
 import { Panel } from "../../components/common/ui/Panel";
 import { SupportChannelGrid } from "../../components/support/SupportChannels";
 import { AuthContext } from "../../context/Auth";
 import { LanguageContext, T } from "../../context/Language";
+import { pageMeta } from "../../constants/page-meta";
 import {
   formatQuotaMoney,
   formatSubscriptionResetDisplayTime,
@@ -54,6 +62,7 @@ export function createDashboardPage({
 }) {
   return function DashboardPage() {
     const { user, setUser } = useContext(AuthContext);
+    const { language } = useContext(LanguageContext);
     const [status, setStatus] = useState<CustomerStatus | null>(null);
     const [logStats, setLogStats] = useState<CustomerLogStats | null>(null);
     const [plans, setPlans] = useState<SubscriptionPlanRecord[]>([]);
@@ -115,12 +124,93 @@ export function createDashboardPage({
       getActiveSubscriptionRecords(subscriptions);
     const account = user ?? undefined;
     const balance = account?.quota ?? 0;
+    const primarySubscription = activeSubscriptionRecords[0];
+    const primaryPlan = primarySubscription
+      ? (primarySubscription.plan ??
+        planMap.get(primarySubscription.subscription.plan_id))
+      : undefined;
+    const currentPlanLabel = primarySubscription
+      ? primaryPlan?.title || `#${primarySubscription.subscription.plan_id}`
+      : localizeKey(language, "No current plan");
 
     return (
       <CustomerShell crumbId="Dashboard" page="dashboard">
-        <div className="dashboard-title-row">
-          <ConsolePageTitle id="Current plan" />
-        </div>
+        <ConsolePageHeader
+          action={
+            <button
+              className="btn btn-flux btn-sm"
+              type="button"
+              onClick={() => setTopupDialogOpen(true)}
+            >
+              <CircleDollarSign size={15} />
+              <T id="Top up now" />
+            </button>
+          }
+          descriptionId={pageMeta.dashboard.descriptionId}
+          titleId="Dashboard"
+        />
+
+        {!loading && !loadError ? (
+          <>
+            <ConsoleSummary
+              items={[
+                {
+                  icon: Wallet,
+                  labelId: "Wallet balance",
+                  tone: "accent",
+                  value: (
+                    <span className="mono">
+                      {formatQuotaMoney(balance, status)}
+                    </span>
+                  ),
+                },
+                {
+                  icon: Activity,
+                  labelId: "Today used",
+                  value: (
+                    <span className="mono">
+                      {formatQuotaMoney(logStats?.quota ?? 0, status)}
+                    </span>
+                  ),
+                },
+                {
+                  icon: KeyRound,
+                  labelId: "Request count",
+                  value: (
+                    <span className="mono">{account?.request_count ?? 0}</span>
+                  ),
+                },
+                {
+                  icon: Layers3,
+                  labelId: "Current plan",
+                  value: currentPlanLabel,
+                },
+              ]}
+            />
+            <nav
+              aria-label={localizeKey(language, "Common actions")}
+              className="dashboard-quick-actions"
+            >
+              <AppLink href="/dashboard/billing">
+                <CircleDollarSign size={18} />
+                <T id="Billing" />
+              </AppLink>
+              <AppLink href="/dashboard/usage">
+                <Activity size={18} />
+                <T id="View usage" />
+              </AppLink>
+              <AppLink href="/dashboard/api-key">
+                <KeyRound size={18} />
+                <T id="Manage API keys" />
+              </AppLink>
+              <AppLink href="/setup">
+                <BookOpen size={18} />
+                <T id="Docs" />
+              </AppLink>
+            </nav>
+            <SectionLabel id="Current plan" />
+          </>
+        ) : null}
 
         {loading ? (
           <Panel className="dashboard-plan-panel">
@@ -167,14 +257,6 @@ export function createDashboardPage({
                   <T id="CNY and USD are settled 1:1." />
                 </span>
               </div>
-              <button
-                className="btn btn-flux btn-sm"
-                type="button"
-                onClick={() => setTopupDialogOpen(true)}
-              >
-                <CircleDollarSign size={15} />
-                <T id="Top up now" />
-              </button>
             </div>
           </Panel>
         </div>
@@ -263,8 +345,7 @@ function ActiveSubscriptionItem({
   const total = Number(subscription.amount_total ?? plan?.total_amount ?? 0);
   const used = Number(subscription.amount_used ?? 0);
   const remaining = total > 0 ? Math.max(0, total - used) : 0;
-  const remainingPercent =
-    total > 0 ? Math.min(100, (remaining / total) * 100) : 100;
+  const usedPercent = total > 0 ? Math.min(100, (used / total) * 100) : 0;
   const totalMoneyLabel =
     total > 0 ? formatQuotaMoney(total, status) : undefined;
   const period = plan ? formatSubscriptionPeriod(plan) : null;
@@ -330,6 +411,11 @@ function ActiveSubscriptionItem({
               {totalMoneyLabel ? (
                 <span className="mono"> / {totalMoneyLabel}</span>
               ) : null}
+              {totalMoneyLabel ? (
+                <span className="usage-percent mono">
+                  {usedPercent.toFixed(1)}%
+                </span>
+              ) : null}
             </div>
           </div>
           <div className="usage-quota">
@@ -341,13 +427,6 @@ function ActiveSubscriptionItem({
             </div>
           </div>
         </div>
-        <i className="consume-progress" aria-hidden="true">
-          <b
-            style={{
-              width: `${Math.max(0, Math.min(100, remainingPercent))}%`,
-            }}
-          />
-        </i>
       </div>
     </Panel>
   );

@@ -795,5 +795,8 @@ export const enTranslations = {
     "Choose the model. Keep the workflow.",
   "Create one account, follow the setup guide once, and manage every request from the same dashboard.":
     "Create one account, follow the setup guide once, and manage every request from the same dashboard.",
+  "Account overview": "Account overview",
+  "Common actions": "Common actions",
+  "Request count": "Request count",
   X: "X",
 } as const;

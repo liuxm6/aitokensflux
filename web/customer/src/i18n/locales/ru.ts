@@ -765,6 +765,9 @@ const customerRuTranslations = {
     "Выберите модель. Сохраните рабочий процесс.",
   "Create one account, follow the setup guide once, and manage every request from the same dashboard.":
     "Создайте один аккаунт, один раз выполните настройку и управляйте всеми запросами в одной панели.",
+  "Account overview": "Обзор аккаунта",
+  "Common actions": "Частые действия",
+  "Request count": "Количество запросов",
   X: "X",
 } satisfies Record<string, string>;
 
