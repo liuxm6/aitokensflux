@@ -43,6 +43,9 @@
 30. 语言切换只更新 metadata，不再触发路由标题聚焦；菜单选择后焦点恢复语言按钮。
 31. 加载骨架与首页交互动效收紧为仅 `transform`/`opacity`，并保留 reduced-motion。
 32. 复核并修复嵌套 WeChat Dialog 的视觉层级，使其 `z-index: 5100` 高于账户外层 `5000`，Toast 继续位于 `10000`。
+33. 将页面滚动锁改为首层快照与全局计数，嵌套 Dialog 同时卸载也能恢复原 overflow/overscroll。
+34. 为 Auth/Setup 懒路由错误增加真实 fixed overlay，错误与重试按钮在首屏可见，背景 root 保持 inert。
+35. 为模型费率请求增加 latest-request 与 unmount 失效保护，旧响应不能覆盖较新的失败或 retry 恢复。
 
 ## 最终审查修复
 
@@ -98,6 +101,32 @@
 - 首次 final `format:check` 精确发现 `Dialog.tsx`、`lazy-pages.tsx`、`style-layers.test.ts` 三个文件未符合 Prettier；测试、typecheck、build 均已通过。
 - `f0aa6ccb style(customer): format final review fixes` 只包含机械格式差异；相关 21 tests / 111 expect 和 `format:check` 随后通过。
 
+## 独立整包复审与 Important 修复
+
+独立 reviewer 首轮结果为 0 Critical / 3 Important，三项均按 TDD 修复后窄范围复审通过：Spec compliance PASS、Code quality PASS、0 Critical、0 Important、1 Minor、Ready to merge Yes。
+
+### 1. 嵌套 Dialog 同时卸载后的滚动锁
+
+- 根因：每层 Dialog 各自保存/恢复 overflow；内层把外层已经设置的 `hidden` 当成原状态，同时卸载时最后一个 cleanup 会把 `hidden` 写回。
+- RED：`bun test tests/dialog.test.tsx` 为 4 pass / 1 fail，期望原 `scroll`，实际 `hidden`。
+- GREEN：`092883dd fix(customer): restore nested dialog scroll lock` 引入首层快照与全局计数；5 pass / 0 fail / 32 expect。
+
+### 2. Auth/Setup overlay lazy rejection 首屏不可见
+
+- 根因：正常 Auth/Setup 会 portal 为 overlay，但 loader rejection 的 ErrorState 仍在 Home 普通文档流末尾；900px 视口中错误框顶部约 4213px。
+- RED：app-navigation 为 10 pass / 1 fail，缺少 inert overlay 呈现。
+- GREEN：`19572638 fix(customer): expose lazy overlay failures` 为 Auth/Setup 启用 overlay presentation，复用 `AccessibleDialog`；11 pass / 0 fail / 43 expect。
+- Chromium `143.0.7499.4`：`/sign-in` 首次 Auth chunk abort 后 ErrorState 位于 y=400.0-549.7，`scrollY=0`，dialog 在 root 外，root inert/aria-hidden，Try again 获焦点；retry 后 `authChunkRequests: 2`，恢复 Account password sign in，0 pageerror。
+- 截图：`/tmp/customer-homepage-final-review-auth-lazy-overlay-error.png`、`/tmp/customer-homepage-final-review-auth-lazy-overlay-recovered.png`。
+
+### 3. 模型费率乱序响应
+
+- 根因：StrictMode、retry 或网络延迟可产生并发请求；较旧成功响应会覆盖较新的失败或恢复数据。
+- RED：home-model-pricing 为 4 pass / 2 fail；旧 empty 覆盖新 failure，旧请求覆盖 `claude-latest` retry 结果。
+- GREEN：`aa6b565c fix(customer): ignore stale pricing responses` 使用递增 request id，并在 effect cleanup 时失效；6 pass / 0 fail / 18 expect。
+- 三项聚焦组合：22 pass / 0 fail / 93 expect；typecheck、format check、diff check 均通过。
+- 唯一 Minor：尚无“组件 unmount 后再 resolve deferred pricing request”的独立直接测试；实现的 cleanup 自增 id 与统一 success/catch guard 已覆盖该行为，不阻塞交付。
+
 ## 本报告提交前的实现与验证提交
 
 - `cd6abcb1` feat(customer): add Gemini pricing group
@@ -141,15 +170,17 @@
 - `2c330a2c` fix(customer): recover cached lazy chunks
 - `f0aa6ccb` style(customer): format final review fixes
 - `6fc5284c` fix(customer): raise nested auth dialog layer
+- `092883dd` fix(customer): restore nested dialog scroll lock
+- `19572638` fix(customer): expose lazy overlay failures
+- `aa6b565c` fix(customer): ignore stale pricing responses
 
 ## 自动化验证
 
 Customer 前端：
 
-- `bun test`：13 个测试文件，46 个测试通过，0 失败，195 个断言。
+- `bun test`：13 个测试文件，50 个测试通过，0 失败，215 个断言。
 - `bun run typecheck`：通过。
 - `bun run build`：通过。
-- 构建过程中 Rspack 持久化缓存写入报告一次 `Directory not empty (os error 66)`，仅禁用该进程缓存，37 个产物仍正常生成。
 - `bun run format:check`：通过。
 - `git diff --check`：通过。
 - `rg -n '[—–]' web/customer/src/pages/Home web/customer/src/i18n/locales`：无匹配，按预期退出 1。
@@ -161,11 +192,11 @@ Customer 前端：
 最终 Customer 构建体积：
 
 - CSS：151.7 KB，gzip 30.0 KB。
-- 主 JS：757.7 KB，gzip 216.5 KB。
+- 主 JS：758.7 KB，gzip 216.8 KB。
 - React：189.0 KB，gzip 59.7 KB。
-- 总量：2880.2 KB，gzip 931.1 KB。
+- 总量：2881.1 KB，gzip 931.4 KB。
 
-初始主包约为 881.8 KB / gzip 249.5 KB，懒加载后主包减少约 124.1 KB / gzip 33.0 KB。
+初始主包约为 881.8 KB / gzip 249.5 KB，懒加载后主包减少约 123.1 KB / gzip 32.7 KB。
 
 ## 真实浏览器审查
 
@@ -221,6 +252,8 @@ Chrome DevTools MCP 在当前会话未配置，按 Task 5 简报使用隔离 Pla
 - `/tmp/customer-homepage-final-review-lazy-recovered.png`
 - `/tmp/customer-homepage-final-review-route-focus.png`
 - `/tmp/customer-homepage-final-review-nested-dialog-toast-fixed.png`
+- `/tmp/customer-homepage-final-review-auth-lazy-overlay-error.png`
+- `/tmp/customer-homepage-final-review-auth-lazy-overlay-recovered.png`
 
 最终截图使用新的无状态 browser context，从 `scrollY = 0` 直接通过 Chromium `captureBeyondViewport` 捕获完整页面；未执行 hover 或页面滚动，截图中没有 fixed nav 或 Skip Link 的中段重复伪影。
 
@@ -253,6 +286,6 @@ Chrome DevTools MCP 在当前会话未配置，按 Task 5 简报使用隔离 Pla
 - 本机 Docker daemon 未运行，因此没有启动 Docker PostgreSQL/Redis 开发栈；后端使用本地 Go + 临时 SQLite 副本运行。
 - Motion 回归测试精确覆盖本轮 Skeleton、`.mp-tab` 和首页 marketing transitions，但不是全仓 CSS 动效审计器。
 - 真实浏览器已覆盖无需认证的 modal Auth/WeChat 嵌套流；需要认证或支付配置的 Topup/PurchaseProgress 嵌套流由组件回归测试保护，本轮未伪造真实支付业务。
-- 最终构建成功但出现一次仅影响本次 Rspack 持久化缓存的 `Directory not empty (os error 66)` 警告。
+- 前一轮构建曾出现一次仅影响当次 Rspack 持久化缓存的 `Directory not empty (os error 66)` 警告；最终 fresh build 未复现且正常生成 37 个产物。
 - 当前按用户要求保留功能分支和 worktree，不自动合并、推送或创建 PR。
 - 本次只完成本地验证、报告和提交，未部署生产环境。
