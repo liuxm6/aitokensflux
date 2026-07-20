@@ -36,6 +36,67 @@
 23. 完成 375、390、700、768、900、1024、1440 七个正式视口，以及 720、760 临界回归和 reduced-motion 的隔离 Chromium 审查。
 24. 将首页 minimal nav 对齐为桌面 80px、移动 72px 内容高度，并将所有正式视口的 Hero 顶部 padding 统一为 96px。
 25. 将桌面 80px minimal nav 规则收紧到首页专用 `home-nav` 标记，恢复 `/console/connect` 与 `/fathers-day` 的既有 82px minimal nav。
+26. 最终审查将嵌套 Dialog 的非顶层节点设为 `aria-hidden` 与 `inert`，并在顶层关闭后恢复原状态。
+27. Toast viewport 改为 `document.body` portal，避免被应用根节点的 inert/aria-hidden 隔离。
+28. 非首页懒路由增加局部错误边界、四语言错误态和可恢复重试；真实 ChunkLoadError 使用 route/runtime reload 绕过 Rspack rejected promise 缓存。
+29. 模型费率明确区分 loading、error、成功空数据和成功有数据；删除开发样例费率，不再用假数据遮蔽真实空态。
+30. 语言切换只更新 metadata，不再触发路由标题聚焦；菜单选择后焦点恢复语言按钮。
+31. 加载骨架与首页交互动效收紧为仅 `transform`/`opacity`，并保留 reduced-motion。
+32. 复核并修复嵌套 WeChat Dialog 的视觉层级，使其 `z-index: 5100` 高于账户外层 `5000`，Toast 继续位于 `10000`。
+
+## 最终审查修复
+
+### 1. 嵌套 Dialog、Toast 与视觉层级
+
+- 根因：原 Dialog 栈只保存标识，未隔离非顶层 Dialog；Toast viewport 又位于 `#root` 内，根节点 inert 时会一起失去可见/交互语义。
+- 首次修复：`96a9936e fix(customer): isolate nested dialog layers`，涉及 `Dialog.tsx`、`Toast/index.tsx`、`dialog.test.tsx`。
+- RED：`bun test tests/dialog.test.tsx` 为 2 pass / 2 fail；下层 Dialog 缺少 `aria-hidden="true"`，Toast viewport 仍在 root 内。
+- GREEN：同命令为 4 pass / 0 fail / 26 expect；Dialog 与 overlay 组合为 7 pass / 0 fail / 36 expect，`tsc -b` 通过。
+- 二次视觉根因：浏览器截图确认顶层 WeChat Dialog 虽已在 DOM/无障碍栈暴露，但 `.auth-dialog` 的 `z-index: 100` 低于外层 `.auth-overlay` 的 `5000`，实际画面仍被账户弹窗遮挡。
+- TDD 补充：新增样式层级契约后 RED 明确为 `Expected > 5000, Received 100`；`6fc5284c fix(customer): raise nested auth dialog layer` 将顶层设为 `5100`，GREEN 为 12 pass / 0 fail / 75 expect。
+- Chromium `143.0.7499.4` 复核：外层 `aria-hidden=true`、`inert=true`、z=5000；WeChat 顶层未隐藏、未 inert、z=5100；Toast 位于 body portal、z=10000、无隐藏祖先。Toast Close 可关闭，Escape 只关闭内层，外层恢复且焦点回到 `Continue with WeChat`。0 pageerror、0 requestfailed。
+- 最终截图：`/tmp/customer-homepage-final-review-nested-dialog-toast-fixed.png`。
+
+### 2. 懒路由错误恢复与 ChunkLoadError 二次根因
+
+- 根因：非首页 `React.lazy` rejection 直接冒泡到应用根错误页，用户无法在当前路由恢复。
+- 首次修复：`5818eeac fix(customer): recover failed lazy routes`，为懒页增加局部错误边界、四语言 `Failed to load page` 和普通 rejected loader 的新 `lazy(loader)` 重试。
+- RED：`bun test tests/app-navigation.test.tsx` 为 7 pass / 1 fail，预期 `Failed to load page`，实际为根级 `Application crashed`。
+- GREEN：首次修复后 8 pass / 0 fail / 33 expect。
+- 二次根因：Rspack 开发模式 lazy-compilation proxy 会缓存 rejected chunk promise；即使创建新的 `React.lazy`，同一 chunk 也不会再次请求。
+- 补充 RED：`bun test tests/app-navigation.test.tsx -t "bundler caches"` 预期 reload 1 次，实际 0 次。
+- 补充 GREEN：`2c330a2c fix(customer): recover cached lazy chunks` 将 ChunkLoadError 重试切换为当前 route/runtime reload；`-t "route code splitting"` 为 4 pass / 0 fail / 11 expect。
+- 浏览器：首次 abort `/static/js/async/src_pages_FathersDay_index_tsx.js` 显示可重试错误；点击后 `chunkRequests: 2`，恢复 `/fathers-day` 与标题 `To the Fathers Who Write Code`，焦点在 H1，0 pageerror。
+
+### 3. 模型费率错误态与真实空态
+
+- 根因：`success:false` 和网络 rejection 被错误折叠为成功空 grouped；开发样例费率又遮蔽了真实后端成功空响应。
+- 修复：`2c0fc046 fix(customer): preserve pricing error state`，涉及 `Home/index.tsx` 和新增 `home-model-pricing.test.tsx`。失败不再写入空 grouped；只有真实 `success:true` 才进入数据/空态，并删除 `DEV_SAMPLE_PRICING`。
+- RED：`bun test tests/home-model-pricing.test.tsx` 为 1 pass / 3 fail；`success:false`、网络 rejection、retry recovery 均错误落到 EmptyState，真实成功空响应测试已通过。
+- GREEN：4 pass / 0 fail / 9 expect；Home 组合为 12 pass / 0 fail / 32 expect。
+- 真实后端 fresh 结果：`/api/pricing/public` 为 `success:true, data_count:0, vendor_count:0`；`/api/subscription/plans` 为 `success:true, data_count:0`。首页明确显示 `No model pricing is available`，不再注入开发样例。
+- 浏览器 390 与 1440：empty、loading、error、retry 后 fixture data 四种状态均无横向溢出或 pricing/plans 重叠；retry 后四个 provider tabs 出现，0 pageerror、0 requestfailed。
+
+### 4. 语言切换与路由焦点
+
+- 根因：metadata 更新与路由标题聚焦共用 effect，语言变化会再次把焦点移到 H1；Dropdown 选择后卸载菜单，焦点随后落到 body。
+- 修复：`7429862f fix(customer): preserve focus on language changes`，将 metadata 与 route focus effect 分离，并在 Dropdown selection 后恢复 trigger。
+- RED：`bun test tests/app-navigation.test.tsx -t "language selection"` 初始期望 BUTTON、实际 H1；拆分 effect 后期望 BUTTON、实际 BODY。
+- GREEN：单测 1 pass / 0 fail / 3 expect；app-navigation + menu 为 12 pass / 0 fail / 47 expect，typecheck 通过。
+- 浏览器：`/fathers-day` 选择简体中文后 title/description 正确本地化，active element 为 `.lang-btn`；点击 header brand SPA 返回首页后焦点移到 H1。0 pageerror、0 requestfailed。
+
+### 5. Motion 契约与 reduced-motion
+
+- 根因：Skeleton 使用 `background-position` 动画，`.mp-tab` 仍含 color/border/background transition；旧测试只检查部分 marketing CSS，没有覆盖最终 Customer CSS import surface。
+- 修复：`0ccdc3ee fix(customer): constrain loading motion`，Skeleton 改为 opacity pulse，移除 `.mp-tab` 非 transform/opacity transition，并让契约扫描最终 Customer CSS surface。
+- RED：`bun test tests/style-layers.test.ts -t "homepage and loading motion"` 报告 `transition: color`、`border-color`、`background` 与两条 `state-skeleton-shift: background-position`。
+- GREEN：聚焦 1 pass / 0 fail / 8 expect；完整 style-layers 为 7 pass / 0 fail / 47 expect；style + async-state 为 9 pass / 0 fail / 54 expect，typecheck 通过。
+- Chromium 390/1440 loading：动画名 `state-skeleton-pulse`，关键帧属性仅 opacity；390 reduced-motion 为 `animationName: none`、`animationCount: 0`。
+
+### 收尾格式修复
+
+- 首次 final `format:check` 精确发现 `Dialog.tsx`、`lazy-pages.tsx`、`style-layers.test.ts` 三个文件未符合 Prettier；测试、typecheck、build 均已通过。
+- `f0aa6ccb style(customer): format final review fixes` 只包含机械格式差异；相关 21 tests / 111 expect 和 `format:check` 随后通过。
 
 ## 本报告提交前的实现与验证提交
 
@@ -71,14 +132,24 @@
 - `38076dcf` fix(customer): align homepage frame dimensions
 - `a5e13fe4` docs(customer): finalize homepage frame validation
 - `0f322d0a` fix(customer): scope compact nav to homepage
+- `6d444bf0` docs(customer): finalize scoped nav validation
+- `96a9936e` fix(customer): isolate nested dialog layers
+- `5818eeac` fix(customer): recover failed lazy routes
+- `2c0fc046` fix(customer): preserve pricing error state
+- `7429862f` fix(customer): preserve focus on language changes
+- `0ccdc3ee` fix(customer): constrain loading motion
+- `2c330a2c` fix(customer): recover cached lazy chunks
+- `f0aa6ccb` style(customer): format final review fixes
+- `6fc5284c` fix(customer): raise nested auth dialog layer
 
 ## 自动化验证
 
 Customer 前端：
 
-- `bun test`：12 个测试文件，37 个测试通过，0 失败，160 个断言。
+- `bun test`：13 个测试文件，46 个测试通过，0 失败，195 个断言。
 - `bun run typecheck`：通过。
 - `bun run build`：通过。
+- 构建过程中 Rspack 持久化缓存写入报告一次 `Directory not empty (os error 66)`，仅禁用该进程缓存，37 个产物仍正常生成。
 - `bun run format:check`：通过。
 - `git diff --check`：通过。
 - `rg -n '[—–]' web/customer/src/pages/Home web/customer/src/i18n/locales`：无匹配，按预期退出 1。
@@ -89,16 +160,16 @@ Customer 前端：
 
 最终 Customer 构建体积：
 
-- CSS：151.8 KB，gzip 30.0 KB。
-- 主 JS：756.3 KB，gzip 216.1 KB。
+- CSS：151.7 KB，gzip 30.0 KB。
+- 主 JS：757.7 KB，gzip 216.5 KB。
 - React：189.0 KB，gzip 59.7 KB。
-- 总量：2878.8 KB，gzip 930.7 KB。
+- 总量：2880.2 KB，gzip 931.1 KB。
 
-初始主包约为 881.8 KB / gzip 249.5 KB，懒加载后主包减少约 125.6 KB / gzip 33.5 KB。
+初始主包约为 881.8 KB / gzip 249.5 KB，懒加载后主包减少约 124.1 KB / gzip 33.0 KB。
 
 ## 真实浏览器审查
 
-Chrome DevTools MCP 在当前会话未配置，按 Task 5 简报使用缓存中的 Playwright Chromium 1223 和独立无状态 context 完成。浏览器只访问已知 localhost 地址；DOM、console 和网络结果均按不可信数据处理；未读取 cookie、localStorage、sessionStorage、token 或其他认证材料。
+Chrome DevTools MCP 在当前会话未配置，按 Task 5 简报使用隔离 Playwright（主审查记录为 1.60.0）和 Chromium `143.0.7499.4` 的独立无状态 context 完成。浏览器只访问已知 localhost 地址；DOM、console 和网络结果均按不可信数据处理；未读取 cookie、localStorage、sessionStorage、token 或其他认证材料。
 
 正式视口结果：
 
@@ -137,6 +208,19 @@ Chrome DevTools MCP 在当前会话未配置，按 Task 5 简报使用缓存中�
 - `/tmp/customer-homepage-task5-760x900.png`
 - `/tmp/customer-homepage-task5-375x812-reduced.png`
 - `/tmp/customer-homepage-task5-1440x1000-reduced.png`
+- `/tmp/customer-homepage-final-review-390-empty.png`
+- `/tmp/customer-homepage-final-review-1440-empty.png`
+- `/tmp/customer-homepage-final-review-390-loading.png`
+- `/tmp/customer-homepage-final-review-1440-loading.png`
+- `/tmp/customer-homepage-final-review-390-loading-reduced.png`
+- `/tmp/customer-homepage-final-review-390-error.png`
+- `/tmp/customer-homepage-final-review-390-data.png`
+- `/tmp/customer-homepage-final-review-1440-error.png`
+- `/tmp/customer-homepage-final-review-1440-data.png`
+- `/tmp/customer-homepage-final-review-lazy-error.png`
+- `/tmp/customer-homepage-final-review-lazy-recovered.png`
+- `/tmp/customer-homepage-final-review-route-focus.png`
+- `/tmp/customer-homepage-final-review-nested-dialog-toast-fixed.png`
 
 最终截图使用新的无状态 browser context，从 `scrollY = 0` 直接通过 Chromium `captureBeyondViewport` 捕获完整页面；未执行 hover 或页面滚动，截图中没有 fixed nav 或 Skip Link 的中段重复伪影。
 
@@ -145,7 +229,7 @@ Chrome DevTools MCP 在当前会话未配置，按 Task 5 简报使用缓存中�
 ## 设计 Pre-flight
 
 - 设计判断：面向开发者的 B2B AI 网关首页保留式精修，延续轻量、清晰、绿色主色的原有视觉语言。
-- 设计参数：`DESIGN_VARIANCE: 5`、`MOTION_INTENSITY: 3`、`VISUAL_DENSITY: 4`。
+- 设计参数：`DESIGN_VARIANCE: 7`、`MOTION_INTENSITY: 6`、`VISUAL_DENSITY: 3`。
 - 实现基础：现有 React + 原生 CSS 语义层，不引入第二套设计系统或新依赖。
 - 通过项：全页浅色主题锁定、绿色主色一致、角色化圆角体系、Hero 两行内且首屏完整、CTA 单行、按钮默认和 hover 对比度达到 AA、无页面级横向溢出、无破折号字符、无滚动监听、动效支持 reduced-motion、支持/FAQ/Footer 响应式折叠正确。
 - 项目批准例外：浅色单主题是明确产品选择；动态供应商 Logo 是 Hero 主视觉，因此不增加生成摄影；唯一近黑 CTA 是有意的对比区块；Lucide 继续作为既有 UI 图标家族，供应商品牌 Logo 使用现有品牌图标资源。
@@ -167,5 +251,8 @@ Chrome DevTools MCP 在当前会话未配置，按 Task 5 简报使用缓存中�
 ## 环境说明
 
 - 本机 Docker daemon 未运行，因此没有启动 Docker PostgreSQL/Redis 开发栈；后端使用本地 Go + 临时 SQLite 副本运行。
+- Motion 回归测试精确覆盖本轮 Skeleton、`.mp-tab` 和首页 marketing transitions，但不是全仓 CSS 动效审计器。
+- 真实浏览器已覆盖无需认证的 modal Auth/WeChat 嵌套流；需要认证或支付配置的 Topup/PurchaseProgress 嵌套流由组件回归测试保护，本轮未伪造真实支付业务。
+- 最终构建成功但出现一次仅影响本次 Rspack 持久化缓存的 `Directory not empty (os error 66)` 警告。
 - 当前按用户要求保留功能分支和 worktree，不自动合并、推送或创建 PR。
 - 本次只完成本地验证、报告和提交，未部署生产环境。
