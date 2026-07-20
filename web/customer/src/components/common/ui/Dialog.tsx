@@ -135,7 +135,9 @@ export function AccessibleDialog({
     focusTarget?.focus();
 
     return () => {
-      const stackIndex = dialogStack.findIndex((layer) => layer.id === dialogId);
+      const stackIndex = dialogStack.findIndex(
+        (layer) => layer.id === dialogId,
+      );
       if (stackIndex >= 0) {
         const [removedLayer] = dialogStack.splice(stackIndex, 1);
         if (removedLayer) restoreDialogLayer(removedLayer);

@@ -106,10 +106,7 @@ test("homepage and loading motion use only transform or opacity", () => {
   );
   const customerStyles = readCustomerStyleSurface();
   const modelTabStyles = getCssBlock(customerStyles, ".mp-tab {");
-  const skeletonStyles = getCssBlock(
-    customerStyles,
-    ".state-skeleton-line {",
-  );
+  const skeletonStyles = getCssBlock(customerStyles, ".state-skeleton-line {");
   const skeletonAnimation = skeletonStyles.match(
     /animation:\s*([a-z][a-z0-9-]*)\b/,
   )?.[1];
@@ -117,18 +114,14 @@ test("homepage and loading motion use only transform or opacity", () => {
     ? getCssBlock(customerStyles, `@keyframes ${skeletonAnimation}`)
     : "";
   const transitionDeclarations = Array.from(
-    `${marketingStyles}\n${modelTabStyles}`.matchAll(
-      /transition:\s*([^;]+);/g,
-    ),
+    `${marketingStyles}\n${modelTabStyles}`.matchAll(/transition:\s*([^;]+);/g),
     ([, declaration]) => declaration.replace(/\s+/g, " ").trim(),
   );
   const transitionViolations = transitionDeclarations.flatMap((declaration) =>
     declaration
       .split(",")
       .map((item) => item.trim())
-      .filter(
-        (item) => item !== "none" && !/^(transform|opacity)\b/.test(item),
-      )
+      .filter((item) => item !== "none" && !/^(transform|opacity)\b/.test(item))
       .map((item) => `transition: ${item}`),
   );
   const keyframeViolations = Array.from(
