@@ -281,7 +281,7 @@
   }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 760px) {
   .home-page .mp-table-wrap-adaptive {
     max-height: none;
   }

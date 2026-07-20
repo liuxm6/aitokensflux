@@ -93,20 +93,37 @@ test("homepage polish keeps stable layout constraints and safe transitions", () 
   expect(transitionDeclarations.at(-1)).toBe("none");
 });
 
-test("adaptive pricing table releases its max height at 700px and below", () => {
+test("adaptive pricing table releases its max height at 760px and below", () => {
   const marketingStyles = readFileSync(
     new URL("../src/styles/marketing.css", import.meta.url),
     "utf8",
   );
-  const mobileMediaStart = marketingStyles.indexOf("@media (max-width: 700px)");
-  const nextMediaStart = marketingStyles.indexOf(
-    "@media (max-width: 680px)",
-    mobileMediaStart,
-  );
+  const mobileMediaStart = marketingStyles.indexOf("@media (max-width: 760px)");
 
   expect(mobileMediaStart).toBeGreaterThanOrEqual(0);
-  expect(nextMediaStart).toBeGreaterThan(mobileMediaStart);
-  expect(marketingStyles.slice(mobileMediaStart, nextMediaStart)).toMatch(
+  const mobileMediaOpen = marketingStyles.indexOf("{", mobileMediaStart);
+  expect(mobileMediaOpen).toBeGreaterThan(mobileMediaStart);
+
+  let depth = 0;
+  let mobileMediaEnd = -1;
+  for (
+    let index = mobileMediaOpen;
+    index < marketingStyles.length;
+    index += 1
+  ) {
+    if (marketingStyles[index] === "{") {
+      depth += 1;
+    } else if (marketingStyles[index] === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        mobileMediaEnd = index + 1;
+        break;
+      }
+    }
+  }
+
+  expect(mobileMediaEnd).toBeGreaterThan(mobileMediaOpen);
+  expect(marketingStyles.slice(mobileMediaStart, mobileMediaEnd)).toMatch(
     /\.home-page \.mp-table-wrap-adaptive\s*\{\s*max-height:\s*none;\s*\}/,
   );
 });
