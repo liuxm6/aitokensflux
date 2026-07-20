@@ -1,9 +1,20 @@
-import { lazy, type ComponentType } from "react";
+import {
+  Component,
+  lazy,
+  type ComponentProps,
+  type ComponentType,
+  type ReactNode,
+  useRef,
+  useState,
+} from "react";
 import { AccountActionDialog } from "../components/account/AccountActionDialog";
 import { AppLink } from "../components/common/AppLink";
 import { CodeBlock } from "../components/common/CodeBlock";
 import { Pill } from "../components/common/Pill";
-import { LoadingState } from "../components/common/ui/AsyncState";
+import {
+  ErrorState,
+  LoadingState,
+} from "../components/common/ui/AsyncState";
 import { MarketingHeader } from "../components/layout/MarketingHeader";
 import { TopupDialog } from "../components/topup/TopupDialog";
 import { T } from "../context/Language";
@@ -12,10 +23,45 @@ import { getConfiguredServerAddress } from "../helpers/server-address";
 import { fetchCustomerStatus } from "../services/customer-api";
 import type { PageKey } from "../types";
 
+class LazyPageErrorBoundary extends Component<
+  { children: ReactNode; onRetry: () => void },
+  { failed: boolean }
+> {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  render() {
+    if (this.state.failed) {
+      return <ErrorState id="Failed to load page" onRetry={this.props.onRetry} />;
+    }
+    return this.props.children;
+  }
+}
+
 export function createLazyPage<PageComponent extends ComponentType<any>>(
   loader: () => Promise<{ default: PageComponent }>,
 ) {
-  return lazy(loader);
+  const InitialLazyPage = lazy(loader);
+
+  return function RecoverableLazyPage(props: ComponentProps<PageComponent>) {
+    const [attempt, setAttempt] = useState(0);
+    const lazyPageRef = useRef(InitialLazyPage);
+    const LazyPage = lazyPageRef.current;
+
+    const retry = () => {
+      lazyPageRef.current = lazy(loader);
+      setAttempt((current) => current + 1);
+    };
+
+    return (
+      <LazyPageErrorBoundary key={attempt} onRetry={retry}>
+        <LazyPage {...props} />
+      </LazyPageErrorBoundary>
+    );
+  };
 }
 
 export function isLazyPageKey(page: PageKey) {

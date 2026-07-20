@@ -740,6 +740,7 @@ export const zhTWTranslations = {
   "Data table": "資料表格",
   "Loading model pricing": "正在載入模型費率",
   "Failed to load model pricing": "模型費率載入失敗",
+  "Failed to load page": "頁面載入失敗",
   "No model pricing is available": "暫無模型費率",
   "Failed to load plans": "套餐載入失敗",
   "Failed to load dashboard data": "控制台資料載入失敗",

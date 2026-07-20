@@ -1,7 +1,7 @@
 import { describe, expect, mock, test } from "bun:test";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Suspense } from "react";
+import { Component, type ReactNode, Suspense } from "react";
 import { RouteFocus } from "../src/components/common/RouteFocus";
 import { LanguageContext } from "../src/context/Language";
 import {
@@ -15,6 +15,22 @@ import {
   isLazyPageKey,
   RouteLoadingState,
 } from "../src/pages/lazy-pages";
+
+class RootCrashBoundary extends Component<
+  { children: ReactNode },
+  { crashed: boolean }
+> {
+  state = { crashed: false };
+
+  static getDerivedStateFromError() {
+    return { crashed: true };
+  }
+
+  render() {
+    if (this.state.crashed) return <div role="alert">Application crashed</div>;
+    return this.props.children;
+  }
+}
 
 describe("customer route contract", () => {
   test("maps public, protected, alias, and unknown routes", () => {
@@ -119,5 +135,57 @@ describe("route code splitting", () => {
     );
 
     expect(screen.getByRole("status").textContent).toContain("Loading page");
+  });
+
+  test("retries a rejected route with a fresh lazy loader", async () => {
+    let attempts = 0;
+    const RecoveringPage = createLazyPage(() => {
+      attempts += 1;
+      if (attempts === 1) return Promise.reject(new Error("chunk unavailable"));
+      return Promise.resolve({
+        default: () => (
+          <main>
+            <h1>Recovered route</h1>
+          </main>
+        ),
+      });
+    });
+    const originalConsoleError = console.error;
+    console.error = mock(() => undefined);
+
+    try {
+      render(
+        <LanguageContext.Provider
+          value={{
+            language: "en",
+            setLanguage: () => undefined,
+            translationVersion: 0,
+          }}
+        >
+          <RootCrashBoundary>
+            <Suspense fallback={<RouteLoadingState />}>
+              <RecoveringPage />
+            </Suspense>
+          </RootCrashBoundary>
+        </LanguageContext.Provider>,
+      );
+
+      expect((await screen.findByRole("alert")).textContent).toContain(
+        "Failed to load page",
+      );
+      expect(attempts).toBe(1);
+
+      await userEvent
+        .setup({ document })
+        .click(screen.getByRole("button", { name: "Try again" }));
+
+      expect(
+        await screen.findByRole("heading", { name: "Recovered route" }),
+      ).toBeTruthy();
+      expect(attempts).toBe(2);
+      expect(screen.queryByText("Application crashed")).toBeNull();
+    } finally {
+      console.error = originalConsoleError;
+    }
   });
 });

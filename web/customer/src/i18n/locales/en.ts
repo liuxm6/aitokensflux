@@ -772,6 +772,7 @@ export const enTranslations = {
   "Data table": "Data table",
   "Loading model pricing": "Loading model pricing",
   "Failed to load model pricing": "Failed to load model pricing",
+  "Failed to load page": "Failed to load page",
   "No model pricing is available": "No model pricing is available",
   "Failed to load plans": "Failed to load plans",
   "Failed to load dashboard data": "Failed to load dashboard data",

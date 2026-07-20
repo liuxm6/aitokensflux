@@ -741,6 +741,7 @@ const customerRuTranslations = {
   "Data table": "Таблица данных",
   "Loading model pricing": "Загрузка тарифов моделей",
   "Failed to load model pricing": "Не удалось загрузить тарифы моделей",
+  "Failed to load page": "Не удалось загрузить страницу",
   "No model pricing is available": "Тарифы моделей недоступны",
   "Failed to load plans": "Не удалось загрузить тарифы",
   "Failed to load dashboard data": "Не удалось загрузить данные панели",
