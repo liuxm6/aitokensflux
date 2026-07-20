@@ -1,4 +1,4 @@
-import { XAI } from "@lobehub/icons";
+import { Gemini, XAI } from "@lobehub/icons";
 import {
   Activity,
   BookOpen,
@@ -181,6 +181,12 @@ function GrokLogo({ className }: { className?: string }) {
   return <XAI aria-hidden="true" className={className} focusable="false" />;
 }
 
+function GeminiLogo({ className }: { className?: string }) {
+  return (
+    <Gemini.Color aria-hidden="true" className={className} focusable="false" />
+  );
+}
+
 const HERO_MODELS = [
   { id: "claude", label: "Claude Code", Logo: ClaudeLogo },
   { id: "openai", label: "OpenAI Codex", Logo: OpenAILogo },
@@ -286,7 +292,7 @@ function SupportSection() {
   );
 }
 
-type PricingGroup = "claude" | "codex" | "grok";
+type PricingGroup = "claude" | "codex" | "grok" | "gemini";
 
 type PriceRow = {
   name: string;
@@ -303,20 +309,33 @@ type GroupPricingRows = {
 };
 
 const RATIO_TO_USD_PER_M = 2;
-const PRICING_GROUP_ORDER: PricingGroup[] = ["claude", "codex", "grok"];
+const PRICING_GROUP_ORDER: PricingGroup[] = [
+  "claude",
+  "codex",
+  "grok",
+  "gemini",
+];
 
-function classifyFallbackGroup(
+export function classifyFallbackGroup(
   modelName: string,
   vendorName?: string,
   ownerBy?: string,
 ): PricingGroup | null {
   const vendor = `${vendorName ?? ""} ${ownerBy ?? ""}`.toLowerCase();
+  const name = modelName.toLowerCase();
   if (vendor.includes("anthropic")) return "claude";
   if (vendor.includes("openai")) return "codex";
   if (vendor.includes("xai") || vendor.includes("grok")) return "grok";
-  const name = modelName.toLowerCase();
+  if (
+    vendor.includes("gemini") ||
+    ((vendor.includes("google") || vendor.includes("deepmind")) &&
+      name.includes("gemini"))
+  ) {
+    return "gemini";
+  }
   if (name.includes("claude")) return "claude";
   if (name.includes("grok") || name.includes("xai")) return "grok";
+  if (name.includes("gemini")) return "gemini";
   if (
     /^(gpt|chatgpt|codex|o1|o3|o4|text-embedding|dall-e|whisper|davinci|babbage|tts)/.test(
       name,
@@ -387,16 +406,18 @@ function comparePriceRows(a: PriceRow, b: PriceRow) {
 }
 
 const DEV_SAMPLE_PRICING: ModelPricingData = {
-  group_ratio: { claude: 1, codex: 0.6, grok: 1 },
+  group_ratio: { claude: 1, codex: 0.6, grok: 1, gemini: 1 },
   usable_group: {
     claude: "cc-Max(满血)-不限客户端",
     codex: "cx-Pro(满血)-不限客户端",
     grok: "",
+    gemini: "",
   },
   vendors: [
     { id: 1, name: "Anthropic" },
     { id: 2, name: "OpenAI" },
     { id: 3, name: "xAI" },
+    { id: 4, name: "Google" },
   ],
   data: [
     {
@@ -489,6 +510,36 @@ const DEV_SAMPLE_PRICING: ModelPricingData = {
       vendor_id: 3,
       enable_groups: ["grok"],
     },
+    {
+      model_name: "gemini-2.5-pro",
+      quota_type: 0,
+      model_ratio: 0.625,
+      model_price: 0,
+      completion_ratio: 4,
+      cache_ratio: 0.1,
+      vendor_id: 4,
+      enable_groups: ["gemini"],
+    },
+    {
+      model_name: "gemini-2.5-flash",
+      quota_type: 0,
+      model_ratio: 0.15,
+      model_price: 0,
+      completion_ratio: 4,
+      cache_ratio: 0.1,
+      vendor_id: 4,
+      enable_groups: ["gemini"],
+    },
+    {
+      model_name: "gemini-2.5-flash-lite",
+      quota_type: 0,
+      model_ratio: 0.05,
+      model_price: 0,
+      completion_ratio: 4,
+      cache_ratio: 0.1,
+      vendor_id: 4,
+      enable_groups: ["gemini"],
+    },
   ],
 };
 
@@ -511,6 +562,10 @@ const GROUP_META: Record<
     label: "grok",
     Logo: GrokLogo,
   },
+  gemini: {
+    label: "gemini",
+    Logo: GeminiLogo,
+  },
 };
 
 function formatGroupMultiplier(value: number): string {
@@ -518,7 +573,7 @@ function formatGroupMultiplier(value: number): string {
   return `${Number(value.toFixed(4))}x`;
 }
 
-function groupPricing(
+export function groupPricing(
   source: ModelPricingData,
 ): Record<PricingGroup, GroupPricingRows> {
   const vendorName = new Map<number, string>();
@@ -538,6 +593,11 @@ function groupPricing(
     grok: {
       ratio: source.group_ratio?.grok ?? 1,
       note: source.usable_group?.grok ?? "",
+      rows: [],
+    },
+    gemini: {
+      ratio: source.group_ratio?.gemini ?? 1,
+      note: source.usable_group?.gemini ?? "",
       rows: [],
     },
   };
