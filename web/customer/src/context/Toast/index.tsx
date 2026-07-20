@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import { LanguageContext } from "../Language";
 import { localizeKey } from "../../i18n/localization";
 
@@ -149,24 +150,27 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="toast-viewport" aria-live="polite" aria-atomic="false">
-        {toasts.map((toast) => (
-          <div className={`toast toast-${toast.type}`} key={toast.id}>
-            <span className="toast-icon">
-              <ToastIcon type={toast.type} />
-            </span>
-            <span className="toast-text">{toast.message}</span>
-            <button
-              aria-label={localizeKey(language, "Close")}
-              className="toast-close"
-              type="button"
-              onClick={() => dismiss(toast.id)}
-            >
-              <X size={15} />
-            </button>
-          </div>
-        ))}
-      </div>
+      {createPortal(
+        <div className="toast-viewport" aria-live="polite" aria-atomic="false">
+          {toasts.map((toast) => (
+            <div className={`toast toast-${toast.type}`} key={toast.id}>
+              <span className="toast-icon">
+                <ToastIcon type={toast.type} />
+              </span>
+              <span className="toast-text">{toast.message}</span>
+              <button
+                aria-label={localizeKey(language, "Close")}
+                className="toast-close"
+                type="button"
+                onClick={() => dismiss(toast.id)}
+              >
+                <X size={15} />
+              </button>
+            </div>
+          ))}
+        </div>,
+        document.body,
+      )}
     </ToastContext.Provider>
   );
 }

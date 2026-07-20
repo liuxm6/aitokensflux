@@ -13,7 +13,30 @@ const focusableSelector = [
 let openDialogCount = 0;
 let rootAriaHidden: string | null = null;
 let rootWasInert = false;
-const dialogStack: symbol[] = [];
+const dialogStack: Array<{
+  ariaHidden: string | null;
+  element: HTMLDivElement;
+  id: symbol;
+  wasInert: boolean;
+}> = [];
+
+function restoreDialogLayer(layer: (typeof dialogStack)[number]) {
+  if (layer.ariaHidden === null) layer.element.removeAttribute("aria-hidden");
+  else layer.element.setAttribute("aria-hidden", layer.ariaHidden);
+  if (!layer.wasInert) layer.element.removeAttribute("inert");
+}
+
+function syncDialogLayers() {
+  const topLayer = dialogStack.at(-1);
+  for (const layer of dialogStack) {
+    if (layer === topLayer) {
+      restoreDialogLayer(layer);
+      continue;
+    }
+    layer.element.setAttribute("aria-hidden", "true");
+    layer.element.setAttribute("inert", "");
+  }
+}
 
 function lockApplicationRoot() {
   const root = document.getElementById("root");
@@ -71,6 +94,7 @@ export function AccessibleDialog({
   panelClassName: string;
   onClose: () => void;
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLElement>(null);
   const dialogIdRef = useRef(Symbol("accessible-dialog"));
 
@@ -87,7 +111,16 @@ export function AccessibleDialog({
     const previousRootOverscroll = root.style.overscrollBehavior;
 
     const dialogId = dialogIdRef.current;
-    dialogStack.push(dialogId);
+    const dialog = dialogRef.current;
+    if (dialog) {
+      dialogStack.push({
+        ariaHidden: dialog.getAttribute("aria-hidden"),
+        element: dialog,
+        id: dialogId,
+        wasInert: dialog.hasAttribute("inert"),
+      });
+      syncDialogLayers();
+    }
     lockApplicationRoot();
     body.style.overflow = "hidden";
     root.style.overflow = "hidden";
@@ -102,8 +135,12 @@ export function AccessibleDialog({
     focusTarget?.focus();
 
     return () => {
-      const stackIndex = dialogStack.lastIndexOf(dialogId);
-      if (stackIndex >= 0) dialogStack.splice(stackIndex, 1);
+      const stackIndex = dialogStack.findIndex((layer) => layer.id === dialogId);
+      if (stackIndex >= 0) {
+        const [removedLayer] = dialogStack.splice(stackIndex, 1);
+        if (removedLayer) restoreDialogLayer(removedLayer);
+        syncDialogLayers();
+      }
       body.style.overflow = previousBodyOverflow;
       root.style.overflow = previousRootOverflow;
       body.style.overscrollBehavior = previousBodyOverscroll;
@@ -115,7 +152,7 @@ export function AccessibleDialog({
 
   useLayoutEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (dialogStack.at(-1) !== dialogIdRef.current) return;
+      if (dialogStack.at(-1)?.id !== dialogIdRef.current) return;
       if (event.key === "Escape") {
         if (closeDisabled) return;
         event.preventDefault();
@@ -156,6 +193,7 @@ export function AccessibleDialog({
       aria-labelledby={ariaLabelledBy}
       aria-modal="true"
       className={className}
+      ref={dialogRef}
       role="dialog"
     >
       {closeOnBackdrop ? (

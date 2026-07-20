@@ -3,6 +3,8 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useRef, useState } from "react";
 import { AccessibleDialog } from "../src/components/common/ui/Dialog";
+import { LanguageContext } from "../src/context/Language";
+import { ToastProvider, useToast } from "../src/context/Toast";
 
 function DialogHarness({ closeDisabled = false }: { closeDisabled?: boolean }) {
   const [open, setOpen] = useState(false);
@@ -73,6 +75,53 @@ function NestedDialogHarness() {
   );
 }
 
+function ToastAction() {
+  const notify = useToast();
+
+  return (
+    <button
+      type="button"
+      onClick={() =>
+        notify({ message: "Dialog action completed", duration: 0 })
+      }
+    >
+      Complete action
+    </button>
+  );
+}
+
+function ToastDialogHarness() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <LanguageContext.Provider
+      value={{
+        language: "en",
+        setLanguage: () => undefined,
+        translationVersion: 0,
+      }}
+    >
+      <ToastProvider>
+        <button type="button" onClick={() => setOpen(true)}>
+          Open toast dialog
+        </button>
+        {open ? (
+          <AccessibleDialog
+            ariaLabel="Toast dialog"
+            backdropClassName="backdrop"
+            className="dialog"
+            closeLabel="Close dialog"
+            panelClassName="panel"
+            onClose={() => setOpen(false)}
+          >
+            <ToastAction />
+          </AccessibleDialog>
+        ) : null}
+      </ToastProvider>
+    </LanguageContext.Provider>
+  );
+}
+
 test("dialog traps focus, closes with Escape, and restores the trigger", async () => {
   const user = userEvent.setup({ document });
   const root = document.createElement("div");
@@ -125,7 +174,7 @@ test("dialog ignores backdrop and Escape while closing is disabled", async () =>
   expect(screen.getByRole("dialog")).toBeTruthy();
 });
 
-test("Escape closes only the topmost nested dialog", async () => {
+test("nested dialogs expose and restore only the topmost layer", async () => {
   const user = userEvent.setup({ document });
   const root = document.createElement("div");
   root.id = "root";
@@ -135,9 +184,43 @@ test("Escape closes only the topmost nested dialog", async () => {
   await user.click(screen.getByRole("button", { name: "Open outer dialog" }));
   await user.click(screen.getByRole("button", { name: "Open inner dialog" }));
 
+  const outerDialog = screen
+    .getAllByRole("dialog", { hidden: true })
+    .find((dialog) => dialog.getAttribute("aria-label") === "Outer dialog");
+  const innerDialog = screen.getByRole("dialog", { name: "Inner dialog" });
+  expect(outerDialog?.getAttribute("aria-hidden")).toBe("true");
+  expect(outerDialog?.hasAttribute("inert")).toBe(true);
+  expect(innerDialog.hasAttribute("aria-hidden")).toBe(false);
+  expect(innerDialog.hasAttribute("inert")).toBe(false);
+
   await user.keyboard("{Escape}");
 
   expect(screen.queryByRole("dialog", { name: "Inner dialog" })).toBeNull();
   expect(screen.getByRole("dialog", { name: "Outer dialog" })).toBeTruthy();
+  expect(outerDialog?.hasAttribute("aria-hidden")).toBe(false);
+  expect(outerDialog?.hasAttribute("inert")).toBe(false);
   expect(root.hasAttribute("inert")).toBe(true);
+  expect(document.activeElement).toBe(
+    screen.getByRole("button", { name: "Open inner dialog" }),
+  );
+});
+
+test("dialog toasts stay exposed outside the inert application root", async () => {
+  const user = userEvent.setup({ document });
+  const root = document.createElement("div");
+  root.id = "root";
+  document.body.append(root);
+  render(<ToastDialogHarness />, { container: root });
+
+  await user.click(screen.getByRole("button", { name: "Open toast dialog" }));
+  await user.click(screen.getByRole("button", { name: "Complete action" }));
+
+  const message = screen.getByText("Dialog action completed");
+  const viewport = message.closest(".toast-viewport");
+  expect(viewport).toBeTruthy();
+  expect(root.contains(viewport)).toBe(false);
+  expect(viewport?.closest('[aria-hidden="true"]')).toBeNull();
+
+  await user.click(screen.getByRole("button", { name: "Close" }));
+  expect(screen.queryByText("Dialog action completed")).toBeNull();
 });
