@@ -29,6 +29,10 @@
     #fff;
 }
 
+.home-page .home-hero .hero-inner {
+  padding-top: 96px;
+}
+
 .home-page .home-hero::before,
 .home-page .home-hero::after {
   filter: blur(34px) saturate(1.04);
@@ -241,6 +245,12 @@
   color: var(--ink-2);
   font-size: 14px;
   line-height: 1.5;
+}
+
+@media (min-width: 681px) {
+  .nav.minimal-nav .nav-inner {
+    height: 80px;
+  }
 }
 
 @media (min-width: 681px) and (max-width: 900px) {

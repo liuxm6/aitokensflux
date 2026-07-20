@@ -107,6 +107,47 @@ test("homepage green actions bind accessible ink to scoped selectors", () => {
   );
 });
 
+test("desktop homepage frame binds nav height and hero top padding", () => {
+  const marketingStyles = readFileSync(
+    new URL("../src/styles/marketing.css", import.meta.url),
+    "utf8",
+  );
+
+  expect(marketingStyles).toMatch(
+    /\.home-page \.home-hero \.hero-inner\s*\{\s*padding-top:\s*96px;\s*\}/,
+  );
+
+  const desktopMediaStart = marketingStyles.indexOf(
+    "@media (min-width: 681px) {",
+  );
+  expect(desktopMediaStart).toBeGreaterThanOrEqual(0);
+  const desktopMediaOpen = marketingStyles.indexOf("{", desktopMediaStart);
+  expect(desktopMediaOpen).toBeGreaterThan(desktopMediaStart);
+
+  let depth = 0;
+  let desktopMediaEnd = -1;
+  for (
+    let index = desktopMediaOpen;
+    index < marketingStyles.length;
+    index += 1
+  ) {
+    if (marketingStyles[index] === "{") {
+      depth += 1;
+    } else if (marketingStyles[index] === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        desktopMediaEnd = index + 1;
+        break;
+      }
+    }
+  }
+
+  expect(desktopMediaEnd).toBeGreaterThan(desktopMediaOpen);
+  expect(marketingStyles.slice(desktopMediaStart, desktopMediaEnd)).toMatch(
+    /\.nav\.minimal-nav \.nav-inner\s*\{\s*height:\s*80px;\s*\}/,
+  );
+});
+
 test("adaptive pricing table releases its max height at 760px and below", () => {
   const marketingStyles = readFileSync(
     new URL("../src/styles/marketing.css", import.meta.url),
