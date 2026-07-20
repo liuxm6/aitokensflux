@@ -54,6 +54,12 @@ test("homepage source scopes polish and observes minimal navigation", () => {
   expect(marketingStyles).toContain(".home-page .home-hero");
   expect(marketingStyles).toContain(".home-page .support-reward-callout");
   expect(marketingStyles).toContain(".home-page .home-features");
+  expect(marketingStyles).toContain(".home-page .cta-banner");
+  expect(marketingStyles).toContain(".home-page .support-card");
+  expect(marketingStyles).toContain(".home-page .faq details");
+  expect(marketingStyles).toContain(
+    '.home-page ~ [data-home-section="footer"] .footer',
+  );
   expect(marketingStyles).toContain("@media (prefers-reduced-motion: reduce)");
   expect(headerSource).toContain('className="minimal-nav-sentinel"');
   expect(headerSource).toContain("IntersectionObserver");

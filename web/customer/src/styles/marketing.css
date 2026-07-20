@@ -41,7 +41,8 @@
   text-wrap: balance;
 }
 
-.home-page .home-hero .hero-cta .btn {
+.home-page .home-hero .hero-cta .btn,
+.home-page .cta-banner .btn {
   box-shadow: 0 12px 30px rgb(15 180 119 / 12%);
   transition: transform 0.16s ease;
 }
@@ -54,10 +55,14 @@
   transform: translateY(1px) scale(0.985);
 }
 
+.home-page .support-reward-callout,
+.home-page .support-card {
+  transition: transform 0.16s ease;
+}
+
 .home-page .support-reward-callout {
   width: min(720px, 100%);
   box-shadow: 0 18px 44px rgb(15 143 91 / 11%);
-  transition: transform 0.16s ease;
 }
 
 .home-page .support-reward-callout:hover {
@@ -131,6 +136,104 @@
   margin-bottom: 16px;
 }
 
+.home-page .cta-wrap {
+  padding-block: 64px;
+}
+
+.home-page .cta-banner {
+  padding: 52px 40px;
+  background: var(--ink);
+}
+
+.home-page .cta-banner .btn:active {
+  transform: translateY(1px) scale(0.985);
+}
+
+.home-page .support-section {
+  padding-block: 68px;
+  background: var(--surface-2);
+}
+
+.home-page .support-card {
+  background: var(--surface);
+}
+
+.home-page .support-card.qq .support-logo {
+  background: rgb(18 183 245 / 14%);
+}
+
+.home-page .support-card.telegram .support-logo {
+  background: rgb(38 165 228 / 14%);
+}
+
+.home-page .support-card.x .support-logo {
+  background: rgb(17 17 17 / 9%);
+}
+
+.home-page .support-card.linuxdo .support-logo {
+  background: rgb(255 176 3 / 18%);
+}
+
+.home-page .support-card.gmail .support-logo {
+  background: rgb(234 67 53 / 12%);
+}
+
+.home-page .faq details {
+  padding: 0;
+}
+
+.home-page .faq details[open] {
+  background: var(--accent-soft);
+}
+
+.home-page .faq summary {
+  min-height: 52px;
+  padding: 14px 12px;
+}
+
+.home-page .faq details[open] summary {
+  color: var(--accent-ink);
+}
+
+.home-page .faq p {
+  margin: 0;
+  padding: 0 12px 18px;
+}
+
+.home-page ~ [data-home-section="footer"] .footer {
+  background: var(--surface);
+}
+
+.home-page ~ [data-home-section="footer"] .footer .brand.sm {
+  width: 160px;
+  height: 34px;
+}
+
+.home-page ~ [data-home-section="footer"] .footer h4 {
+  color: var(--ink-2);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+
+.home-page ~ [data-home-section="footer"] .footer a {
+  padding-block: 6px;
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.home-page ~ [data-home-section="footer"] .footer .footer-copy {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.home-page ~ [data-home-section="footer"] .footer .copy {
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 @media (min-width: 681px) and (max-width: 900px) {
   .model-pricing-section .mp-panel-top {
     align-items: stretch;
@@ -160,6 +263,74 @@
     padding-left: 0;
     border-left: none;
   }
+
+  .home-page .support-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .home-page .support-card {
+    grid-column: span 2;
+  }
+
+  .home-page .support-card:nth-child(4) {
+    grid-column: 2 / span 2;
+  }
+
+  .home-page .support-card:nth-child(5) {
+    grid-column: 4 / span 2;
+  }
+}
+
+@media (max-width: 680px) {
+  .home-page .cta-wrap {
+    padding-block: 48px;
+  }
+
+  .home-page .cta-banner {
+    padding: 40px 20px;
+  }
+
+  .home-page .cta-banner > div {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .home-page .cta-banner .btn {
+    width: 100%;
+    white-space: nowrap;
+  }
+
+  .home-page .support-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .home-page .support-card,
+  .home-page .support-card:nth-child(4),
+  .home-page .support-card:nth-child(5) {
+    grid-column: auto;
+  }
+
+  .home-page ~ [data-home-section="footer"] .footer .footer-inner {
+    padding: 40px 22px 28px;
+    text-align: left;
+  }
+
+  .home-page ~ [data-home-section="footer"] .footer .footer-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .home-page ~ [data-home-section="footer"] .footer .copy {
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 6px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    text-align: left;
+  }
 }
 
 @media (max-width: 560px) {
@@ -175,7 +346,9 @@
 
 @media (prefers-reduced-motion: reduce) {
   .home-page .home-hero .hero-cta .btn,
-  .home-page .support-reward-callout {
+  .home-page .cta-banner .btn,
+  .home-page .support-reward-callout,
+  .home-page .support-card {
     transition: none;
   }
 }
