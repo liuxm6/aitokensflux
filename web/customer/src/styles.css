@@ -1233,8 +1233,15 @@ h3 {
   }
 
   .hero-model-pair:first-child .hero-model-item:nth-child(2),
-  .hero-model-pair:nth-child(2) .hero-model-item:nth-child(2) {
+  .hero-model-pair:nth-child(2) .hero-model-item:nth-child(2),
+  .hero-model-pair:nth-child(3) .hero-model-item:nth-child(2) {
     display: inline-flex;
+  }
+}
+
+@media (max-width: 680px) and (prefers-reduced-motion: reduce) {
+  .hero-model-pair:not(:last-child) {
+    display: contents;
   }
 }
 
