@@ -41,12 +41,20 @@ test("homepage source scopes polish and observes minimal navigation", () => {
     new URL("../src/pages/Home/index.tsx", import.meta.url),
     "utf8",
   );
+  const marketingStyles = readFileSync(
+    new URL("../src/styles/marketing.css", import.meta.url),
+    "utf8",
+  );
   const headerSource = readFileSync(
     new URL("../src/components/layout/MarketingHeader.tsx", import.meta.url),
     "utf8",
   );
 
   expect(homeSource).toContain('<main className="home-page">');
+  expect(marketingStyles).toContain(".home-page .home-hero");
+  expect(marketingStyles).toContain(".home-page .support-reward-callout");
+  expect(marketingStyles).toContain(".home-page .home-features");
+  expect(marketingStyles).toContain("@media (prefers-reduced-motion: reduce)");
   expect(headerSource).toContain('className="minimal-nav-sentinel"');
   expect(headerSource).toContain("IntersectionObserver");
   expect(headerSource).not.toContain('window.addEventListener("scroll"');

@@ -1063,10 +1063,7 @@ export function createHomePage({
             id="features"
           >
             <div className="wrap">
-              <div className="center">
-                <Pill>
-                  <T id="Why aitokensflux" />
-                </Pill>
+              <div className="home-section-head center">
                 <h2 className="h-sec">
                   <T id="Keep your workflow. Bill it smarter." />
                 </h2>
@@ -1104,10 +1101,7 @@ export function createHomePage({
           >
             <div className="wrap">
               <div className="pricing-section-head">
-                <div className="pricing-title center">
-                  <Pill>
-                    <T id="Pricing" />
-                  </Pill>
+                <div className="pricing-title home-section-head-left">
                   <h2 className="h-sec">
                     <T id={HOME_SECTION_HEADINGS.plansBalance} />
                   </h2>
