@@ -993,10 +993,6 @@
   font-size: 14px;
   font-weight: 640;
   cursor: pointer;
-  transition:
-    color 0.16s ease,
-    border-color 0.16s ease,
-    background 0.16s ease;
 }
 
 .mp-tab:hover {

@@ -3,6 +3,33 @@ import { expect, test } from "bun:test";
 
 const customerRoot = new URL("../", import.meta.url);
 
+function readCustomerStyleSurface() {
+  const entryUrl = new URL("src/styles.css", customerRoot);
+  const entry = readFileSync(entryUrl, "utf8");
+  const imports = Array.from(
+    entry.matchAll(/@import\s+["']([^"']+)["'];/g),
+    ([, path]) => readFileSync(new URL(path, entryUrl), "utf8"),
+  );
+  return [entry, ...imports].join("\n");
+}
+
+function getCssBlock(source: string, marker: string) {
+  const markerStart = source.indexOf(marker);
+  if (markerStart < 0) return "";
+  const blockStart = source.indexOf("{", markerStart);
+  if (blockStart < 0) return "";
+
+  let depth = 0;
+  for (let index = blockStart; index < source.length; index += 1) {
+    if (source[index] === "{") depth += 1;
+    else if (source[index] === "}") {
+      depth -= 1;
+      if (depth === 0) return source.slice(blockStart + 1, index);
+    }
+  }
+  return "";
+}
+
 test("customer styles load semantic token, base, and dialog layers in order", async () => {
   const entry = await Bun.file(new URL("src/styles.css", customerRoot)).text();
   expect(
@@ -72,29 +99,53 @@ test("homepage source scopes polish and observes minimal navigation", () => {
   expect(headerSource).toContain('homePage ? " home-nav" : ""');
 });
 
-test("homepage polish keeps stable layout constraints and safe transitions", () => {
+test("homepage and loading motion use only transform or opacity", () => {
   const marketingStyles = readFileSync(
     new URL("../src/styles/marketing.css", import.meta.url),
     "utf8",
   );
+  const customerStyles = readCustomerStyleSurface();
+  const modelTabStyles = getCssBlock(customerStyles, ".mp-tab {");
+  const skeletonStyles = getCssBlock(
+    customerStyles,
+    ".state-skeleton-line {",
+  );
+  const skeletonAnimation = skeletonStyles.match(
+    /animation:\s*([a-z][a-z0-9-]*)\b/,
+  )?.[1];
+  const skeletonKeyframes = skeletonAnimation
+    ? getCssBlock(customerStyles, `@keyframes ${skeletonAnimation}`)
+    : "";
   const transitionDeclarations = Array.from(
-    marketingStyles.matchAll(/transition:\s*([^;]+);/g),
+    `${marketingStyles}\n${modelTabStyles}`.matchAll(
+      /transition:\s*([^;]+);/g,
+    ),
     ([, declaration]) => declaration.replace(/\s+/g, " ").trim(),
   );
+  const transitionViolations = transitionDeclarations.flatMap((declaration) =>
+    declaration
+      .split(",")
+      .map((item) => item.trim())
+      .filter(
+        (item) => item !== "none" && !/^(transform|opacity)\b/.test(item),
+      )
+      .map((item) => `transition: ${item}`),
+  );
+  const keyframeViolations = Array.from(
+    skeletonKeyframes.matchAll(/^\s*([a-z-]+)\s*:/gm),
+    ([, property]) => property,
+  )
+    .filter((property) => property !== "transform" && property !== "opacity")
+    .map((property) => `${skeletonAnimation}: ${property}`);
 
   expect(marketingStyles).toContain("min-height: 100dvh");
   expect(marketingStyles).toContain("width: min(720px, 100%)");
   expect(marketingStyles).toContain("@media (max-width: 900px)");
   expect(marketingStyles).toContain("@media (max-width: 560px)");
-  expect(
-    transitionDeclarations
-      .slice(0, -1)
-      .every((declaration) =>
-        declaration
-          .split(",")
-          .every((item) => /^(transform|opacity)\b/.test(item.trim())),
-      ),
-  ).toBe(true);
+  expect(modelTabStyles).toBeTruthy();
+  expect(skeletonAnimation).toBeTruthy();
+  expect(skeletonKeyframes).toBeTruthy();
+  expect([...transitionViolations, ...keyframeViolations]).toEqual([]);
   expect(transitionDeclarations).toHaveLength(3);
   expect(transitionDeclarations.at(-1)).toBe("none");
 });

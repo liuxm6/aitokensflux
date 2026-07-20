@@ -182,8 +182,8 @@ h3 {
     var(--customer-line),
     var(--customer-panel-muted)
   );
-  background-size: 220% 100%;
-  animation: state-skeleton-shift 1.2s ease-in-out infinite;
+  opacity: 0.68;
+  animation: state-skeleton-pulse 1.2s ease-in-out infinite;
 }
 
 .state-skeleton-line:nth-child(2) {
@@ -201,12 +201,13 @@ h3 {
   color: #9f2d27;
 }
 
-@keyframes state-skeleton-shift {
-  from {
-    background-position: 100% 0;
+@keyframes state-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.62;
   }
 
-  to {
-    background-position: -100% 0;
+  50% {
+    opacity: 1;
   }
 }
