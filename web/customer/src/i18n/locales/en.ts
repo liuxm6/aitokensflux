@@ -768,5 +768,13 @@ export const enTranslations = {
     "Review how account and usage data are handled.",
   "The requested customer portal page could not be found.":
     "The requested customer portal page could not be found.",
+  "Try again": "Try again",
+  "Data table": "Data table",
+  "Loading model pricing": "Loading model pricing",
+  "Failed to load model pricing": "Failed to load model pricing",
+  "No model pricing is available": "No model pricing is available",
+  "Failed to load plans": "Failed to load plans",
+  "Failed to load dashboard data": "Failed to load dashboard data",
+  "Usage records": "Usage records",
   X: "X",
 } as const;

@@ -1,6 +1,10 @@
 import { Calendar, CircleDollarSign, RefreshCw } from "lucide-react";
 import { useContext, useEffect, useMemo, useState } from "react";
-import { EmptyState } from "../../components/common/EmptyState";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+} from "../../components/common/ui/AsyncState";
 import {
   ConsolePageTitle,
   CustomerShell,
@@ -96,11 +100,13 @@ export function TopupPage() {
   const [recordType, setRecordType] = useState<BillingRecordType>("all");
   const [billingPage, setBillingPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [message, setMessage] = useState("");
   useToastMessage(message);
 
   const loadBilling = async () => {
     setLoading(true);
+    setLoadError(false);
     const [statusRes, selfRes, recordsRes, subRes] = await Promise.all([
       fetchCustomerStatus(),
       fetchCustomerSelf(),
@@ -120,8 +126,10 @@ export function TopupPage() {
       setSubscriptionRecords([]);
     }
     if (recordsRes.success && subRes.success) {
+      setLoadError(false);
       setMessage("");
     } else {
+      setLoadError(true);
       setMessage(
         recordsRes.message ||
           subRes.message ||
@@ -275,11 +283,26 @@ export function TopupPage() {
           </button>
         </div>
         {loading ? (
-          <EmptyState id="Loading billing records" />
+          <LoadingState id="Loading billing records" />
+        ) : loadError ? (
+          <ErrorState
+            id="Failed to load billing records"
+            onRetry={() => void loadBilling()}
+          />
         ) : billingRows.length > 0 ? (
           <DataTable
+            caption="Billing records"
             className="billing-record-table"
             headers={[
+              "Time",
+              "Type",
+              "Name / Trade No.",
+              "Method",
+              "Quota",
+              "Paid",
+              "Status",
+            ]}
+            mobileLabels={[
               "Time",
               "Type",
               "Name / Trade No.",

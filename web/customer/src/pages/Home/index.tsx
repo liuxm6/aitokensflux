@@ -10,13 +10,18 @@ import {
 import type { LucideIcon } from "lucide-react";
 import {
   type ComponentType,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
   useState,
 } from "react";
 import { AppLink } from "../../components/common/AppLink";
-import { EmptyState } from "../../components/common/EmptyState";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+} from "../../components/common/ui/AsyncState";
 import {
   FathersDayGifts,
   FathersDayGiftEntry,
@@ -27,7 +32,8 @@ import { SupportChannelGrid } from "../../components/support/SupportChannels";
 import { PaygTopupSection } from "../../components/topup/PaygTopupSection";
 import { PriceCard } from "../../components/topup/PriceCard";
 import { AuthContext } from "../../context/Auth";
-import { T } from "../../context/Language";
+import { LanguageContext, T } from "../../context/Language";
+import { localizeKey } from "../../i18n/localization";
 import { navigateTo } from "../../helpers/navigation";
 import { recordsToPricePlans } from "../../helpers/plans";
 import {
@@ -618,18 +624,21 @@ export function groupPricing(
 }
 
 function ModelPricingSection() {
+  const { language } = useContext(LanguageContext);
   const [grouped, setGrouped] = useState<Record<
     PricingGroup,
     GroupPricingRows
   > | null>(null);
+  const [pricingError, setPricingError] = useState(false);
   const [tab, setTab] = useState<PricingGroup>("claude");
 
-  useEffect(() => {
-    let mounted = true;
+  const loadPricing = useCallback(() => {
+    setGrouped(null);
+    setPricingError(false);
     void fetchModelPricing()
       .then((res) => {
-        if (!mounted) return;
         const hasData = res.success && (res.data?.length ?? 0) > 0;
+        if (!res.success && !import.meta.env.DEV) setPricingError(true);
         const next = groupPricing(
           hasData
             ? {
@@ -645,13 +654,17 @@ function ModelPricingSection() {
         setGrouped(next);
       })
       .catch(() => {
-        if (!mounted || !import.meta.env.DEV) return;
-        setGrouped(groupPricing(DEV_SAMPLE_PRICING));
+        if (import.meta.env.DEV) {
+          setGrouped(groupPricing(DEV_SAMPLE_PRICING));
+          return;
+        }
+        setPricingError(true);
       });
-    return () => {
-      mounted = false;
-    };
   }, []);
+
+  useEffect(() => {
+    loadPricing();
+  }, [loadPricing]);
 
   const providers = useMemo(
     () =>
@@ -667,8 +680,31 @@ function ModelPricingSection() {
     }
   }, [providers, tab]);
 
-  if (!grouped) return null;
-  if (providers.length === 0) return null;
+  if (!grouped) {
+    return (
+      <section className="section model-pricing-section" id="model-pricing">
+        <div className="wrap">
+          {pricingError ? (
+            <ErrorState
+              id="Failed to load model pricing"
+              onRetry={loadPricing}
+            />
+          ) : (
+            <LoadingState id="Loading model pricing" />
+          )}
+        </div>
+      </section>
+    );
+  }
+  if (providers.length === 0) {
+    return (
+      <section className="section model-pricing-section" id="model-pricing">
+        <div className="wrap">
+          <EmptyState id="No model pricing is available" />
+        </div>
+      </section>
+    );
+  }
 
   const rows = grouped[tab]?.rows ?? [];
   const groupNote = (grouped[tab]?.note ?? "").trim();
@@ -738,20 +774,28 @@ function ModelPricingSection() {
             </div>
           ) : null}
 
-          <div className="mp-table-wrap">
+          <div
+            aria-labelledby="model-pricing-caption"
+            className="mp-table-wrap"
+            role="region"
+            tabIndex={0}
+          >
             <table className="mp-table">
+              <caption className="sr-only" id="model-pricing-caption">
+                <T id="Model pricing" />
+              </caption>
               <thead>
                 <tr>
-                  <th className="mp-col-model">
+                  <th className="mp-col-model" scope="col">
                     <T id="Model" />
                   </th>
-                  <th>
+                  <th scope="col">
                     <T id="Input" />
                   </th>
-                  <th>
+                  <th scope="col">
                     <T id="Output" />
                   </th>
-                  <th>
+                  <th scope="col">
                     <T id="Cache read" />
                   </th>
                 </tr>
@@ -759,7 +803,10 @@ function ModelPricingSection() {
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.name}>
-                    <td className="mp-col-model">
+                    <td
+                      className="mp-col-model"
+                      data-label={localizeKey(language, "Model")}
+                    >
                       <span className="mp-model-cell">
                         <span
                           className={`mp-model-mark ${tab}`}
@@ -771,7 +818,11 @@ function ModelPricingSection() {
                       </span>
                     </td>
                     {row.perCall != null ? (
-                      <td className="mp-percall" colSpan={3}>
+                      <td
+                        className="mp-percall"
+                        colSpan={3}
+                        data-label={localizeKey(language, "Price")}
+                      >
                         <span className="mp-price">
                           <span>{formatUsd(row.perCall)}</span>
                           <span className="mp-unit">
@@ -781,13 +832,16 @@ function ModelPricingSection() {
                       </td>
                     ) : (
                       <>
-                        <td>
+                        <td data-label={localizeKey(language, "Input")}>
                           <TokenPrice value={row.input} />
                         </td>
-                        <td>
+                        <td data-label={localizeKey(language, "Output")}>
                           <TokenPrice value={row.output} />
                         </td>
-                        <td className="mp-muted">
+                        <td
+                          className="mp-muted"
+                          data-label={localizeKey(language, "Cache read")}
+                        >
                           <TokenPrice value={row.cacheRead} />
                         </td>
                       </>
@@ -816,11 +870,14 @@ export function createHomePage({
     const [plans, setPlans] = useState<SubscriptionPlanRecord[]>([]);
     const [topupInfo, setTopupInfo] = useState<TopupInfo | null>(null);
     const [plansLoading, setPlansLoading] = useState(true);
+    const [plansError, setPlansError] = useState(false);
+    const [reloadKey, setReloadKey] = useState(0);
     const [topupDialogOpen, setTopupDialogOpen] = useState(false);
 
     useEffect(() => {
       let mounted = true;
       setPlansLoading(true);
+      setPlansError(false);
       void Promise.all([
         fetchCustomerStatus(),
         fetchPublicPlans(),
@@ -829,6 +886,7 @@ export function createHomePage({
         if (!mounted) return;
         if (statusRes.success && statusRes.data) setStatus(statusRes.data);
         setPlans(plansRes.success && plansRes.data ? plansRes.data : []);
+        setPlansError(!plansRes.success);
         if (topupInfoRes.success && topupInfoRes.data) {
           setTopupInfo(topupInfoRes.data);
         }
@@ -837,7 +895,7 @@ export function createHomePage({
       return () => {
         mounted = false;
       };
-    }, []);
+    }, [reloadKey]);
 
     const displayPlans = useMemo(
       () => recordsToPricePlans(plans, status),
@@ -999,7 +1057,12 @@ export function createHomePage({
                 </AppLink>
               </div>
               {plansLoading ? (
-                <EmptyState id="Loading plans" />
+                <LoadingState id="Loading plans" />
+              ) : plansError ? (
+                <ErrorState
+                  id="Failed to load plans"
+                  onRetry={() => setReloadKey((value) => value + 1)}
+                />
               ) : displayPlans.length > 0 ? (
                 <div className="price-grid">
                   {displayPlans.map((plan) => (

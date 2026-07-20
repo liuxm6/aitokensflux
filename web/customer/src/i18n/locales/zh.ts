@@ -736,5 +736,13 @@ export const zhTranslations = {
     "查看账号和用量数据的处理方式。",
   "The requested customer portal page could not be found.":
     "找不到请求的客户门户页面。",
+  "Try again": "重试",
+  "Data table": "数据表格",
+  "Loading model pricing": "正在加载模型费率",
+  "Failed to load model pricing": "模型费率加载失败",
+  "No model pricing is available": "暂无模型费率",
+  "Failed to load plans": "套餐加载失败",
+  "Failed to load dashboard data": "控制台数据加载失败",
+  "Usage records": "用量记录",
   X: "X",
 } as const;

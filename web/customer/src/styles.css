@@ -223,6 +223,18 @@ textarea:focus-visible {
   font-family: var(--mono);
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  margin: -1px;
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
 .center {
   text-align: center;
 }
@@ -3361,6 +3373,14 @@ h3 {
 
 .table-wrap {
   overflow-x: auto;
+  outline: none;
+  overscroll-behavior-x: contain;
+}
+
+.table-wrap:focus-visible,
+.usage-table-wrap:focus-visible,
+.mp-table-wrap:focus-visible {
+  box-shadow: var(--customer-focus);
 }
 
 .table {
@@ -4226,6 +4246,72 @@ h3 {
 
 .dashboard-support-panel .support-copy strong {
   font-size: 14px;
+}
+
+.async-state {
+  display: grid;
+  min-height: 150px;
+  place-items: center;
+  gap: 14px;
+  padding: 24px;
+  border-radius: var(--customer-radius-card);
+  color: var(--customer-muted);
+  text-align: center;
+}
+
+.async-state-action {
+  display: flex;
+  justify-content: center;
+}
+
+.loading-state {
+  width: min(100%, 560px);
+  margin: 0 auto;
+}
+
+.state-skeleton {
+  display: grid;
+  width: 100%;
+  gap: 10px;
+}
+
+.state-skeleton-line {
+  display: block;
+  height: 13px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--customer-panel-muted),
+    var(--customer-line),
+    var(--customer-panel-muted)
+  );
+  background-size: 220% 100%;
+  animation: state-skeleton-shift 1.2s ease-in-out infinite;
+}
+
+.state-skeleton-line:nth-child(2) {
+  width: 84%;
+}
+
+.state-skeleton-line:nth-child(3) {
+  width: 62%;
+}
+
+.error-state {
+  min-height: 150px;
+  border: 1px solid color-mix(in srgb, var(--customer-danger) 22%, white);
+  background: #fffafa;
+  color: #9f2d27;
+}
+
+@keyframes state-skeleton-shift {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: -100% 0;
+  }
 }
 
 .dashboard-support-panel .support-copy span {
@@ -7955,6 +8041,7 @@ h3 {
   .setup-modal,
   .setup-picker,
   .setup-wizard-page::before,
+  .state-skeleton-line,
   .auth-page,
   .auth-page::before,
   .auth-page::after,
@@ -10759,5 +10846,101 @@ h3 {
   .date-range input,
   .usage-filter-control {
     font-size: 16px;
+  }
+
+  .table-wrap,
+  .usage-table-wrap {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+  }
+
+  .table,
+  .table tbody,
+  .table tr,
+  .table td,
+  .usage-log-table,
+  .usage-log-table tbody,
+  .usage-log-table tr,
+  .usage-log-table td,
+  .mp-table,
+  .mp-table tbody,
+  .mp-table tr,
+  .mp-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .table thead,
+  .usage-log-table thead,
+  .mp-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  .table tr,
+  .usage-log-table tr,
+  .mp-table tr {
+    overflow: hidden;
+    margin-bottom: 12px;
+    border: 1px solid var(--customer-line);
+    border-radius: var(--customer-radius-field);
+    background: var(--customer-panel);
+  }
+
+  .table td,
+  .usage-log-table td,
+  .mp-table td,
+  .mp-table td.mp-col-model,
+  .mp-table td.mp-percall {
+    display: grid;
+    grid-template-columns: minmax(92px, 36%) minmax(0, 1fr);
+    align-items: start;
+    gap: 12px;
+    max-width: none;
+    min-height: 44px;
+    padding: 11px 13px;
+    border-bottom: 1px solid var(--customer-line);
+    text-align: right;
+    white-space: normal;
+  }
+
+  .table td::before,
+  .usage-log-table td::before,
+  .mp-table td::before {
+    color: var(--customer-muted);
+    content: attr(data-label);
+    font-size: 12px;
+    font-weight: 850;
+    text-align: left;
+  }
+
+  .table tr:last-child td,
+  .table td:last-child,
+  .usage-log-table tbody tr:last-child td,
+  .usage-log-table td:last-child,
+  .mp-table td:last-child {
+    border-bottom: 0;
+  }
+
+  .usage-log-table,
+  .mp-table {
+    min-width: 0;
+  }
+
+  .mp-table-wrap {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    padding: 12px;
+  }
+
+  .mp-model-cell,
+  .usage-latency-row,
+  .usage-detail-stack {
+    justify-content: flex-end;
   }
 }

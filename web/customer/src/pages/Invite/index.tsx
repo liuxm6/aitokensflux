@@ -1,6 +1,10 @@
 import { Copy, Gift, RefreshCw } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
-import { EmptyState } from "../../components/common/EmptyState";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+} from "../../components/common/ui/AsyncState";
 import { SectionLabel } from "../../components/common/SectionLabel";
 import { RewardPair } from "../../components/dashboard/RewardPair";
 import {
@@ -76,12 +80,14 @@ export function InvitePage() {
   const [invitePage, setInvitePage] = useState(1);
   const [monthInviteCount, setMonthInviteCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [transferring, setTransferring] = useState(false);
   const [message, setMessage] = useState("");
   useToastMessage(message);
 
   const loadInvite = async (clearMessage = true) => {
     setLoading(true);
+    setLoadError(false);
     const month = getCurrentMonthUnixRange();
     const [statusRes, selfRes, affRes, logsRes, monthLogsRes] =
       await Promise.all([
@@ -107,6 +113,7 @@ export function InvitePage() {
       setInviteLogs(normalizePageItems(logsRes.data).filter(isInviteLog));
       if (clearMessage) setMessage("");
     } else {
+      setLoadError(true);
       setMessage(
         logsRes.message ||
           localizeKey(language, "Failed to load referral records"),
@@ -329,10 +336,17 @@ export function InvitePage() {
           </div>
         </div>
         {loading ? (
-          <EmptyState id="Loading referral records" />
+          <LoadingState id="Loading referral records" />
+        ) : loadError ? (
+          <ErrorState
+            id="Failed to load referral records"
+            onRetry={() => void loadInvite()}
+          />
         ) : inviteRows.length > 0 ? (
           <DataTable
+            caption="Invite records"
             headers={["Time", "Type", "Record", "Quota"]}
+            mobileLabels={["Time", "Type", "Record", "Quota"]}
             rows={inviteRows.map((log) => [
               formatDateTime(log.created_at),
               getInviteLogTypeLabel(getInviteLogKind(log), language),

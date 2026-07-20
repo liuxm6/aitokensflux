@@ -2,7 +2,10 @@ import { CircleDollarSign, FileText, KeyRound } from "lucide-react";
 import type { ComponentType } from "react";
 import { useContext, useEffect, useState } from "react";
 import { AppLink } from "../../components/common/AppLink";
-import { EmptyState } from "../../components/common/EmptyState";
+import {
+  ErrorState,
+  LoadingState,
+} from "../../components/common/ui/AsyncState";
 import { SectionLabel } from "../../components/common/SectionLabel";
 import { TutorialCard } from "../../components/dashboard/TutorialCard";
 import {
@@ -58,6 +61,8 @@ export function createDashboardPage({
       CustomerSubscriptionRecord[]
     >([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState(false);
+    const [reloadKey, setReloadKey] = useState(0);
     const [topupDialogOpen, setTopupDialogOpen] = useState(false);
 
     useEffect(() => {
@@ -65,6 +70,7 @@ export function createDashboardPage({
       let mounted = true;
       const today = getTodayUnixRange();
       setLoading(true);
+      setLoadError(false);
       void Promise.all([
         fetchCustomerStatus(),
         fetchCustomerSelf(),
@@ -80,12 +86,18 @@ export function createDashboardPage({
           setSubscriptions(subRes.data.subscriptions ?? []);
         }
         if (plansRes.success && plansRes.data) setPlans(plansRes.data);
+        setLoadError(
+          !selfRes.success ||
+            !statsRes.success ||
+            !subRes.success ||
+            !plansRes.success,
+        );
         setLoading(false);
       });
       return () => {
         mounted = false;
       };
-    }, [user?.id]);
+    }, [reloadKey, user?.id]);
 
     useEffect(() => {
       if (loading || window.location.hash !== "#dashboard-wallet") return;
@@ -112,7 +124,14 @@ export function createDashboardPage({
 
         {loading ? (
           <Panel className="dashboard-plan-panel">
-            <EmptyState id="Loading current plan" />
+            <LoadingState id="Loading current plan" />
+          </Panel>
+        ) : loadError ? (
+          <Panel className="dashboard-plan-panel">
+            <ErrorState
+              id="Failed to load dashboard data"
+              onRetry={() => setReloadKey((value) => value + 1)}
+            />
           </Panel>
         ) : activeSubscriptionRecords.length > 0 ? (
           <div className="dashboard-plan-list">
