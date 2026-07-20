@@ -59,10 +59,13 @@ export function ResetPasswordPage() {
     }
 
     setLoading(true);
-    const response = await apiRequest<ResetPasswordResponse>("/api/user/reset", {
-      method: "POST",
-      body: JSON.stringify({ email, token }),
-    });
+    const response = await apiRequest<ResetPasswordResponse>(
+      "/api/user/reset",
+      {
+        method: "POST",
+        body: JSON.stringify({ email, token }),
+      },
+    );
     setLoading(false);
 
     if (!response.success || !response.data) {

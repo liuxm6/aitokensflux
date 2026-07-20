@@ -313,14 +313,8 @@ function subscriptionPlanToPricePlan(
     suffixZh: codingPreset ? "月" : period.zh,
     suffixEn: codingPreset ? "mo" : period.en,
     hideSuffix: codingPreset?.hideSuffix,
-    saveZh:
-      codingPreset?.saveZh ??
-      codingValueMeta?.saveZh ??
-      summary.zh,
-    saveEn:
-      codingPreset?.saveEn ??
-      codingValueMeta?.saveEn ??
-      summary.en,
+    saveZh: codingPreset?.saveZh ?? codingValueMeta?.saveZh ?? summary.zh,
+    saveEn: codingPreset?.saveEn ?? codingValueMeta?.saveEn ?? summary.en,
     promoZh: subtitle,
     promoEn: subtitle,
     originalPriceZh: codingValueMeta?.originalPriceZh,

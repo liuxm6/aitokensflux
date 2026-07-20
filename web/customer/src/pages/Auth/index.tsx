@@ -544,17 +544,14 @@ export function AuthPage({
     if (!validateBase()) return;
     setLoading(true);
     try {
-      const response = await apiRequest<LoginData>(
-        "/api/user/login",
-        {
-          method: "POST",
-          headers: withTurnstileHeader(turnstileToken),
-          body: JSON.stringify({
-            username: values.email.trim(),
-            password: values.password,
-          }),
-        },
-      );
+      const response = await apiRequest<LoginData>("/api/user/login", {
+        method: "POST",
+        headers: withTurnstileHeader(turnstileToken),
+        body: JSON.stringify({
+          username: values.email.trim(),
+          password: values.password,
+        }),
+      });
 
       if (!response.success || !response.data) {
         setMessage({
@@ -627,21 +624,17 @@ export function AuthPage({
     try {
       const email = values.email.trim();
       const username = generateUsernameFromEmail(email);
-      const registerResponse = await apiRequest(
-        "/api/user/register",
-        {
-          method: "POST",
-          headers: withTurnstileHeader(turnstileToken),
-          body: JSON.stringify({
-            username,
-            email,
-            password: values.password,
-            verification_code: values.verificationCode.trim() || undefined,
-            aff_code:
-              values.inviteCode.trim() || getStoredAffCode() || undefined,
-          }),
-        },
-      );
+      const registerResponse = await apiRequest("/api/user/register", {
+        method: "POST",
+        headers: withTurnstileHeader(turnstileToken),
+        body: JSON.stringify({
+          username,
+          email,
+          password: values.password,
+          verification_code: values.verificationCode.trim() || undefined,
+          aff_code: values.inviteCode.trim() || getStoredAffCode() || undefined,
+        }),
+      });
 
       if (!registerResponse.success) {
         setMessage({
@@ -652,16 +645,13 @@ export function AuthPage({
       }
 
       setMessage({ type: "success", text: copy.success });
-      const loginResponse = await apiRequest<LoginData>(
-        "/api/user/login",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            username: email,
-            password: values.password,
-          }),
-        },
-      );
+      const loginResponse = await apiRequest<LoginData>("/api/user/login", {
+        method: "POST",
+        body: JSON.stringify({
+          username: email,
+          password: values.password,
+        }),
+      });
 
       if (loginResponse.success && loginResponse.data) {
         setUser(loginResponse.data);
@@ -805,13 +795,10 @@ export function AuthPage({
     if (!requireTurnstile()) return;
     setOAuthLoading("passkey");
     try {
-      const begin = await apiRequest(
-        "/api/user/passkey/login/begin",
-        {
-          method: "POST",
-          headers: withTurnstileHeader(turnstileToken),
-        },
-      );
+      const begin = await apiRequest("/api/user/passkey/login/begin", {
+        method: "POST",
+        headers: withTurnstileHeader(turnstileToken),
+      });
       if (!begin.success || !begin.data) {
         setMessage({
           type: "error",

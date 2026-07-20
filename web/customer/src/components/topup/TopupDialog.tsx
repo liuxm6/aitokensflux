@@ -4,10 +4,7 @@ import { EmptyState } from "../common/EmptyState";
 import { AuthContext } from "../../context/Auth";
 import { LanguageContext, T } from "../../context/Language";
 import { useToastMessage } from "../../context/Toast";
-import {
-  formatCurrencyAmount,
-  formatQuotaMoney,
-} from "../../helpers/format";
+import { formatCurrencyAmount, formatQuotaMoney } from "../../helpers/format";
 import { navigateTo } from "../../helpers/navigation";
 import {
   getApiPaymentError,
