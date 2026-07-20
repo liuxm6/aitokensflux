@@ -2,6 +2,8 @@ import { Menu, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { AppLink } from "../common/AppLink";
+import { ConsoleAccountMenu } from "./ConsoleAccountMenu";
+import { LanguageButton } from "./LanguageButton";
 import { sidebarItems } from "../../constants/navigation";
 import { LanguageContext } from "../../context/Language";
 import { localizeKey } from "../../i18n/localization";
@@ -104,7 +106,7 @@ export function CustomerShell({
         </nav>
       </aside>
       <div className="main" ref={mainRef}>
-        <div className="mobile-topbar">
+        <header className="console-topbar">
           <button
             ref={menuButtonRef}
             aria-controls="customer-sidebar"
@@ -119,8 +121,14 @@ export function CustomerShell({
           >
             {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
-          <strong>{localizeKey(language, crumbId)}</strong>
-        </div>
+          <strong className="console-topbar-title">
+            {localizeKey(language, crumbId)}
+          </strong>
+          <div className="console-topbar-actions">
+            <LanguageButton />
+            <ConsoleAccountMenu />
+          </div>
+        </header>
         <main className="content">{children}</main>
       </div>
     </div>
