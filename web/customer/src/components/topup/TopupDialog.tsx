@@ -1,6 +1,7 @@
 import { Check, CircleDollarSign, LoaderCircle, Play, X } from "lucide-react";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useId, useMemo, useRef, useState } from "react";
 import { EmptyState } from "../common/EmptyState";
+import { AccessibleDialog } from "../common/ui/Dialog";
 import { AuthContext } from "../../context/Auth";
 import { LanguageContext, T } from "../../context/Language";
 import { useToastMessage } from "../../context/Toast";
@@ -48,6 +49,8 @@ import type {
 export function TopupDialog({ onClose }: { onClose: () => void }) {
   const { user, setUser } = useContext(AuthContext);
   const { language } = useContext(LanguageContext);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const titleId = useId();
   const [status, setStatus] = useState<CustomerStatus | null>(null);
   const [topupInfo, setTopupInfo] = useState<TopupInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -384,309 +387,303 @@ export function TopupDialog({ onClose }: { onClose: () => void }) {
 
   return (
     <>
-      <div
+      <AccessibleDialog
+        ariaLabelledBy={titleId}
+        backdropClassName="purchase-backdrop as-button"
         className="purchase-dialog topup-dialog"
-        role="dialog"
-        aria-modal="true"
+        closeLabel={localizeKey(language, "Close")}
+        initialFocusRef={closeButtonRef}
+        panelClassName="purchase-panel topup-dialog-panel"
+        onClose={onClose}
       >
         <button
+          ref={closeButtonRef}
           aria-label={localizeKey(language, "Close")}
-          className="purchase-backdrop as-button"
+          className="purchase-close"
           type="button"
           onClick={onClose}
-        />
-        <div className="purchase-panel topup-dialog-panel">
-          <button
-            aria-label={localizeKey(language, "Close")}
-            className="purchase-close"
-            type="button"
-            onClick={onClose}
-          >
-            <X size={20} />
-          </button>
-          <div className="purchase-head topup-dialog-head">
-            <h2>
-              <T id="Top up" />
-            </h2>
-          </div>
+        >
+          <X size={20} />
+        </button>
+        <div className="purchase-head topup-dialog-head">
+          <h2 id={titleId}>
+            <T id="Top up" />
+          </h2>
+        </div>
 
-          {loading ? (
-            <EmptyState id="Loading top-up options" />
-          ) : (
-            <div className="topup-dialog-content">
-              <div className="billing-balance topup-dialog-balance">
-                <span>
-                  <T id="Balance" />
-                </span>
-                <b className="mono">{paygLeft}</b>
+        {loading ? (
+          <EmptyState id="Loading top-up options" />
+        ) : (
+          <div className="topup-dialog-content">
+            <div className="billing-balance topup-dialog-balance">
+              <span>
+                <T id="Balance" />
+              </span>
+              <b className="mono">{paygLeft}</b>
+            </div>
+            <div className="topup-settlement-notice">
+              <T id="CNY and USD are settled 1:1." />
+            </div>
+
+            {complianceBlocked ? (
+              <div className="billing-alert">
+                <T id="Payment compliance has not been confirmed by admin yet." />
               </div>
-              <div className="topup-settlement-notice">
-                <T id="CNY and USD are settled 1:1." />
-              </div>
+            ) : null}
 
-              {complianceBlocked ? (
-                <div className="billing-alert">
-                  <T id="Payment compliance has not been confirmed by admin yet." />
-                </div>
-              ) : null}
+            <div
+              className={`billing-form-grid topup-form-grid${
+                hasCreemTopup ? "" : " single"
+              }`}
+            >
+              <div className="billing-main-form">
+                <label className="billing-field">
+                  <span>
+                    <T id="Top-up amount" />
+                  </span>
+                  <div className="billing-input-row">
+                    <input
+                      min={selectedPaymentMethod?.minTopup ?? 1}
+                      step="1"
+                      type="number"
+                      value={topupAmount || ""}
+                      onChange={(event) =>
+                        setTopupAmount(Number(event.currentTarget.value || 0))
+                      }
+                    />
+                    <b>{getTopupAmountUnit(status)}</b>
+                  </div>
+                </label>
 
-              <div
-                className={`billing-form-grid topup-form-grid${
-                  hasCreemTopup ? "" : " single"
-                }`}
-              >
-                <div className="billing-main-form">
-                  <label className="billing-field">
-                    <span>
-                      <T id="Top-up amount" />
-                    </span>
-                    <div className="billing-input-row">
-                      <input
-                        min={selectedPaymentMethod?.minTopup ?? 1}
-                        step="1"
-                        type="number"
-                        value={topupAmount || ""}
-                        onChange={(event) =>
-                          setTopupAmount(Number(event.currentTarget.value || 0))
-                        }
+                {presetAmounts.length > 0 ? (
+                  <div className="billing-preset-grid">
+                    {presetAmounts.slice(0, 8).map((amount) => {
+                      const selected = amount === topupAmount;
+                      const presetDiscount = getTopupDiscountRate(
+                        topupInfo,
+                        amount,
+                      );
+                      return (
+                        <button
+                          className={`billing-preset${selected ? " active" : ""}`}
+                          key={amount}
+                          type="button"
+                          onClick={() => setTopupAmount(amount)}
+                        >
+                          <span>{formatTopupAmount(amount, status)}</span>
+                          {presetDiscount > 0 && presetDiscount < 1 ? (
+                            <small>{Math.round(presetDiscount * 100)}%</small>
+                          ) : null}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : null}
+
+                <div className="billing-pay-summary">
+                  <span>
+                    <T id="Estimated payment" />
+                  </span>
+                  <strong>
+                    {amountLoading ? (
+                      <T id="Calculating..." />
+                    ) : (
+                      formatTopupPaymentAmount(paymentAmount, status)
+                    )}
+                  </strong>
+                  {hasDiscount && originalPaymentAmount !== null ? (
+                    <small>
+                      <T
+                        id="Original {{amount}}"
+                        values={{
+                          amount: formatTopupPaymentAmount(
+                            originalPaymentAmount,
+                            status,
+                          ),
+                        }}
                       />
-                      <b>{getTopupAmountUnit(status)}</b>
-                    </div>
-                  </label>
+                    </small>
+                  ) : null}
+                </div>
 
-                  {presetAmounts.length > 0 ? (
-                    <div className="billing-preset-grid">
-                      {presetAmounts.slice(0, 8).map((amount) => {
-                        const selected = amount === topupAmount;
-                        const presetDiscount = getTopupDiscountRate(
-                          topupInfo,
-                          amount,
-                        );
+                {paymentOptions.length > 0 ? (
+                  <div className="billing-methods">
+                    <span className="billing-section-label">
+                      <T id="Payment method" />
+                    </span>
+                    <div className="billing-method-grid">
+                      {paymentOptions.map((option) => {
+                        const active = option.id === selectedPaymentMethod?.id;
+                        const belowMin = topupAmount < option.minTopup;
+                        const processing = paymentLoading === option.id;
                         return (
                           <button
-                            className={`billing-preset${selected ? " active" : ""}`}
-                            key={amount}
+                            className={`billing-method ${
+                              option.provider === "stripe" ? "stripe" : ""
+                            }${active ? " active" : ""}`}
+                            disabled={processing}
+                            key={option.id}
                             type="button"
-                            onClick={() => setTopupAmount(amount)}
+                            onClick={() =>
+                              setSelectedPaymentMethodId(option.id)
+                            }
                           >
-                            <span>{formatTopupAmount(amount, status)}</span>
-                            {presetDiscount > 0 && presetDiscount < 1 ? (
-                              <small>{Math.round(presetDiscount * 100)}%</small>
-                            ) : null}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  ) : null}
-
-                  <div className="billing-pay-summary">
-                    <span>
-                      <T id="Estimated payment" />
-                    </span>
-                    <strong>
-                      {amountLoading ? (
-                        <T id="Calculating..." />
-                      ) : (
-                        formatTopupPaymentAmount(paymentAmount, status)
-                      )}
-                    </strong>
-                    {hasDiscount && originalPaymentAmount !== null ? (
-                      <small>
-                        <T
-                          id="Original {{amount}}"
-                          values={{
-                            amount: formatTopupPaymentAmount(
-                              originalPaymentAmount,
-                              status,
-                            ),
-                          }}
-                        />
-                      </small>
-                    ) : null}
-                  </div>
-
-                  {paymentOptions.length > 0 ? (
-                    <div className="billing-methods">
-                      <span className="billing-section-label">
-                        <T id="Payment method" />
-                      </span>
-                      <div className="billing-method-grid">
-                        {paymentOptions.map((option) => {
-                          const active =
-                            option.id === selectedPaymentMethod?.id;
-                          const belowMin = topupAmount < option.minTopup;
-                          const processing = paymentLoading === option.id;
-                          return (
-                            <button
-                              className={`billing-method ${
-                                option.provider === "stripe" ? "stripe" : ""
-                              }${active ? " active" : ""}`}
-                              disabled={processing}
-                              key={option.id}
-                              type="button"
-                              onClick={() =>
-                                setSelectedPaymentMethodId(option.id)
-                              }
-                            >
-                              {option.provider === "stripe" ? (
-                                <>
-                                  <span className="stripe-brand" aria-hidden>
-                                    stripe
-                                  </span>
-                                  <span className="billing-method-copy">
-                                    <span>{option.name}</span>
-                                    <small className="billing-method-note">
-                                      <T id="WeChat Pay / Alipay" />
-                                    </small>
-                                    {belowMin ? (
-                                      <small className="billing-method-note warning">
-                                        <T
-                                          id="Min {{amount}}"
-                                          values={{ amount: option.minTopup }}
-                                        />
-                                      </small>
-                                    ) : null}
-                                  </span>
-                                </>
-                              ) : (
-                                <>
-                                  <CircleDollarSign size={16} />
+                            {option.provider === "stripe" ? (
+                              <>
+                                <span className="stripe-brand" aria-hidden>
+                                  stripe
+                                </span>
+                                <span className="billing-method-copy">
                                   <span>{option.name}</span>
+                                  <small className="billing-method-note">
+                                    <T id="WeChat Pay / Alipay" />
+                                  </small>
                                   {belowMin ? (
-                                    <small>
+                                    <small className="billing-method-note warning">
                                       <T
                                         id="Min {{amount}}"
                                         values={{ amount: option.minTopup }}
                                       />
                                     </small>
                                   ) : null}
-                                </>
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      <button
-                        className="btn btn-flux btn-block"
-                        disabled={paymentDisabled}
-                        type="button"
-                        onClick={() =>
-                          selectedPaymentMethod
-                            ? void handleTopupPayment(selectedPaymentMethod)
-                            : undefined
-                        }
-                      >
-                        {paymentLoading &&
-                        paymentLoading === selectedPaymentMethod?.id ? (
-                          <LoaderCircle className="spin" size={16} />
-                        ) : (
-                          <CircleDollarSign size={16} />
-                        )}
-                        <T id="Top up now" />
-                      </button>
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <CircleDollarSign size={16} />
+                                <span>{option.name}</span>
+                                {belowMin ? (
+                                  <small>
+                                    <T
+                                      id="Min {{amount}}"
+                                      values={{ amount: option.minTopup }}
+                                    />
+                                  </small>
+                                ) : null}
+                              </>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
-                  ) : (
-                    <div className="billing-alert">
-                      <T id="No online payment method is enabled." />
-                    </div>
-                  )}
-                </div>
-
-                {hasCreemTopup ? (
-                  <div className="billing-side-form">
-                    <div className="billing-side-section">
-                      <span className="billing-section-label">Creem</span>
-                      <div className="billing-creem-grid">
-                        {creemProducts.map((product) => {
-                          const productId =
-                            product.productId ||
-                            product.product_id ||
-                            product.name ||
-                            "";
-                          return (
-                            <button
-                              className="billing-creem-product"
-                              disabled={
-                                complianceBlocked ||
-                                paymentLoading === `creem:${productId}`
-                              }
-                              key={productId}
-                              type="button"
-                              onClick={() => void handleCreemPayment(product)}
-                            >
-                              <strong>{product.name || "Creem"}</strong>
-                              <span>
-                                {formatCurrencyAmount(
-                                  Number(product.price || 0),
-                                  product.currency || "USD",
-                                )}
-                              </span>
-                              {product.quota ? (
-                                <small>
-                                  {formatQuotaMoney(product.quota, status)}
-                                </small>
-                              ) : null}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-
-              {hasAuxTopupActions ? (
-                <div className="topup-dialog-tools">
-                  {redemptionEnabled ? (
-                    <div className="billing-redemption-row topup-redemption-inline">
-                      <span className="billing-section-label">
-                        <T id="Redemption code" />
-                      </span>
-                      <input
-                        placeholder={localizeKey(language, "Enter code")}
-                        value={redemptionCode}
-                        onChange={(event) =>
-                          setRedemptionCode(event.currentTarget.value)
-                        }
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter" && !complianceBlocked) {
-                            void handleRedeemCode();
-                          }
-                        }}
-                      />
-                      <button
-                        className="btn btn-ghost"
-                        disabled={redeeming || complianceBlocked}
-                        type="button"
-                        onClick={() => void handleRedeemCode()}
-                      >
-                        {redeeming ? (
-                          <LoaderCircle className="spin" size={15} />
-                        ) : (
-                          <Check size={15} />
-                        )}
-                        <T id="Redeem" />
-                      </button>
-                    </div>
-                  ) : null}
-                  {topupInfo?.topup_link ? (
                     <button
-                      className="billing-link-button"
+                      className="btn btn-flux btn-block"
+                      disabled={paymentDisabled}
                       type="button"
                       onClick={() =>
-                        window.open(topupInfo.topup_link, "_blank")
+                        selectedPaymentMethod
+                          ? void handleTopupPayment(selectedPaymentMethod)
+                          : undefined
                       }
                     >
-                      <Play size={15} />
-                      <T id="Open external top-up link" />
+                      {paymentLoading &&
+                      paymentLoading === selectedPaymentMethod?.id ? (
+                        <LoaderCircle className="spin" size={16} />
+                      ) : (
+                        <CircleDollarSign size={16} />
+                      )}
+                      <T id="Top up now" />
                     </button>
-                  ) : null}
+                  </div>
+                ) : (
+                  <div className="billing-alert">
+                    <T id="No online payment method is enabled." />
+                  </div>
+                )}
+              </div>
+
+              {hasCreemTopup ? (
+                <div className="billing-side-form">
+                  <div className="billing-side-section">
+                    <span className="billing-section-label">Creem</span>
+                    <div className="billing-creem-grid">
+                      {creemProducts.map((product) => {
+                        const productId =
+                          product.productId ||
+                          product.product_id ||
+                          product.name ||
+                          "";
+                        return (
+                          <button
+                            className="billing-creem-product"
+                            disabled={
+                              complianceBlocked ||
+                              paymentLoading === `creem:${productId}`
+                            }
+                            key={productId}
+                            type="button"
+                            onClick={() => void handleCreemPayment(product)}
+                          >
+                            <strong>{product.name || "Creem"}</strong>
+                            <span>
+                              {formatCurrencyAmount(
+                                Number(product.price || 0),
+                                product.currency || "USD",
+                              )}
+                            </span>
+                            {product.quota ? (
+                              <small>
+                                {formatQuotaMoney(product.quota, status)}
+                              </small>
+                            ) : null}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               ) : null}
             </div>
-          )}
-        </div>
-      </div>
+
+            {hasAuxTopupActions ? (
+              <div className="topup-dialog-tools">
+                {redemptionEnabled ? (
+                  <div className="billing-redemption-row topup-redemption-inline">
+                    <span className="billing-section-label">
+                      <T id="Redemption code" />
+                    </span>
+                    <input
+                      placeholder={localizeKey(language, "Enter code")}
+                      value={redemptionCode}
+                      onChange={(event) =>
+                        setRedemptionCode(event.currentTarget.value)
+                      }
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" && !complianceBlocked) {
+                          void handleRedeemCode();
+                        }
+                      }}
+                    />
+                    <button
+                      className="btn btn-ghost"
+                      disabled={redeeming || complianceBlocked}
+                      type="button"
+                      onClick={() => void handleRedeemCode()}
+                    >
+                      {redeeming ? (
+                        <LoaderCircle className="spin" size={15} />
+                      ) : (
+                        <Check size={15} />
+                      )}
+                      <T id="Redeem" />
+                    </button>
+                  </div>
+                ) : null}
+                {topupInfo?.topup_link ? (
+                  <button
+                    className="billing-link-button"
+                    type="button"
+                    onClick={() => window.open(topupInfo.topup_link, "_blank")}
+                  >
+                    <Play size={15} />
+                    <T id="Open external top-up link" />
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        )}
+      </AccessibleDialog>
       {topupProgress ? (
         <PurchaseProgressDialog
           progress={topupProgress}
