@@ -4977,6 +4977,11 @@
   gap: 16px;
 }
 
+.record-toolbar {
+  align-items: center;
+  margin-bottom: 14px;
+}
+
 .record-left,
 .usage-filter {
   display: flex;
@@ -5331,6 +5336,8 @@
   display: flex;
   align-items: center;
   gap: 9px;
+  padding-top: 10px;
+  border-top: 1px solid var(--customer-line);
   flex-wrap: wrap;
 }
 
@@ -5342,10 +5349,10 @@
 }
 
 .usage-stat-pills {
-  display: inline-flex;
+  display: flex;
+  width: 100%;
   align-items: center;
   gap: 7px;
-  margin-right: auto;
   flex-wrap: wrap;
 }
 
@@ -5364,6 +5371,7 @@
 }
 
 .usage-stat-pills span {
+  flex: 0 1 auto;
   padding: 0 10px;
 }
 
@@ -9949,6 +9957,11 @@
   .console-page-actions,
   .console-page-actions .btn {
     width: 100%;
+  }
+
+  .console-page-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   }
 
   .console-page-actions .btn {

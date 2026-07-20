@@ -5,12 +5,12 @@ import {
   ErrorState,
   LoadingState,
 } from "../../components/common/ui/AsyncState";
-import {
-  ConsolePageTitle,
-  CustomerShell,
-} from "../../components/layout/CustomerShell";
+import { CustomerShell } from "../../components/layout/CustomerShell";
+import { ConsolePageHeader } from "../../components/layout/ConsolePageHeader";
 import { Panel } from "../../components/common/ui/Panel";
 import { DataTable } from "../../components/table/DataTable";
+import { TopupDialog } from "../../components/topup/TopupDialog";
+import { pageMeta } from "../../constants/page-meta";
 import { AuthContext } from "../../context/Auth";
 import { LanguageContext, T } from "../../context/Language";
 import { useToastMessage } from "../../context/Toast";
@@ -102,6 +102,7 @@ export function TopupPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [message, setMessage] = useState("");
+  const [topupDialogOpen, setTopupDialogOpen] = useState(false);
   useToastMessage(message);
 
   const loadBilling = async () => {
@@ -256,7 +257,30 @@ export function TopupPage() {
 
   return (
     <CustomerShell crumbId="Billing" page="topup">
-      <ConsolePageTitle id="Billing records" />
+      <ConsolePageHeader
+        action={
+          <>
+            <button
+              className="btn btn-ghost btn-sm"
+              type="button"
+              onClick={() => void loadBilling()}
+            >
+              <RefreshCw size={15} />
+              <T id="Refresh" />
+            </button>
+            <button
+              className="btn btn-flux btn-sm"
+              type="button"
+              onClick={() => setTopupDialogOpen(true)}
+            >
+              <CircleDollarSign size={15} />
+              <T id="Top up now" />
+            </button>
+          </>
+        }
+        descriptionId={pageMeta.topup.descriptionId}
+        titleId="Billing records"
+      />
       <Panel className="record-panel">
         <div className="record-toolbar">
           <div className="record-left">
@@ -273,14 +297,6 @@ export function TopupPage() {
               <T id="PAYG left" /> <b className="mono">{paygLeft}</b>
             </span>
           </div>
-          <button
-            className="btn btn-flux btn-sm"
-            type="button"
-            onClick={() => void loadBilling()}
-          >
-            <RefreshCw size={15} />
-            <T id="Refresh" />
-          </button>
         </div>
         {loading ? (
           <LoadingState id="Loading billing records" />
@@ -350,6 +366,9 @@ export function TopupPage() {
           </div>
         ) : null}
       </Panel>
+      {topupDialogOpen ? (
+        <TopupDialog onClose={() => setTopupDialogOpen(false)} />
+      ) : null}
     </CustomerShell>
   );
 }

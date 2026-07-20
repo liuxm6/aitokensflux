@@ -16,10 +16,9 @@ import {
 } from "../../components/common/ui/AsyncState";
 import { ModelIcon } from "../../components/common/ModelIcon";
 import { Panel } from "../../components/common/ui/Panel";
-import {
-  ConsolePageTitle,
-  CustomerShell,
-} from "../../components/layout/CustomerShell";
+import { CustomerShell } from "../../components/layout/CustomerShell";
+import { ConsolePageHeader } from "../../components/layout/ConsolePageHeader";
+import { pageMeta } from "../../constants/page-meta";
 import { LanguageContext, T } from "../../context/Language";
 import { useToastMessage } from "../../context/Toast";
 import { getQuotaPerUnit, normalizePageItems } from "../../helpers/format";
@@ -509,7 +508,10 @@ export function UsagePage() {
 
   return (
     <CustomerShell crumbId="Usage" page="usage">
-      <ConsolePageTitle id="Usage details" />
+      <ConsolePageHeader
+        descriptionId={pageMeta.usage.descriptionId}
+        titleId="Usage details"
+      />
       <Panel className="usage-panel usage-detail-panel">
         <div className="usage-toolbar">
           <div className="usage-filter-grid">
