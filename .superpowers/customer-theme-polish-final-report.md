@@ -31,6 +31,9 @@
 18. 将核心能力恢复为原版四列轻量分隔布局，移除后加的 2+2 卡片化覆盖。
 19. 补齐英文、简体中文、繁体中文、俄文四种语言文案。
 20. 最终浏览器审查修复了路由自动聚焦标题的默认描边，以及 700px/768px 模型费率栏横向溢出。
+21. Task 5 浏览器终验修复了 760px 及以下卡片式模型费率表的文档流重叠，并保留 768px 及以上桌面表格的内容自适应高度。
+22. 将首页品牌绿 CTA 的默认文字对比度从约 2.69:1 提升到 5.40:1，hover 状态提升到 5.89:1。
+23. 完成 375、390、700、768、900、1024、1440 七个正式视口，以及 720、760 临界回归和 reduced-motion 的隔离 Chromium 审查。
 
 ## 提交记录
 
@@ -53,16 +56,25 @@
 - `bfa5b40f` feat(customer): polish homepage hierarchy
 - `84db3d10` fix(customer): polish focus and pricing breakpoints
 - `fb3c774a` docs(customer): define original homepage restoration
+- `8b02cd72` style(customer): refine homepage visual rhythm
+- `e903bf86` fix(customer): limit homepage polish transitions
+- `db47a8d1` style(customer): adapt homepage pricing states
+- `659902b5` style(customer): polish homepage supporting sections
+- `642bb4ca` fix(customer): restore mobile pricing table flow
+- `9f786c75` fix(customer): align mobile pricing breakpoint
+- `a710dd73` fix(customer): improve homepage button contrast
+- `df8259b0` fix(customer): preserve homepage hover contrast
 
 ## 自动化验证
 
 Customer 前端：
 
-- `bun test`：12 个测试文件，30 个测试通过，0 失败，119 个断言。
+- `bun test`：12 个测试文件，35 个测试通过，0 失败，145 个断言。
 - `bun run typecheck`：通过。
 - `bun run build`：通过。
 - `bun run format:check`：通过。
 - `git diff --check`：通过。
+- `rg -n '[—–]' web/customer/src/pages/Home web/customer/src/i18n/locales`：无匹配，按预期退出 1。
 
 完整 Go 项目：
 
@@ -70,39 +82,67 @@ Customer 前端：
 
 最终 Customer 构建体积：
 
-- CSS：146.3 KB，gzip 29.1 KB。
-- 主 JS：756.0 KB，gzip 215.9 KB。
+- CSS：151.6 KB，gzip 30.0 KB。
+- 主 JS：756.2 KB，gzip 216.0 KB。
 - React：189.0 KB，gzip 59.7 KB。
-- 总量：2873.0 KB，gzip 929.6 KB。
+- 总量：2878.6 KB，gzip 930.7 KB。
 
-初始主包约为 881.8 KB / gzip 249.5 KB，懒加载后主包减少约 125.3 KB / gzip 33.6 KB。
+初始主包约为 881.8 KB / gzip 249.5 KB，懒加载后主包减少约 125.6 KB / gzip 33.5 KB。
 
 ## 真实浏览器审查
 
-使用 Playwright Chromium Headless 完成：
+Chrome DevTools MCP 在当前会话未配置，按 Task 5 简报使用缓存中的 Playwright Chromium 1223 和独立无状态 context 完成。浏览器只访问已知 localhost 地址；DOM、console 和网络结果均按不可信数据处理；未读取 cookie、localStorage、sessionStorage、token 或其他认证材料。
 
-- 首页断点：375、390、700、768、1024、1440。
-- 全部断点均无页面级 JavaScript 错误，最终无横向溢出。
-- 繁体中文首屏恢复为“輕鬆上手”“穩定好用的 AI 編程解決方案”“配置文檔”“立即使用”。
-- 1440px 下福利卡宽度恢复为 720px，并完整位于首屏 Hero 内。
-- 在 390 和 1440 下检查：首页、登录、注册、接入设置、套餐、Dashboard 及其 Billing/Usage/API Key/Invite/Settings 子路由、用户协议、隐私政策和未知路由。
-- 所有检查路由均正确更新标题，未登录保护路由保持原有登录弹窗流程。
-- 验证语言菜单键盘导航、Escape 关闭、焦点恢复、Skip Link、弹窗 Escape、浏览器前进/后退和 reduced-motion。
-- 首页确认同时保留 Grok 与 Gemini，并保持既定区块顺序。
-- 公共首页会按现有业务逻辑发起未登录充值信息探测，产生两个预期的 `/api/user/topup/info` 401；无 page error，未改变该业务行为。
+正式视口结果：
 
-截图：
+| 视口      |                页面宽度 | Hero                                  | 模型费率 wrapper / table | 空套餐                          | 支持 / Footer |
+| --------- | ----------------------: | ------------------------------------- | ------------------------ | ------------------------------- | ------------- |
+| 375x812   |   375 / 375，无横向溢出 | 标题、轮播、CTA、福利卡均在首屏       | 738 / 702px，无重叠      | empty-state 96px，至 PAYG 140px | 单列 / 单列   |
+| 390x844   |   390 / 390，无横向溢出 | 标题、轮播、CTA、福利卡均在首屏       | 738 / 702px，无重叠      | empty-state 96px，至 PAYG 140px | 单列 / 单列   |
+| 700x900   |   700 / 700，无横向溢出 | 单品牌轮播完整，福利卡在首屏          | 738 / 702px，无重叠      | empty-state 96px，至 PAYG 140px | 3+2 / 两列    |
+| 768x1024  |   768 / 768，无横向溢出 | 双品牌轮播完整，福利卡在首屏          | 224.5 / 208.5px，无重叠  | empty-state 96px，至 PAYG 140px | 3+2 / 两列    |
+| 900x900   |   900 / 900，无横向溢出 | 标题、轮播、CTA、福利卡均在首屏       | 224.5 / 208.5px，无重叠  | empty-state 96px，至 PAYG 140px | 3+2 / 两列    |
+| 1024x900  | 1024 / 1024，无横向溢出 | 标题、轮播、CTA、福利卡均在首屏       | 224.5 / 208.5px，无重叠  | empty-state 96px，至 PAYG 140px | 五列 / 四列   |
+| 1440x1000 | 1440 / 1440，无横向溢出 | 标题、轮播、CTA、720px 福利卡均在首屏 | 224.5 / 208.5px，无重叠  | empty-state 96px，至 PAYG 140px | 五列 / 四列   |
 
-- `/tmp/customer-homepage-original-restored-1440.png`
-- `/tmp/customer-homepage-original-restored-390-full.png`
+补充边界与交互证据：
+
+- 720x900、760x900 下卡片表 wrapper / table 均为 738 / 702px，完整参与文档流；768x1024 恢复桌面表格 224.5 / 208.5px。
+- 七个正式视口均为 HTTP 200、0 个 page error、0 个 request failure；模型轮播在 3.25 秒采样前后发生切换。
+- 每次开发模式加载会记录两个预期的 `/api/user/topup/info` 401 console resource error；它们来自现有未登录充值信息探测，没有页面级 JavaScript 异常。
+- Hero 无障碍标签始终包含 `Google Gemini`，模型费率 tab 始终包含 Gemini。
+- 六个首页 CTA 在全部正式视口均为单行、无裁切；品牌绿默认状态对比度 5.40:1，hover 状态 5.89:1。
+- reduced-motion 在 375x812 和 1440x1000 下停止轮播，同时静态显示 Claude、Codex、Grok、Gemini，Hero 仍完整位于首屏。
+- 支持区在 375/390 为单列，在 700/768/900 为 3+2，在 1024/1440 为五列；Footer 分别为一列、两列、四列；FAQ 在所有视口均位于容器内。
+
+最终截图：
+
+- `/tmp/customer-homepage-task5-375x812.png`
+- `/tmp/customer-homepage-task5-390x844.png`
+- `/tmp/customer-homepage-task5-700x900.png`
+- `/tmp/customer-homepage-task5-768x1024.png`
+- `/tmp/customer-homepage-task5-900x900.png`
+- `/tmp/customer-homepage-task5-1024x900.png`
+- `/tmp/customer-homepage-task5-1440x1000.png`
+- `/tmp/customer-homepage-task5-720x900.png`
+- `/tmp/customer-homepage-task5-760x900.png`
+- `/tmp/customer-homepage-task5-375x812-reduced.png`
+- `/tmp/customer-homepage-task5-1440x1000-reduced.png`
+
+## 设计 Pre-flight
+
+- 设计判断：面向开发者的 B2B AI 网关首页保留式精修，延续轻量、清晰、绿色主色的原有视觉语言。
+- 设计参数：`DESIGN_VARIANCE: 5`、`MOTION_INTENSITY: 3`、`VISUAL_DENSITY: 4`。
+- 实现基础：现有 React + 原生 CSS 语义层，不引入第二套设计系统或新依赖。
+- 通过项：全页浅色主题锁定、绿色主色一致、角色化圆角体系、Hero 两行内且首屏完整、CTA 单行、按钮默认和 hover 对比度达到 AA、无页面级横向溢出、无破折号字符、无滚动监听、动效支持 reduced-motion、支持/FAQ/Footer 响应式折叠正确。
+- 项目批准例外：浅色单主题是明确产品选择；动态供应商 Logo 是 Hero 主视觉，因此不增加生成摄影；唯一近黑 CTA 是有意的对比区块；Lucide 继续作为既有 UI 图标家族，供应商品牌 Logo 使用现有品牌图标资源。
+- 保留式构图说明：桌面 minimal nav 内容高 82px（含边框浏览器测得 83px），Hero 桌面顶部 padding 为 112px；二者略高于 taste matrix 的建议值，但均来自已批准的原版恢复，七个正式视口均验证导航单行且 Hero、CTA、福利卡完整落在首屏，因此未继续改动。
 
 ## 本地运行
 
 - Customer：<http://localhost:5175>
 - Backend：<http://localhost:3010>
-- Backend exec session：`35571`
 - Backend listener PID：`12410`
-- Customer exec session：`6687`
 - Customer listener PID：`12464`
 - Backend 数据库：`/tmp/tokenflux-customer-theme.db`，由本机已有 SQLite 数据库复制后独立运行。
 
@@ -115,3 +155,4 @@ Customer 前端：
 
 - 本机 Docker daemon 未运行，因此没有启动 Docker PostgreSQL/Redis 开发栈；后端使用本地 Go + 临时 SQLite 副本运行。
 - 当前按用户要求保留功能分支和 worktree，不自动合并、推送或创建 PR。
+- 本次只完成本地验证、报告和提交，未部署生产环境。
