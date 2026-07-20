@@ -6892,7 +6892,7 @@
 
 .invite-hero {
   display: grid;
-  grid-template-columns: 150px minmax(0, 1fr) minmax(220px, 270px) auto auto;
+  grid-template-columns: 150px minmax(0, 1fr) minmax(220px, 280px);
   align-items: center;
   gap: 24px;
   min-height: 110px;
@@ -6936,14 +6936,10 @@
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  border: 1px solid #bbf7d0;
-  border-radius: 18px;
-  background: linear-gradient(
-    135deg,
-    rgb(236 253 245 / 96%),
-    rgb(255 251 235 / 98%)
-  );
-  box-shadow: 0 18px 36px rgb(21 128 61 / 12%);
+  border: 1px solid var(--customer-accent-line);
+  border-radius: var(--customer-radius-card);
+  background: var(--customer-accent-soft);
+  box-shadow: none;
 }
 
 .invite-reward-callout svg {
@@ -6970,8 +6966,8 @@
   min-width: 0;
   margin-top: 3px;
   color: #111827;
-  font-size: 22px;
-  font-weight: 950;
+  font-size: 18px;
+  font-weight: 900;
   letter-spacing: 0;
   line-height: 1.05;
   overflow-wrap: anywhere;
@@ -7122,6 +7118,12 @@
   gap: 18px;
   padding: 0 25px;
   border-top: 1px solid #edf0f3;
+  transition: background 150ms ease;
+}
+
+.settings-list .set-item:hover,
+.settings-list .set-item:focus-within {
+  background: var(--customer-panel-subtle);
 }
 
 .settings-list .set-item:first-of-type {
@@ -7144,8 +7146,11 @@
 }
 
 .settings-list .set-item .sv {
+  min-width: 0;
   color: #9aa3b2;
   font-size: 15px;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .settings-list .set-item .btn {

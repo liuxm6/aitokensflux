@@ -1,5 +1,6 @@
-import { Copy, Gift, RefreshCw } from "lucide-react";
+import { Copy, Gift, History, RefreshCw, Users, Wallet } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
+import { ConsoleSummary } from "../../components/common/ConsoleSummary";
 import {
   EmptyState,
   ErrorState,
@@ -7,12 +8,11 @@ import {
 } from "../../components/common/ui/AsyncState";
 import { SectionLabel } from "../../components/common/SectionLabel";
 import { RewardPair } from "../../components/dashboard/RewardPair";
-import {
-  ConsolePageTitle,
-  CustomerShell,
-} from "../../components/layout/CustomerShell";
+import { CustomerShell } from "../../components/layout/CustomerShell";
+import { ConsolePageHeader } from "../../components/layout/ConsolePageHeader";
 import { DataTable } from "../../components/table/DataTable";
 import { Panel } from "../../components/common/ui/Panel";
+import { pageMeta } from "../../constants/page-meta";
 import { AuthContext } from "../../context/Auth";
 import { LanguageContext, T } from "../../context/Language";
 import { useToastMessage } from "../../context/Toast";
@@ -216,7 +216,66 @@ export function InvitePage() {
 
   return (
     <CustomerShell crumbId="Referrals" page="invite">
-      <ConsolePageTitle id="Referral rewards" />
+      <ConsolePageHeader
+        action={
+          <>
+            <button
+              className="btn btn-ghost btn-sm"
+              type="button"
+              onClick={() => void loadInvite()}
+            >
+              <RefreshCw size={16} />
+              <T id="Refresh" />
+            </button>
+            <button
+              className="btn btn-flux btn-sm"
+              type="button"
+              onClick={() => void copyInviteLink()}
+            >
+              <Copy size={16} />
+              <T id="Copy link" />
+            </button>
+          </>
+        }
+        descriptionId={pageMeta.invite.descriptionId}
+        titleId="Referral rewards"
+      />
+      {!loading && !loadError ? (
+        <ConsoleSummary
+          labelId="Reward statistics"
+          items={[
+            {
+              icon: Users,
+              labelId: "This month",
+              value: <span className="mono">{monthInviteCount}</span>,
+            },
+            {
+              icon: Users,
+              labelId: "Total referrals",
+              value: <span className="mono">{user?.aff_count ?? 0}</span>,
+            },
+            {
+              icon: Wallet,
+              labelId: "Withdrawable",
+              tone: "accent",
+              value: (
+                <span className="mono">
+                  {formatQuotaMoney(user?.aff_quota ?? 0, status)}
+                </span>
+              ),
+            },
+            {
+              icon: History,
+              labelId: "Total rewards",
+              value: (
+                <span className="mono">
+                  {formatQuotaMoney(user?.aff_history_quota ?? 0, status)}
+                </span>
+              ),
+            },
+          ]}
+        />
+      ) : null}
       <Panel className="invite-hero">
         <div>
           <div className="lbl">
@@ -252,22 +311,6 @@ export function InvitePage() {
             </div>
           </div>
         ) : null}
-        <button
-          className="btn btn-ghost btn-sm"
-          type="button"
-          onClick={() => void copyInviteLink()}
-        >
-          <Copy size={16} />
-          <T id="Copy link" />
-        </button>
-        <button
-          className="btn btn-ghost btn-sm"
-          type="button"
-          onClick={() => void loadInvite()}
-        >
-          <RefreshCw size={16} />
-          <T id="Refresh" />
-        </button>
       </Panel>
       <SectionLabel id="Reward statistics" />
       <Panel className="reward-panel">

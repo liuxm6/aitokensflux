@@ -13,10 +13,9 @@ import type { ComponentType } from "react";
 import { useContext, useState } from "react";
 import { SectionLabel } from "../../components/common/SectionLabel";
 import { Panel } from "../../components/common/ui/Panel";
-import {
-  ConsolePageTitle,
-  CustomerShell,
-} from "../../components/layout/CustomerShell";
+import { CustomerShell } from "../../components/layout/CustomerShell";
+import { ConsolePageHeader } from "../../components/layout/ConsolePageHeader";
+import { pageMeta } from "../../constants/page-meta";
 import { AuthContext } from "../../context/Auth";
 import { LanguageContext } from "../../context/Language";
 import {
@@ -100,7 +99,10 @@ export function createSettingsPage({
 
     return (
       <CustomerShell crumbId="Settings" page="settings">
-        <ConsolePageTitle id="Account security" />
+        <ConsolePageHeader
+          descriptionId={pageMeta.settings.descriptionId}
+          titleId="Account security"
+        />
         <Panel className="settings-list">
           <SettingsRow
             icon={UserRound}

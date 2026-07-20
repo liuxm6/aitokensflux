@@ -12,14 +12,17 @@ type ConsoleSummaryItem = {
   tone?: "accent" | "neutral";
 };
 
-export function ConsoleSummary({ items }: { items: ConsoleSummaryItem[] }) {
+export function ConsoleSummary({
+  items,
+  labelId = "Account overview",
+}: {
+  items: ConsoleSummaryItem[];
+  labelId?: string;
+}) {
   const { language } = useContext(LanguageContext);
 
   return (
-    <ul
-      aria-label={localizeKey(language, "Account overview")}
-      className="console-summary"
-    >
+    <ul aria-label={localizeKey(language, labelId)} className="console-summary">
       {items.map((item) => {
         const Icon = item.icon;
         return (

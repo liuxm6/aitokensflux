@@ -54,3 +54,14 @@ test("console summary exposes operational values as a named list", () => {
   expect(screen.getByText("$20.00")).toBeTruthy();
   expect(screen.getByText("$1.50")).toBeTruthy();
 });
+
+test("console summary accepts a page-specific accessible name", () => {
+  renderWithLanguage(
+    <ConsoleSummary
+      labelId="Reward statistics"
+      items={[{ labelId: "Total referrals", value: "8" }]}
+    />,
+  );
+
+  expect(screen.getByRole("list", { name: "Reward statistics" })).toBeTruthy();
+});

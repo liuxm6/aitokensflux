@@ -17,10 +17,9 @@ import {
 } from "../../components/common/ui/AsyncState";
 import { SectionLabel } from "../../components/common/SectionLabel";
 import { Panel } from "../../components/common/ui/Panel";
-import {
-  ConsolePageTitle,
-  CustomerShell,
-} from "../../components/layout/CustomerShell";
+import { CustomerShell } from "../../components/layout/CustomerShell";
+import { ConsolePageHeader } from "../../components/layout/ConsolePageHeader";
+import { pageMeta } from "../../constants/page-meta";
 import { ConfirmActionContext } from "../../context/ConfirmAction";
 import { LanguageContext, T } from "../../context/Language";
 import { useToastMessage } from "../../context/Toast";
@@ -638,7 +637,20 @@ export function ApiKeysPage() {
 
   return (
     <CustomerShell crumbId="API Access" page="apikeys">
-      <ConsolePageTitle id="API Access" />
+      <ConsolePageHeader
+        action={
+          <button
+            className="btn btn-flux btn-sm"
+            type="button"
+            onClick={openCreateDialog}
+          >
+            <KeyRound size={15} />
+            <T id="Create key" />
+          </button>
+        }
+        descriptionId={pageMeta.apikeys.descriptionId}
+        titleId="API Access"
+      />
       <Panel className="api-access-panel">
         <div className="api-access-head">
           <p>
@@ -673,16 +685,6 @@ export function ApiKeysPage() {
 
       <SectionLabel id="API Keys" />
       <Panel className="key-panel">
-        <div className="key-toolbar">
-          <button
-            className="btn btn-flux btn-sm"
-            type="button"
-            onClick={openCreateDialog}
-          >
-            <KeyRound size={15} />
-            <T id="Create key" />
-          </button>
-        </div>
         {loadingTokens ? (
           <LoadingState id="Loading API keys" />
         ) : tokenLoadError ? (
