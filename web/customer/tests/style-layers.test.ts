@@ -54,6 +54,21 @@ test("customer styles load semantic token, base, and dialog layers in order", as
   expect(tokens).toContain("--customer-radius-dialog:");
 });
 
+test("nested auth dialog stays above the account overlay", () => {
+  const customerStyles = readCustomerStyleSurface();
+  const accountOverlayStyles = getCssBlock(customerStyles, "\n.auth-overlay {");
+  const nestedDialogStyles = getCssBlock(customerStyles, "\n.auth-dialog {");
+  const accountOverlayZIndex = Number(
+    accountOverlayStyles.match(/z-index:\s*(\d+)/)?.[1],
+  );
+  const nestedDialogZIndex = Number(
+    nestedDialogStyles.match(/z-index:\s*(\d+)/)?.[1],
+  );
+
+  expect(accountOverlayZIndex).toBeGreaterThan(0);
+  expect(nestedDialogZIndex).toBeGreaterThan(accountOverlayZIndex);
+});
+
 test("styles.css remains the only stylesheet imported by the entrypoint", async () => {
   const entrypoint = await Bun.file(
     new URL("src/main.tsx", customerRoot),
