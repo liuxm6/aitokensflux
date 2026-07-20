@@ -1,5 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import { classifyFallbackGroup, groupPricing } from "../src/pages/Home";
+import {
+  classifyFallbackGroup,
+  groupPricing,
+  HERO_MODEL_PAIRS,
+  HERO_MODELS,
+} from "../src/pages/Home";
 import type { ModelPricingData } from "../src/types";
 
 describe("homepage Gemini pricing group", () => {
@@ -50,5 +55,25 @@ describe("homepage Gemini pricing group", () => {
     ]);
     expect(grouped.gemini.rows[0]?.input).toBe(1);
     expect(grouped.codex.rows).toHaveLength(0);
+  });
+});
+
+describe("homepage Gemini hero rotation", () => {
+  test("places Google Gemini after Grok", () => {
+    expect(HERO_MODELS.map(({ id, label }) => [id, label])).toEqual([
+      ["claude", "Claude Code"],
+      ["openai", "OpenAI Codex"],
+      ["grok", "Grok Code"],
+      ["gemini", "Google Gemini"],
+    ]);
+  });
+
+  test("cycles through the four approved adjacent pairs", () => {
+    expect(HERO_MODEL_PAIRS.map((pair) => pair.map(({ id }) => id))).toEqual([
+      ["claude", "openai"],
+      ["openai", "grok"],
+      ["grok", "gemini"],
+      ["gemini", "claude"],
+    ]);
   });
 });

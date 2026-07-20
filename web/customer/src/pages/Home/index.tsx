@@ -187,16 +187,18 @@ function GeminiLogo({ className }: { className?: string }) {
   );
 }
 
-const HERO_MODELS = [
+export const HERO_MODELS = [
   { id: "claude", label: "Claude Code", Logo: ClaudeLogo },
   { id: "openai", label: "OpenAI Codex", Logo: OpenAILogo },
   { id: "grok", label: "Grok Code", Logo: GrokLogo },
+  { id: "gemini", label: "Google Gemini", Logo: GeminiLogo },
 ] as const;
 
-const HERO_MODEL_PAIRS = [
+export const HERO_MODEL_PAIRS = [
   [HERO_MODELS[0], HERO_MODELS[1]],
   [HERO_MODELS[1], HERO_MODELS[2]],
-  [HERO_MODELS[2], HERO_MODELS[0]],
+  [HERO_MODELS[2], HERO_MODELS[3]],
+  [HERO_MODELS[3], HERO_MODELS[0]],
 ] as const;
 
 function FeatureColumn({
@@ -862,7 +864,7 @@ export function createHomePage({
                 <T id="Get started, effortlessly" />
               </h1>
               <div
-                aria-label="Claude Code, OpenAI Codex, Grok Code"
+                aria-label="Claude Code, OpenAI Codex, Grok Code, Google Gemini"
                 className="hero-sub hero-model-switcher"
                 role="group"
               >
