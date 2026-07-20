@@ -25,10 +25,10 @@
 12. 为数据表补齐 caption、表头 scope、可聚焦滚动区域和移动端卡片摘要。
 13. 建立 tokens、base、dialogs、marketing 四层语义样式结构。
 14. 对非首页路由实施懒加载，降低首页初始主包体积。
-15. 重构首页信息层级，明确统一 AI 编程模型网关定位。
+15. 根据用户提供的原版截图恢复首页品牌型首屏，重新以短标题和动态模型品牌作为视觉主角。
 16. 保留并统一 Claude、Codex、Grok、Gemini Hero 轮播和模型费率分组。
-17. 将支持群福利条移动到 Hero 下方，增强首屏后的转化承接。
-18. 将核心能力整理为 2+2 层级卡片，并明确“模型费率”和“套餐与余额”的职责差异。
+17. 将售后群福利卡恢复到 Hero 内容流内部，并恢复原版 720px 最大宽度和垂直节奏。
+18. 将核心能力恢复为原版四列轻量分隔布局，移除后加的 2+2 卡片化覆盖。
 19. 补齐英文、简体中文、繁体中文、俄文四种语言文案。
 20. 最终浏览器审查修复了路由自动聚焦标题的默认描边，以及 700px/768px 模型费率栏横向溢出。
 
@@ -52,12 +52,13 @@
 - `ac4bd345` perf(customer): split customer routes
 - `bfa5b40f` feat(customer): polish homepage hierarchy
 - `84db3d10` fix(customer): polish focus and pricing breakpoints
+- `fb3c774a` docs(customer): define original homepage restoration
 
 ## 自动化验证
 
 Customer 前端：
 
-- `bun test`：12 个测试文件，30 个测试通过，0 失败，118 个断言。
+- `bun test`：12 个测试文件，30 个测试通过，0 失败，119 个断言。
 - `bun run typecheck`：通过。
 - `bun run build`：通过。
 - `bun run format:check`：通过。
@@ -69,10 +70,10 @@ Customer 前端：
 
 最终 Customer 构建体积：
 
-- CSS：148.2 KB，gzip 29.4 KB。
-- 主 JS：756.5 KB，gzip 215.9 KB。
+- CSS：146.3 KB，gzip 29.1 KB。
+- 主 JS：756.0 KB，gzip 215.9 KB。
 - React：189.0 KB，gzip 59.7 KB。
-- 总量：2875.5 KB，gzip 930.0 KB。
+- 总量：2873.0 KB，gzip 929.6 KB。
 
 初始主包约为 881.8 KB / gzip 249.5 KB，懒加载后主包减少约 125.3 KB / gzip 33.6 KB。
 
@@ -82,6 +83,8 @@ Customer 前端：
 
 - 首页断点：375、390、700、768、1024、1440。
 - 全部断点均无页面级 JavaScript 错误，最终无横向溢出。
+- 繁体中文首屏恢复为“輕鬆上手”“穩定好用的 AI 編程解決方案”“配置文檔”“立即使用”。
+- 1440px 下福利卡宽度恢复为 720px，并完整位于首屏 Hero 内。
 - 在 390 和 1440 下检查：首页、登录、注册、接入设置、套餐、Dashboard 及其 Billing/Usage/API Key/Invite/Settings 子路由、用户协议、隐私政策和未知路由。
 - 所有检查路由均正确更新标题，未登录保护路由保持原有登录弹窗流程。
 - 验证语言菜单键盘导航、Escape 关闭、焦点恢复、Skip Link、弹窗 Escape、浏览器前进/后退和 reduced-motion。
@@ -90,10 +93,8 @@ Customer 前端：
 
 截图：
 
-- `/tmp/customer-homepage-1440.png`
-- `/tmp/customer-homepage-1440-full.png`
-- `/tmp/customer-homepage-390-full.png`
-- `/tmp/customer-homepage-700.png`
+- `/tmp/customer-homepage-original-restored-1440.png`
+- `/tmp/customer-homepage-original-restored-390-full.png`
 
 ## 本地运行
 
@@ -113,5 +114,4 @@ Customer 前端：
 ## 环境说明
 
 - 本机 Docker daemon 未运行，因此没有启动 Docker PostgreSQL/Redis 开发栈；后端使用本地 Go + 临时 SQLite 副本运行。
-- 同时运行 Rsbuild dev server 和生产构建时，Rspack 报告一次持久缓存保存失败并自动禁用该次缓存；构建退出码为 0，产物完整生成。
 - 当前按用户要求保留功能分支和 worktree，不自动合并、推送或创建 PR。

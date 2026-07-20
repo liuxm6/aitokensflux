@@ -2,6 +2,7 @@ import { expect, test } from "bun:test";
 import {
   HERO_MODELS,
   HOME_DESTINATIONS,
+  HOME_HERO_COPY,
   HOME_SECTION_HEADINGS,
   HOME_SECTION_ORDER,
 } from "../src/pages/Home";
@@ -26,7 +27,7 @@ test("homepage keeps the approved section and provider order", () => {
   ]);
 });
 
-test("homepage destinations and pricing headings remain distinct", () => {
+test("homepage destinations and original presentation copy remain stable", () => {
   expect(HOME_DESTINATIONS).toEqual({
     dashboard: "/dashboard",
     onboarding: "/sign-in",
@@ -34,8 +35,18 @@ test("homepage destinations and pricing headings remain distinct", () => {
     setup: "/setup",
     support: "/#support",
   });
-  expect(HOME_SECTION_HEADINGS.modelRates).toBe("Model rates");
-  expect(HOME_SECTION_HEADINGS.plansBalance).toBe("Plans and balance");
+  expect(HOME_HERO_COPY).toEqual({
+    title: "Get started, effortlessly",
+    tagline: "A stable AI coding solution",
+    setupCta: "Setup guide",
+    primaryCta: "Start now",
+  });
+  expect(HOME_SECTION_HEADINGS.modelRates).toBe(
+    "Pay only for the tokens you use",
+  );
+  expect(HOME_SECTION_HEADINGS.plansBalance).toBe(
+    "Transparent pricing that scales down",
+  );
   expect(HOME_SECTION_HEADINGS.modelRates).not.toBe(
     HOME_SECTION_HEADINGS.plansBalance,
   );

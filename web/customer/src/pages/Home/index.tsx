@@ -227,24 +227,29 @@ export const HOME_DESTINATIONS = {
   support: "/#support",
 } as const;
 
+export const HOME_HERO_COPY = {
+  title: "Get started, effortlessly",
+  tagline: "A stable AI coding solution",
+  setupCta: "Setup guide",
+  primaryCta: "Start now",
+} as const;
+
 export const HOME_SECTION_HEADINGS = {
-  modelRates: "Model rates",
-  plansBalance: "Plans and balance",
+  modelRates: "Pay only for the tokens you use",
+  plansBalance: "Transparent pricing that scales down",
 } as const;
 
 function FeatureColumn({
   icon: Icon,
-  tier = "secondary",
   titleId,
   textId,
 }: {
   icon: LucideIcon;
-  tier?: "primary" | "secondary";
   titleId: string;
   textId: string;
 }) {
   return (
-    <div className={`fc ${tier}`}>
+    <div className="fc">
       <Icon className="gi" />
       <h3>
         <T id={titleId} />
@@ -424,14 +429,14 @@ function toPriceRow(model: PricingModel, groupRatio: number): PriceRow {
 }
 
 function formatUsd(value: number | null): string {
-  if (value == null) return "—";
+  if (value == null) return "-";
   if (value === 0) return "$0";
   const digits = value < 0.01 ? 4 : 2;
   return `$${value.toFixed(digits)}`;
 }
 
 function TokenPrice({ value }: { value: number | null }) {
-  if (value == null) return <>—</>;
+  if (value == null) return <>-</>;
   return (
     <span className="mp-price">
       <span>{formatUsd(value)}</span>
@@ -758,14 +763,11 @@ function ModelPricingSection() {
       <div className="wrap">
         <div className="center">
           <Pill>
-            <T id="Usage billing" />
+            <T id="Model pricing" />
           </Pill>
           <h2 className="h-sec">
             <T id={HOME_SECTION_HEADINGS.modelRates} />
           </h2>
-          <p className="mp-intro">
-            <T id="Compare per-model input, output, cache, and request rates before you send traffic." />
-          </p>
         </div>
 
         <div className="mp-panel">
@@ -965,7 +967,7 @@ export function createHomePage({
           <section className="hero-mesh home-hero" data-home-section="hero">
             <div className="wrap hero-inner center">
               <h1>
-                <T id="One gateway for every coding model." />
+                <T id={HOME_HERO_COPY.title} />
               </h1>
               <div
                 aria-label="Claude Code, OpenAI Codex, Grok Code, Google Gemini"
@@ -996,7 +998,7 @@ export function createHomePage({
                 ))}
               </div>
               <p className="hero-tagline">
-                <T id="Use one balance, see every request, and keep your existing workflow." />
+                <T id={HOME_HERO_COPY.tagline} />
               </p>
               <div className="os-icons" aria-label="macOS Windows Linux">
                 <span className="os-icon" aria-label="macOS">
@@ -1015,7 +1017,7 @@ export function createHomePage({
                   href={HOME_DESTINATIONS.setup}
                 >
                   <BookOpen size={18} />
-                  <T id="View setup guide" />
+                  <T id={HOME_HERO_COPY.setupCta} />
                 </AppLink>
                 <AppLink
                   className="btn btn-flux btn-lg"
@@ -1026,19 +1028,12 @@ export function createHomePage({
                   }
                 >
                   <Play size={18} />
-                  <T id={user ? "Open dashboard" : "Create account"} />
+                  <T id={user ? "Open dashboard" : HOME_HERO_COPY.primaryCta} />
                 </AppLink>
               </div>
-            </div>
-          </section>
-
-          <section
-            className="support-benefit-section"
-            data-home-section="support-benefit"
-          >
-            <div className="wrap">
               <AppLink
                 className="support-reward-callout"
+                data-home-section="support-benefit"
                 href={HOME_DESTINATIONS.support}
               >
                 <span className="support-reward-mascot">
@@ -1079,13 +1074,11 @@ export function createHomePage({
               <div className="feat-cols">
                 <FeatureColumn
                   icon={Gauge}
-                  tier="primary"
                   titleId="One-key switch"
                   textId="One command reroutes your CLI traffic. Scripts untouched."
                 />
                 <FeatureColumn
                   icon={CircleDollarSign}
-                  tier="primary"
                   titleId="Usage-based"
                   textId="Top up any amount. Zero minimum. Credits never expire."
                 />
@@ -1113,14 +1106,11 @@ export function createHomePage({
               <div className="pricing-section-head">
                 <div className="pricing-title center">
                   <Pill>
-                    <T id="Purchase options" />
+                    <T id="Pricing" />
                   </Pill>
                   <h2 className="h-sec">
                     <T id={HOME_SECTION_HEADINGS.plansBalance} />
                   </h2>
-                  <p className="pricing-description">
-                    <T id="Plans add recurring quota; pay-as-you-go balance stays available for flexible usage." />
-                  </p>
                   <p className="pricing-note">
                     <T id="CNY and USD are settled 1:1." />
                   </p>
@@ -1161,10 +1151,10 @@ export function createHomePage({
           <section className="wrap cta-wrap" data-home-section="cta">
             <div className="cta-banner">
               <h2>
-                <T id="Choose the model. Keep the workflow." />
+                <T id="Plug in in 5 minutes. Start saving today." />
               </h2>
               <p>
-                <T id="Create one account, follow the setup guide once, and manage every request from the same dashboard." />
+                <T id="Sign up for free trial credits, follow the guide once, and your Claude Code runs on aitokensflux." />
               </p>
               <div>
                 <AppLink
@@ -1175,13 +1165,13 @@ export function createHomePage({
                       : HOME_DESTINATIONS.onboarding
                   }
                 >
-                  <T id={user ? "Open dashboard" : "Create account"} />
+                  <T id={user ? "Open dashboard" : "Sign in / Register"} />
                 </AppLink>
                 <AppLink
                   className="btn btn-ghost btn-lg dark"
                   href={HOME_DESTINATIONS.setup}
                 >
-                  <T id="View setup guide" />
+                  <T id="Read docs" />
                 </AppLink>
               </div>
             </div>
