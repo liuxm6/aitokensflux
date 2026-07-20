@@ -78,6 +78,26 @@ test("styles.css remains the only stylesheet imported by the entrypoint", async 
   ]);
 });
 
+test("console hierarchy and subscription polish stay scoped and responsive", async () => {
+  const styles = await Bun.file(new URL("src/styles.css", customerRoot)).text();
+
+  expect(styles).toContain(".console-topbar {");
+  expect(styles).toContain(".console-page-header {");
+  expect(styles).toContain(".console-summary {");
+  expect(styles).toContain(".subscription-page {");
+  expect(styles).toContain(".subscription-page .pricing-title {");
+  expect(styles).toContain(".subscription-page .price.feat {");
+  expect(styles).toMatch(
+    /@media \(max-width: 680px\) \{[\s\S]*?\.subscription-page \.price \.price-cta/,
+  );
+  expect(styles).toMatch(
+    /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.state-skeleton-line/,
+  );
+  expect(styles).toMatch(
+    /@media \(max-width: 980px\) \{[\s\S]*?\.mobile-topbar[\s\S]*?display: flex/,
+  );
+});
+
 test("homepage source scopes polish and observes minimal navigation", () => {
   const homeSource = readFileSync(
     new URL("../src/pages/Home/index.tsx", import.meta.url),

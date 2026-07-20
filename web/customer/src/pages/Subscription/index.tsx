@@ -1,6 +1,10 @@
 import type { ComponentType } from "react";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { EmptyState } from "../../components/common/EmptyState";
+import {
+  ErrorState,
+  LoadingState,
+} from "../../components/common/ui/AsyncState";
 import { Pill } from "../../components/common/Pill";
 import { Footer } from "../../components/layout/Footer";
 import { PaygTopupSection } from "../../components/topup/PaygTopupSection";
@@ -37,6 +41,8 @@ export function createSubscribePage({
     const [plans, setPlans] = useState<SubscriptionPlanRecord[]>([]);
     const [topupInfo, setTopupInfo] = useState<TopupInfo | null>(null);
     const [loading, setLoading] = useState(true);
+    const [plansError, setPlansError] = useState(false);
+    const [reloadKey, setReloadKey] = useState(0);
     const [topupDialogOpen, setTopupDialogOpen] = useState(false);
 
     const purchase = usePlanPurchase({ status, topupInfo });
@@ -44,6 +50,7 @@ export function createSubscribePage({
     useEffect(() => {
       let mounted = true;
       setLoading(true);
+      setPlansError(false);
       void Promise.all([
         fetchCustomerStatus(),
         fetchPublicPlans(),
@@ -52,6 +59,7 @@ export function createSubscribePage({
         if (!mounted) return;
         if (statusRes.success && statusRes.data) setStatus(statusRes.data);
         setPlans(plansRes.success && plansRes.data ? plansRes.data : []);
+        setPlansError(!plansRes.success);
         if (topupInfoRes.success && topupInfoRes.data) {
           setTopupInfo(topupInfoRes.data);
         }
@@ -60,7 +68,7 @@ export function createSubscribePage({
       return () => {
         mounted = false;
       };
-    }, []);
+    }, [reloadKey]);
 
     const displayPlans = useMemo(
       () => recordsToPricePlans(plans, status),
@@ -78,7 +86,7 @@ export function createSubscribePage({
     return (
       <>
         <MarketingHeader />
-        <main className="section">
+        <main className="section subscription-page">
           <div className="wrap">
             <div className="center pricing-title">
               <Pill>
@@ -92,7 +100,12 @@ export function createSubscribePage({
               </p>
             </div>
             {loading ? (
-              <EmptyState id="Loading plans" />
+              <LoadingState id="Loading plans" lines={4} />
+            ) : plansError ? (
+              <ErrorState
+                id="Failed to load plans"
+                onRetry={() => setReloadKey((value) => value + 1)}
+              />
             ) : displayPlans.length > 0 ? (
               <div className="price-grid">
                 {displayPlans.map((plan) => {
