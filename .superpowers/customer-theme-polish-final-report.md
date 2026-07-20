@@ -34,9 +34,10 @@
 21. Task 5 浏览器终验修复了 760px 及以下卡片式模型费率表的文档流重叠，并保留 768px 及以上桌面表格的内容自适应高度。
 22. 将首页品牌绿 CTA 的默认文字对比度从约 2.69:1 提升到 5.40:1，hover 状态提升到 5.89:1。
 23. 完成 375、390、700、768、900、1024、1440 七个正式视口，以及 720、760 临界回归和 reduced-motion 的隔离 Chromium 审查。
-24. 将 minimal nav 对齐为桌面 80px、移动 72px 内容高度，并将所有正式视口的 Hero 顶部 padding 统一为 96px。
+24. 将首页 minimal nav 对齐为桌面 80px、移动 72px 内容高度，并将所有正式视口的 Hero 顶部 padding 统一为 96px。
+25. 将桌面 80px minimal nav 规则收紧到首页专用 `home-nav` 标记，恢复 `/console/connect` 与 `/fathers-day` 的既有 82px minimal nav。
 
-## 提交记录
+## 本报告提交前的实现与验证提交
 
 - `cd6abcb1` feat(customer): add Gemini pricing group
 - `14918a23` feat(customer): add Gemini homepage hero
@@ -68,12 +69,14 @@
 - `71753a37` refactor(customer): scope homepage polish
 - `bdfa71f5` docs(customer): record homepage polish validation
 - `38076dcf` fix(customer): align homepage frame dimensions
+- `a5e13fe4` docs(customer): finalize homepage frame validation
+- `0f322d0a` fix(customer): scope compact nav to homepage
 
 ## 自动化验证
 
 Customer 前端：
 
-- `bun test`：12 个测试文件，36 个测试通过，0 失败，150 个断言。
+- `bun test`：12 个测试文件，37 个测试通过，0 失败，160 个断言。
 - `bun run typecheck`：通过。
 - `bun run build`：通过。
 - `bun run format:check`：通过。
@@ -87,7 +90,7 @@ Customer 前端：
 最终 Customer 构建体积：
 
 - CSS：151.8 KB，gzip 30.0 KB。
-- 主 JS：756.2 KB，gzip 216.0 KB。
+- 主 JS：756.3 KB，gzip 216.1 KB。
 - React：189.0 KB，gzip 59.7 KB。
 - 总量：2878.8 KB，gzip 930.7 KB。
 
@@ -112,6 +115,8 @@ Chrome DevTools MCP 在当前会话未配置，按 Task 5 简报使用缓存中�
 补充边界与交互证据：
 
 - 720x900、760x900 下卡片表 wrapper / table 均为 738 / 702px，完整参与文档流；768x1024 恢复桌面表格 224.5 / 208.5px。
+- 1440x1000 下首页 header 带 `home-nav`，nav inner / header 为 80 / 81px；`/console/connect` 与 `/fathers-day` 不带 `home-nav`，均恢复为 82 / 83px。
+- `/console/connect` 是受保护路由，浏览器验证在隔离 context 中使用非敏感伪用户和 `/api/user/self` fixture 进入真实页面；未使用或读取任何真实凭据。
 - 七个正式视口均为 HTTP 200、0 个 Playwright `pageerror`、0 个 Playwright `requestfailed`；模型轮播在 3.25 秒采样前后发生切换。
 - 每次开发模式加载会记录 2 个 `/api/user/topup/info` 401 console resource error；它们来自现有未登录充值信息探测，没有页面级 JavaScript 异常，因此不能表述为 clean console。
 - Hero 无障碍标签始终包含 `Google Gemini`，模型费率 tab 始终包含 Gemini。
@@ -135,6 +140,8 @@ Chrome DevTools MCP 在当前会话未配置，按 Task 5 简报使用缓存中�
 
 最终截图使用新的无状态 browser context，从 `scrollY = 0` 直接通过 Chromium `captureBeyondViewport` 捕获完整页面；未执行 hover 或页面滚动，截图中没有 fixed nav 或 Skip Link 的中段重复伪影。
 
+`0f322d0a` 只收紧非首页 header 的样式作用域，首页视觉尺寸和页面内容未变化；本轮 fresh 重跑全部首页视口与两个非首页路由的 computed 验证，没有重复生成相同截图。
+
 ## 设计 Pre-flight
 
 - 设计判断：面向开发者的 B2B AI 网关首页保留式精修，延续轻量、清晰、绿色主色的原有视觉语言。
@@ -142,7 +149,7 @@ Chrome DevTools MCP 在当前会话未配置，按 Task 5 简报使用缓存中�
 - 实现基础：现有 React + 原生 CSS 语义层，不引入第二套设计系统或新依赖。
 - 通过项：全页浅色主题锁定、绿色主色一致、角色化圆角体系、Hero 两行内且首屏完整、CTA 单行、按钮默认和 hover 对比度达到 AA、无页面级横向溢出、无破折号字符、无滚动监听、动效支持 reduced-motion、支持/FAQ/Footer 响应式折叠正确。
 - 项目批准例外：浅色单主题是明确产品选择；动态供应商 Logo 是 Hero 主视觉，因此不增加生成摄影；唯一近黑 CTA 是有意的对比区块；Lucide 继续作为既有 UI 图标家族，供应商品牌 Logo 使用现有品牌图标资源。
-- 框架尺寸：`38076dcf` 已将桌面 minimal nav 内容高度修正为 80px（含边框 81px）、移动端修正为 72px（含边框 73px），并将 Hero 顶部 padding 统一为 96px；所有正式视口均符合目标尺寸。
+- 框架尺寸：`38076dcf` 已将首页桌面 minimal nav 内容高度修正为 80px（含边框 81px）、首页移动端修正为 72px（含边框 73px），并将 Hero 顶部 padding 统一为 96px；所有正式视口均符合目标尺寸。
 
 ## 本地运行
 
