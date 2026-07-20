@@ -52,6 +52,10 @@
   color: var(--accent-ink);
 }
 
+.home-page .btn-flux:hover {
+  color: var(--ink);
+}
+
 .home-page .home-hero .hero-cta .btn-ghost {
   box-shadow: 0 12px 28px rgb(75 116 132 / 10%);
 }

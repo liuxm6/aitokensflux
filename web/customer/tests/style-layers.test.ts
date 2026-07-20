@@ -102,6 +102,9 @@ test("homepage green actions bind accessible ink to scoped selectors", () => {
   expect(marketingStyles).toMatch(
     /\.home-page \.btn-flux,\s*\.home-page \.support-reward-action\s*\{\s*color:\s*var\(--accent-ink\);\s*\}/,
   );
+  expect(marketingStyles).toMatch(
+    /\.home-page \.btn-flux:hover\s*\{\s*color:\s*var\(--ink\);\s*\}/,
+  );
 });
 
 test("adaptive pricing table releases its max height at 760px and below", () => {
