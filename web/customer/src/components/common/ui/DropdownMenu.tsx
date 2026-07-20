@@ -158,7 +158,10 @@ export function DropdownMenu({
             cloneElement(child, {
               onClick: (event: MouseEvent<HTMLElement>) => {
                 child.props.onClick?.(event);
-                if (!event.defaultPrevented) onOpenChange(false);
+                if (!event.defaultPrevented) {
+                  onOpenChange(false);
+                  triggerRef.current?.focus();
+                }
               },
               ref: (element: HTMLElement | null) => {
                 itemRefs.current[index] = element;

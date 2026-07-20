@@ -34,7 +34,9 @@ export function RouteFocus({
       document.head.append(description);
     }
     description.content = localizeKey(language, meta.descriptionId);
+  }, [language, page]);
 
+  useLayoutEffect(() => {
     const main = getMainContent();
     if (!main) return;
     main.id = "main-content";
@@ -48,7 +50,7 @@ export function RouteFocus({
       return;
     }
     main.focus({ preventScroll: true });
-  }, [focusRoute, language, page]);
+  }, [focusRoute, page]);
 
   const handleSkip = (event: MouseEvent<HTMLAnchorElement>) => {
     const main = getMainContent();

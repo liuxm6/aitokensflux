@@ -1,8 +1,9 @@
 import { describe, expect, mock, test } from "bun:test";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Component, type ReactNode, Suspense } from "react";
+import { Component, type ReactNode, Suspense, useState } from "react";
 import { RouteFocus } from "../src/components/common/RouteFocus";
+import { LanguageButton } from "../src/components/layout/LanguageButton";
 import { LanguageContext } from "../src/context/Language";
 import {
   getPageKey,
@@ -15,6 +16,7 @@ import {
   isLazyPageKey,
   RouteLoadingState,
 } from "../src/pages/lazy-pages";
+import type { Language } from "../src/types";
 
 class RootCrashBoundary extends Component<
   { children: ReactNode },
@@ -30,6 +32,23 @@ class RootCrashBoundary extends Component<
     if (this.state.crashed) return <div role="alert">Application crashed</div>;
     return this.props.children;
   }
+}
+
+function LanguageRouteHarness() {
+  const [language, setLanguage] = useState<Language>("en");
+
+  return (
+    <LanguageContext.Provider
+      value={{ language, setLanguage, translationVersion: 0 }}
+    >
+      <LanguageButton />
+      <RouteFocus focusRoute language={language} page="usage">
+        <main>
+          <h1>{language === "zh" ? "用量明细" : "Usage details"}</h1>
+        </main>
+      </RouteFocus>
+    </LanguageContext.Provider>
+  );
 }
 
 describe("customer route contract", () => {
@@ -106,6 +125,19 @@ describe("route focus and metadata", () => {
       value: originalMatchMedia,
     });
     window.scrollTo = originalScrollTo;
+  });
+
+  test("language selection localizes metadata without stealing route focus", async () => {
+    const user = userEvent.setup({ document });
+    render(<LanguageRouteHarness />);
+    const languageTrigger = screen.getByRole("button", { name: "Language" });
+
+    await user.click(languageTrigger);
+    await user.click(screen.getByRole("menuitem", { name: "简体中文" }));
+
+    expect(document.title).toBe("用量明细 · AI Tokens Flux");
+    expect(document.activeElement?.tagName).toBe("BUTTON");
+    expect(document.activeElement?.getAttribute("class")).toBe("lang-btn");
   });
 });
 
