@@ -746,6 +746,24 @@ const customerRuTranslations = {
   "Failed to load dashboard data": "Не удалось загрузить данные панели",
   "Usage records": "Записи использования",
   "Loading page": "Загрузка страницы",
+  "One gateway for every coding model.":
+    "Один шлюз для всех моделей программирования.",
+  "Use one balance, see every request, and keep your existing workflow.":
+    "Единый баланс, история каждого запроса и привычный рабочий процесс.",
+  "View setup guide": "Открыть руководство по настройке",
+  "Create account": "Создать аккаунт",
+  "Usage billing": "Оплата по использованию",
+  "Model rates": "Тарифы моделей",
+  "Compare per-model input, output, cache, and request rates before you send traffic.":
+    "Сравните стоимость входных, выходных, кэшированных токенов и запросов для каждой модели.",
+  "Purchase options": "Способы покупки",
+  "Plans and balance": "Тарифы и баланс",
+  "Plans add recurring quota; pay-as-you-go balance stays available for flexible usage.":
+    "Тарифы дают периодическую квоту, а баланс по использованию остаётся доступным для гибких расходов.",
+  "Choose the model. Keep the workflow.":
+    "Выберите модель. Сохраните рабочий процесс.",
+  "Create one account, follow the setup guide once, and manage every request from the same dashboard.":
+    "Создайте один аккаунт, один раз выполните настройку и управляйте всеми запросами в одной панели.",
   X: "X",
 } satisfies Record<string, string>;
 

@@ -207,17 +207,44 @@ export const HERO_MODEL_PAIRS = [
   [HERO_MODELS[3], HERO_MODELS[0]],
 ] as const;
 
+export const HOME_SECTION_ORDER = [
+  "hero",
+  "support-benefit",
+  "capabilities",
+  "model-rates",
+  "plans-balance",
+  "cta",
+  "support",
+  "faq",
+  "footer",
+] as const;
+
+export const HOME_DESTINATIONS = {
+  dashboard: "/dashboard",
+  onboarding: "/sign-in",
+  plans: "/subscribe",
+  setup: "/setup",
+  support: "/#support",
+} as const;
+
+export const HOME_SECTION_HEADINGS = {
+  modelRates: "Model rates",
+  plansBalance: "Plans and balance",
+} as const;
+
 function FeatureColumn({
   icon: Icon,
+  tier = "secondary",
   titleId,
   textId,
 }: {
   icon: LucideIcon;
+  tier?: "primary" | "secondary";
   titleId: string;
   textId: string;
 }) {
   return (
-    <div className="fc">
+    <div className={`fc ${tier}`}>
       <Icon className="gi" />
       <h3>
         <T id={titleId} />
@@ -231,7 +258,7 @@ function FeatureColumn({
 
 function FaqSection() {
   return (
-    <section className="section faq-section">
+    <section className="section faq-section" data-home-section="faq">
       <div className="wrap narrow">
         <h2 className="h-sec center">FAQ</h2>
         <div className="faq">
@@ -279,7 +306,11 @@ function FaqSection() {
 
 function SupportSection() {
   return (
-    <section className="section support-section" id="support">
+    <section
+      className="section support-section"
+      data-home-section="support"
+      id="support"
+    >
       <div className="wrap">
         <div className="support-head">
           <div>
@@ -682,7 +713,11 @@ function ModelPricingSection() {
 
   if (!grouped) {
     return (
-      <section className="section model-pricing-section" id="model-pricing">
+      <section
+        className="section model-pricing-section"
+        data-home-section="model-rates"
+        id="model-pricing"
+      >
         <div className="wrap">
           {pricingError ? (
             <ErrorState
@@ -698,7 +733,11 @@ function ModelPricingSection() {
   }
   if (providers.length === 0) {
     return (
-      <section className="section model-pricing-section" id="model-pricing">
+      <section
+        className="section model-pricing-section"
+        data-home-section="model-rates"
+        id="model-pricing"
+      >
         <div className="wrap">
           <EmptyState id="No model pricing is available" />
         </div>
@@ -711,15 +750,22 @@ function ModelPricingSection() {
   const TabLogo = GROUP_META[tab].Logo;
 
   return (
-    <section className="section model-pricing-section" id="model-pricing">
+    <section
+      className="section model-pricing-section"
+      data-home-section="model-rates"
+      id="model-pricing"
+    >
       <div className="wrap">
         <div className="center">
           <Pill>
-            <T id="Model pricing" />
+            <T id="Usage billing" />
           </Pill>
           <h2 className="h-sec">
-            <T id="Pay only for the tokens you use" />
+            <T id={HOME_SECTION_HEADINGS.modelRates} />
           </h2>
+          <p className="mp-intro">
+            <T id="Compare per-model input, output, cache, and request rates before you send traffic." />
+          </p>
         </div>
 
         <div className="mp-panel">
@@ -904,7 +950,7 @@ export function createHomePage({
 
     const handleOpenTopup = () => {
       if (!user?.id) {
-        navigateTo("/sign-in");
+        navigateTo(HOME_DESTINATIONS.onboarding);
         return;
       }
       setTopupDialogOpen(true);
@@ -916,10 +962,10 @@ export function createHomePage({
         <FathersDayGiftEntry />
         <MarketingHeader minimal />
         <main>
-          <section className="hero-mesh home-hero">
+          <section className="hero-mesh home-hero" data-home-section="hero">
             <div className="wrap hero-inner center">
               <h1>
-                <T id="Get started, effortlessly" />
+                <T id="One gateway for every coding model." />
               </h1>
               <div
                 aria-label="Claude Code, OpenAI Codex, Grok Code, Google Gemini"
@@ -950,7 +996,7 @@ export function createHomePage({
                 ))}
               </div>
               <p className="hero-tagline">
-                <T id="A stable AI coding solution" />
+                <T id="Use one balance, see every request, and keep your existing workflow." />
               </p>
               <div className="os-icons" aria-label="macOS Windows Linux">
                 <span className="os-icon" aria-label="macOS">
@@ -964,19 +1010,37 @@ export function createHomePage({
                 </span>
               </div>
               <div className="hero-cta">
-                <AppLink className="btn btn-ghost btn-lg" href="/setup">
+                <AppLink
+                  className="btn btn-ghost btn-lg"
+                  href={HOME_DESTINATIONS.setup}
+                >
                   <BookOpen size={18} />
-                  <T id="Setup guide" />
+                  <T id="View setup guide" />
                 </AppLink>
                 <AppLink
                   className="btn btn-flux btn-lg"
-                  href={user ? "/dashboard" : "/sign-in"}
+                  href={
+                    user
+                      ? HOME_DESTINATIONS.dashboard
+                      : HOME_DESTINATIONS.onboarding
+                  }
                 >
                   <Play size={18} />
-                  <T id={user ? "Open dashboard" : "Start now"} />
+                  <T id={user ? "Open dashboard" : "Create account"} />
                 </AppLink>
               </div>
-              <AppLink className="support-reward-callout" href="/#support">
+            </div>
+          </section>
+
+          <section
+            className="support-benefit-section"
+            data-home-section="support-benefit"
+          >
+            <div className="wrap">
+              <AppLink
+                className="support-reward-callout"
+                href={HOME_DESTINATIONS.support}
+              >
                 <span className="support-reward-mascot">
                   <SupportRewardMascot />
                 </span>
@@ -998,7 +1062,11 @@ export function createHomePage({
             </div>
           </section>
 
-          <section className="section home-features" id="features">
+          <section
+            className="section home-features"
+            data-home-section="capabilities"
+            id="features"
+          >
             <div className="wrap">
               <div className="center">
                 <Pill>
@@ -1011,11 +1079,13 @@ export function createHomePage({
               <div className="feat-cols">
                 <FeatureColumn
                   icon={Gauge}
+                  tier="primary"
                   titleId="One-key switch"
                   textId="One command reroutes your CLI traffic. Scripts untouched."
                 />
                 <FeatureColumn
                   icon={CircleDollarSign}
+                  tier="primary"
                   titleId="Usage-based"
                   textId="Top up any amount. Zero minimum. Credits never expire."
                 />
@@ -1035,23 +1105,29 @@ export function createHomePage({
 
           <ModelPricingSection />
 
-          <section className="section surface-band pricing-section">
+          <section
+            className="section surface-band pricing-section"
+            data-home-section="plans-balance"
+          >
             <div className="wrap">
               <div className="pricing-section-head">
                 <div className="pricing-title center">
                   <Pill>
-                    <T id="Pricing" />
+                    <T id="Purchase options" />
                   </Pill>
                   <h2 className="h-sec">
-                    <T id="Transparent pricing that scales down" />
+                    <T id={HOME_SECTION_HEADINGS.plansBalance} />
                   </h2>
+                  <p className="pricing-description">
+                    <T id="Plans add recurring quota; pay-as-you-go balance stays available for flexible usage." />
+                  </p>
                   <p className="pricing-note">
                     <T id="CNY and USD are settled 1:1." />
                   </p>
                 </div>
                 <AppLink
                   className="btn btn-ghost pricing-all-link"
-                  href="/subscribe"
+                  href={HOME_DESTINATIONS.plans}
                 >
                   <T id="See all plans" />
                 </AppLink>
@@ -1082,23 +1158,30 @@ export function createHomePage({
             </div>
           </section>
 
-          <section className="wrap cta-wrap">
+          <section className="wrap cta-wrap" data-home-section="cta">
             <div className="cta-banner">
               <h2>
-                <T id="Plug in in 5 minutes. Start saving today." />
+                <T id="Choose the model. Keep the workflow." />
               </h2>
               <p>
-                <T id="Sign up for free trial credits, follow the guide once, and your Claude Code runs on aitokensflux." />
+                <T id="Create one account, follow the setup guide once, and manage every request from the same dashboard." />
               </p>
               <div>
                 <AppLink
                   className="btn btn-flux btn-lg"
-                  href={user ? "/dashboard" : "/sign-in"}
+                  href={
+                    user
+                      ? HOME_DESTINATIONS.dashboard
+                      : HOME_DESTINATIONS.onboarding
+                  }
                 >
-                  <T id={user ? "Open dashboard" : "Sign in / Register"} />
+                  <T id={user ? "Open dashboard" : "Create account"} />
                 </AppLink>
-                <AppLink className="btn btn-ghost btn-lg dark" href="/setup">
-                  <T id="Read docs" />
+                <AppLink
+                  className="btn btn-ghost btn-lg dark"
+                  href={HOME_DESTINATIONS.setup}
+                >
+                  <T id="View setup guide" />
                 </AppLink>
               </div>
             </div>
@@ -1111,7 +1194,9 @@ export function createHomePage({
         {topupDialogOpen ? (
           <TopupDialog onClose={() => setTopupDialogOpen(false)} />
         ) : null}
-        <Footer />
+        <div data-home-section="footer">
+          <Footer />
+        </div>
       </>
     );
   };

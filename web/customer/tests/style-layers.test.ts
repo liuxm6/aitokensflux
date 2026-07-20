@@ -13,6 +13,9 @@ test("customer styles load semantic token, base, and dialog layers in order", as
   expect(entry.indexOf('@import "./styles/dialogs.css";')).toBeGreaterThan(
     entry.indexOf('@import "./styles/base.css";'),
   );
+  expect(entry.indexOf('@import "./styles/marketing.css";')).toBeGreaterThan(
+    entry.indexOf('@import "./styles/dialogs.css";'),
+  );
 
   const tokens = await Bun.file(
     new URL("src/styles/tokens.css", customerRoot),

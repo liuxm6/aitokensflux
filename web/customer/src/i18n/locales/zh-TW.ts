@@ -745,5 +745,21 @@ export const zhTWTranslations = {
   "Failed to load dashboard data": "控制台資料載入失敗",
   "Usage records": "用量記錄",
   "Loading page": "正在載入頁面",
+  "One gateway for every coding model.": "一個閘道，統一使用所有程式模型。",
+  "Use one balance, see every request, and keep your existing workflow.":
+    "一個餘額、完整請求明細，原有工作流程無需改變。",
+  "View setup guide": "查看接入指南",
+  "Create account": "建立賬號",
+  "Usage billing": "按量計費",
+  "Model rates": "模型費率",
+  "Compare per-model input, output, cache, and request rates before you send traffic.":
+    "傳送請求前比較各模型的輸入、輸出、快取和按次費率。",
+  "Purchase options": "購買方式",
+  "Plans and balance": "套餐與餘額",
+  "Plans add recurring quota; pay-as-you-go balance stays available for flexible usage.":
+    "套餐提供週期額度；按量餘額可隨時補充，靈活使用。",
+  "Choose the model. Keep the workflow.": "選擇模型，工作流程保持不變。",
+  "Create one account, follow the setup guide once, and manage every request from the same dashboard.":
+    "建立一個賬號，只需完成一次接入，所有請求都在同一控制台管理。",
   X: "X",
 } as const;

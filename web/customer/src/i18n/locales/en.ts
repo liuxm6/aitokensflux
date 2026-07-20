@@ -777,5 +777,22 @@ export const enTranslations = {
   "Failed to load dashboard data": "Failed to load dashboard data",
   "Usage records": "Usage records",
   "Loading page": "Loading page",
+  "One gateway for every coding model.": "One gateway for every coding model.",
+  "Use one balance, see every request, and keep your existing workflow.":
+    "Use one balance, see every request, and keep your existing workflow.",
+  "View setup guide": "View setup guide",
+  "Create account": "Create account",
+  "Usage billing": "Usage billing",
+  "Model rates": "Model rates",
+  "Compare per-model input, output, cache, and request rates before you send traffic.":
+    "Compare per-model input, output, cache, and request rates before you send traffic.",
+  "Purchase options": "Purchase options",
+  "Plans and balance": "Plans and balance",
+  "Plans add recurring quota; pay-as-you-go balance stays available for flexible usage.":
+    "Plans add recurring quota; pay-as-you-go balance stays available for flexible usage.",
+  "Choose the model. Keep the workflow.":
+    "Choose the model. Keep the workflow.",
+  "Create one account, follow the setup guide once, and manage every request from the same dashboard.":
+    "Create one account, follow the setup guide once, and manage every request from the same dashboard.",
   X: "X",
 } as const;
