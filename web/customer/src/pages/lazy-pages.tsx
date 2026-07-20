@@ -12,6 +12,7 @@ import { AppLink } from "../components/common/AppLink";
 import { CodeBlock } from "../components/common/CodeBlock";
 import { Pill } from "../components/common/Pill";
 import { ErrorState, LoadingState } from "../components/common/ui/AsyncState";
+import { AccessibleDialog } from "../components/common/ui/Dialog";
 import { MarketingHeader } from "../components/layout/MarketingHeader";
 import { TopupDialog } from "../components/topup/TopupDialog";
 import { T } from "../context/Language";
@@ -21,7 +22,11 @@ import { fetchCustomerStatus } from "../services/customer-api";
 import type { PageKey } from "../types";
 
 class LazyPageErrorBoundary extends Component<
-  { children: ReactNode; onRetry: (error: unknown) => void },
+  {
+    children: ReactNode;
+    onRetry: (error: unknown) => void;
+    presentation: "page" | "overlay";
+  },
   { failure: { error: unknown } | null }
 > {
   state: { failure: { error: unknown } | null } = { failure: null };
@@ -34,6 +39,24 @@ class LazyPageErrorBoundary extends Component<
 
   render() {
     if (this.state.failure) {
+      if (this.props.presentation === "overlay") {
+        return (
+          <AccessibleDialog
+            ariaLabelledBy="lazy-page-error-message"
+            backdropClassName="auth-overlay-backdrop"
+            className="auth-overlay"
+            closeDisabled
+            closeLabel="Close"
+            closeOnBackdrop={false}
+            panelClassName="auth-overlay-panel"
+            onClose={() => undefined}
+          >
+            <div className="auth-modal" id="lazy-page-error-message">
+              <ErrorState id="Failed to load page" onRetry={this.retry} />
+            </div>
+          </AccessibleDialog>
+        );
+      }
       return <ErrorState id="Failed to load page" onRetry={this.retry} />;
     }
     return this.props.children;
@@ -53,6 +76,7 @@ function isChunkLoadError(error: unknown) {
 export function createLazyPage<PageComponent extends ComponentType<any>>(
   loader: () => Promise<{ default: PageComponent }>,
   reloadPage = () => window.location.reload(),
+  options: { presentation?: "page" | "overlay" } = {},
 ) {
   const InitialLazyPage = lazy(loader);
 
@@ -71,7 +95,11 @@ export function createLazyPage<PageComponent extends ComponentType<any>>(
     };
 
     return (
-      <LazyPageErrorBoundary key={attempt} onRetry={retry}>
+      <LazyPageErrorBoundary
+        key={attempt}
+        onRetry={retry}
+        presentation={options.presentation ?? "page"}
+      >
         <LazyPage {...props} />
       </LazyPageErrorBoundary>
     );
@@ -86,8 +114,10 @@ export function RouteLoadingState() {
   return <LoadingState id="Loading page" lines={2} />;
 }
 
-export const LazyAuthPage = createLazyPage(() =>
-  import("./Auth").then((module) => ({ default: module.AuthPage })),
+export const LazyAuthPage = createLazyPage(
+  () => import("./Auth").then((module) => ({ default: module.AuthPage })),
+  undefined,
+  { presentation: "overlay" },
 );
 
 export const LazyDashboardPage = createLazyPage(() =>
@@ -140,19 +170,22 @@ export const LazySettingsPage = createLazyPage(() =>
   })),
 );
 
-export const LazySetupPage = createLazyPage(() =>
-  import("./Setup").then((module) => ({
-    default: module.createSetupPage({
-      MarketingHeader,
-      Pill,
-      T,
-      AppLink,
-      CodeBlock,
-      fetchCustomerStatus,
-      getConfiguredServerAddress,
-      navigateTo,
-    }),
-  })),
+export const LazySetupPage = createLazyPage(
+  () =>
+    import("./Setup").then((module) => ({
+      default: module.createSetupPage({
+        MarketingHeader,
+        Pill,
+        T,
+        AppLink,
+        CodeBlock,
+        fetchCustomerStatus,
+        getConfiguredServerAddress,
+        navigateTo,
+      }),
+    })),
+  undefined,
+  { presentation: "overlay" },
 );
 
 export const LazySubscribePage = createLazyPage(() =>

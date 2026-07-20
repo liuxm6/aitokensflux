@@ -221,6 +221,49 @@ describe("route code splitting", () => {
     }
   });
 
+  test("keeps a rejected /sign-in lazy page visible in an inert auth overlay", async () => {
+    window.history.replaceState(null, "", "/sign-in");
+    const RejectedAuthPage = createLazyPage(
+      () => Promise.reject(new Error("auth chunk unavailable")),
+      () => undefined,
+      { presentation: "overlay" },
+    );
+    const originalConsoleError = console.error;
+    console.error = mock(() => undefined);
+    const root = document.createElement("div");
+    root.id = "root";
+    document.body.append(root);
+
+    try {
+      render(
+        <LanguageContext.Provider
+          value={{
+            language: "en",
+            setLanguage: () => undefined,
+            translationVersion: 0,
+          }}
+        >
+          <a href="/pricing">Home pricing link</a>
+          <Suspense fallback={<RouteLoadingState />}>
+            <RejectedAuthPage />
+          </Suspense>
+        </LanguageContext.Provider>,
+        { container: root },
+      );
+
+      const alert = await screen.findByRole("alert");
+      const overlay = alert.closest('[role="dialog"]');
+      const retry = screen.getByRole("button", { name: "Try again" });
+      expect(alert.textContent).toContain("Failed to load page");
+      expect(overlay?.classList.contains("auth-overlay")).toBe(true);
+      expect(root.contains(overlay)).toBe(false);
+      expect(root.hasAttribute("inert")).toBe(true);
+      expect(document.activeElement).toBe(retry);
+    } finally {
+      console.error = originalConsoleError;
+    }
+  });
+
   test("reloads the route when the bundler caches a rejected chunk", async () => {
     let attempts = 0;
     const reloadPage = mock(() => undefined);
