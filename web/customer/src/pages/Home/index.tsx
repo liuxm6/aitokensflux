@@ -963,7 +963,7 @@ export function createHomePage({
         <FathersDayGifts />
         <FathersDayGiftEntry />
         <MarketingHeader minimal />
-        <main>
+        <main className="home-page">
           <section className="hero-mesh home-hero" data-home-section="hero">
             <div className="wrap hero-inner center">
               <h1>

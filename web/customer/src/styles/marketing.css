@@ -1,3 +1,12 @@
+.minimal-nav-sentinel {
+  position: absolute;
+  top: 12px;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
 @media (min-width: 681px) and (max-width: 900px) {
   .model-pricing-section .mp-panel-top {
     align-items: stretch;

@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { expect, test } from "bun:test";
 
 const customerRoot = new URL("../", import.meta.url);
@@ -33,4 +34,20 @@ test("styles.css remains the only stylesheet imported by the entrypoint", async 
   expect(entrypoint.match(/import\s+["'][^"']+\.css["']/g)).toEqual([
     'import "./styles.css"',
   ]);
+});
+
+test("homepage source scopes polish and observes minimal navigation", () => {
+  const homeSource = readFileSync(
+    new URL("../src/pages/Home/index.tsx", import.meta.url),
+    "utf8",
+  );
+  const headerSource = readFileSync(
+    new URL("../src/components/layout/MarketingHeader.tsx", import.meta.url),
+    "utf8",
+  );
+
+  expect(homeSource).toContain('<main className="home-page">');
+  expect(headerSource).toContain('className="minimal-nav-sentinel"');
+  expect(headerSource).toContain("IntersectionObserver");
+  expect(headerSource).not.toContain('window.addEventListener("scroll"');
 });
