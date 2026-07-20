@@ -454,144 +454,6 @@ function comparePriceRows(a: PriceRow, b: PriceRow) {
   return (b.input ?? -1) - (a.input ?? -1) || a.name.localeCompare(b.name);
 }
 
-const DEV_SAMPLE_PRICING: ModelPricingData = {
-  group_ratio: { claude: 1, codex: 0.6, grok: 1, gemini: 1 },
-  usable_group: {
-    claude: "cc-Max(满血)-不限客户端",
-    codex: "cx-Pro(满血)-不限客户端",
-    grok: "",
-    gemini: "",
-  },
-  vendors: [
-    { id: 1, name: "Anthropic" },
-    { id: 2, name: "OpenAI" },
-    { id: 3, name: "xAI" },
-    { id: 4, name: "Google" },
-  ],
-  data: [
-    {
-      model_name: "Claude Opus 4.8",
-      quota_type: 0,
-      model_ratio: 2.5,
-      model_price: 0,
-      completion_ratio: 5,
-      cache_ratio: 0.1,
-      vendor_id: 1,
-      enable_groups: ["claude"],
-    },
-    {
-      model_name: "Claude Sonnet 4.6",
-      quota_type: 0,
-      model_ratio: 1.5,
-      model_price: 0,
-      completion_ratio: 5,
-      cache_ratio: 0.1,
-      vendor_id: 1,
-      enable_groups: ["claude"],
-    },
-    {
-      model_name: "Claude Haiku 4.5",
-      quota_type: 0,
-      model_ratio: 0.5,
-      model_price: 0,
-      completion_ratio: 5,
-      cache_ratio: 0.1,
-      vendor_id: 1,
-      enable_groups: ["claude"],
-    },
-    {
-      model_name: "GPT-5.5",
-      quota_type: 0,
-      model_ratio: 0.625,
-      model_price: 0,
-      completion_ratio: 8,
-      cache_ratio: 0.1,
-      vendor_id: 2,
-      enable_groups: ["codex"],
-    },
-    {
-      model_name: "GPT-5.5 mini",
-      quota_type: 0,
-      model_ratio: 0.125,
-      model_price: 0,
-      completion_ratio: 8,
-      cache_ratio: 0.1,
-      vendor_id: 2,
-      enable_groups: ["codex"],
-    },
-    {
-      model_name: "o4-mini",
-      quota_type: 0,
-      model_ratio: 0.55,
-      model_price: 0,
-      completion_ratio: 4,
-      cache_ratio: 0.25,
-      vendor_id: 2,
-      enable_groups: ["codex"],
-    },
-    {
-      model_name: "grok-3-fast-beta",
-      quota_type: 0,
-      model_ratio: 2.5,
-      model_price: 0,
-      completion_ratio: 5,
-      cache_ratio: 0.25,
-      vendor_id: 3,
-      enable_groups: ["grok"],
-    },
-    {
-      model_name: "grok-3-beta",
-      quota_type: 0,
-      model_ratio: 1.5,
-      model_price: 0,
-      completion_ratio: 5,
-      cache_ratio: 0.25,
-      vendor_id: 3,
-      enable_groups: ["grok"],
-    },
-    {
-      model_name: "grok-3-mini-beta",
-      quota_type: 0,
-      model_ratio: 0.15,
-      model_price: 0,
-      completion_ratio: 5 / 3,
-      cache_ratio: 0.25,
-      vendor_id: 3,
-      enable_groups: ["grok"],
-    },
-    {
-      model_name: "gemini-2.5-pro",
-      quota_type: 0,
-      model_ratio: 0.625,
-      model_price: 0,
-      completion_ratio: 4,
-      cache_ratio: 0.1,
-      vendor_id: 4,
-      enable_groups: ["gemini"],
-    },
-    {
-      model_name: "gemini-2.5-flash",
-      quota_type: 0,
-      model_ratio: 0.15,
-      model_price: 0,
-      completion_ratio: 4,
-      cache_ratio: 0.1,
-      vendor_id: 4,
-      enable_groups: ["gemini"],
-    },
-    {
-      model_name: "gemini-2.5-flash-lite",
-      quota_type: 0,
-      model_ratio: 0.05,
-      model_price: 0,
-      completion_ratio: 4,
-      cache_ratio: 0.1,
-      vendor_id: 4,
-      enable_groups: ["gemini"],
-    },
-  ],
-};
-
 const GROUP_META: Record<
   PricingGroup,
   {
@@ -678,27 +540,20 @@ function ModelPricingSection() {
     setPricingError(false);
     void fetchModelPricing()
       .then((res) => {
-        const hasData = res.success && (res.data?.length ?? 0) > 0;
-        if (!res.success && !import.meta.env.DEV) setPricingError(true);
-        const next = groupPricing(
-          hasData
-            ? {
-                data: res.data,
-                vendors: res.vendors,
-                group_ratio: res.group_ratio,
-                usable_group: res.usable_group,
-              }
-            : import.meta.env.DEV
-              ? DEV_SAMPLE_PRICING
-              : {},
-        );
-        setGrouped(next);
-      })
-      .catch(() => {
-        if (import.meta.env.DEV) {
-          setGrouped(groupPricing(DEV_SAMPLE_PRICING));
+        if (!res.success) {
+          setPricingError(true);
           return;
         }
+        setGrouped(
+          groupPricing({
+            data: res.data,
+            vendors: res.vendors,
+            group_ratio: res.group_ratio,
+            usable_group: res.usable_group,
+          }),
+        );
+      })
+      .catch(() => {
         setPricingError(true);
       });
   }, []);
