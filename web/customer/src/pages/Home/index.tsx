@@ -404,10 +404,17 @@ function modelBelongsToGroup(
   const enableGroups = Array.isArray(model.enable_groups)
     ? model.enable_groups
     : [];
-  if (enableGroups.includes(group) || enableGroups.includes("all")) {
+  const explicitPricingGroups = enableGroups.filter(
+    (value) =>
+      value === "all" || PRICING_GROUP_ORDER.includes(value as PricingGroup),
+  );
+  if (
+    explicitPricingGroups.includes(group) ||
+    explicitPricingGroups.includes("all")
+  ) {
     return true;
   }
-  if (enableGroups.length > 0) return false;
+  if (explicitPricingGroups.length > 0) return false;
   return (
     classifyFallbackGroup(model.model_name, vendorName, model.owner_by) ===
     group
