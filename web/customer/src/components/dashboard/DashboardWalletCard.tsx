@@ -25,11 +25,7 @@ export function DashboardWalletCard({
           </h2>
           <strong className="mono">{balanceLabel}</strong>
         </div>
-        <button
-          className="btn btn-flux btn-sm"
-          type="button"
-          onClick={onTopup}
-        >
+        <button className="btn btn-flux btn-sm" type="button" onClick={onTopup}>
           <CircleDollarSign size={15} />
           <T id="Top up now" />
         </button>

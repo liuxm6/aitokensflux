@@ -87,11 +87,24 @@ test("console hierarchy and subscription polish stay scoped and responsive", asy
   expect(styles).toContain(".subscription-page {");
   expect(styles).toContain(".subscription-page .pricing-title {");
   expect(styles).toContain(".subscription-page .price.feat {");
+  expect(styles).toContain(".dashboard-wallet-card {");
+  expect(styles).toContain(".dashboard-wallet-balance > strong {");
+  expect(styles).toContain(".dashboard-plan-disclosure {");
+  expect(styles).toContain(".dashboard-plans-more {");
+  expect(styles).toContain(
+    ".console-app .dashboard-plan-list .dashboard-plan-disclosure-card {",
+  );
   expect(styles).toMatch(
     /@media \(max-width: 680px\) \{[\s\S]*?\.subscription-page \.price \.price-cta/,
   );
   expect(styles).toMatch(
+    /@media \(max-width: 680px\) \{[\s\S]*?\.dashboard-wallet-primary[\s\S]*?\.dashboard-plan-disclosure/,
+  );
+  expect(styles).toMatch(
     /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.state-skeleton-line/,
+  );
+  expect(styles).toMatch(
+    /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.dashboard-plan-disclosure > svg/,
   );
   expect(styles).toMatch(
     /@media \(max-width: 980px\) \{[\s\S]*?\.mobile-topbar[\s\S]*?display: flex/,

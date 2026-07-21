@@ -150,9 +150,7 @@ test("dashboard gives wallet data one region with the top-up action", async () =
   expect(within(wallet).getByText("$2.00")).toBeTruthy();
   expect(within(wallet).getByText("$0.50")).toBeTruthy();
   expect(within(wallet).getByText("42")).toBeTruthy();
-  expect(
-    within(wallet).getByText("CNY and USD are settled 1:1."),
-  ).toBeTruthy();
+  expect(within(wallet).getByText("CNY and USD are settled 1:1.")).toBeTruthy();
   expect(screen.getAllByText("Wallet balance")).toHaveLength(1);
 
   await user.click(within(wallet).getByRole("button", { name: "Top up now" }));
@@ -197,9 +195,7 @@ test("additional plans expand without hiding the primary plan", async () => {
   expect(
     within(compactPlan as HTMLElement).getByText("Next reset"),
   ).toBeTruthy();
-  expect(
-    screen.getByRole("button", { name: "Collapse Plan 2" }),
-  ).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Collapse Plan 2" })).toBeTruthy();
 });
 
 test("dashboard failure keeps summaries hidden and offers retry", async () => {

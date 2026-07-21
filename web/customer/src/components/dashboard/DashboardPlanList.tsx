@@ -122,9 +122,7 @@ function SubscriptionDetailBody({
             <div>
               <strong className="mono">{presentation.usedLabel}</strong>
               {presentation.totalMoneyLabel ? (
-                <span className="mono">
-                  {" "}/ {presentation.totalMoneyLabel}
-                </span>
+                <span className="mono"> / {presentation.totalMoneyLabel}</span>
               ) : null}
               {presentation.usedPercent ? (
                 <span className="usage-percent mono">
