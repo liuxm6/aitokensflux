@@ -283,6 +283,11 @@
   margin-left: auto;
 }
 
+.nav-right > .btn,
+.auth-actions > .btn {
+  height: 44px;
+}
+
 .minimal-nav {
   position: fixed;
   right: 0;

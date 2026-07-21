@@ -215,6 +215,10 @@ test("customer-wide typography and mobile spacing stay coordinated", async () =>
   const planFeature = getCssBlock(styles, ".price li {");
   const legalEmpty = getCssBlock(styles, ".legal-page .empty {");
   const setupTitle = getCssBlock(styles, ".setup-picker h1 {");
+  const headerAction = getCssBlock(
+    styles,
+    ".nav-right > .btn,\n.auth-actions > .btn {",
+  );
 
   expect(headings).toContain("letter-spacing: -0.018em");
   expect(headings).toContain("text-wrap: balance");
@@ -233,6 +237,7 @@ test("customer-wide typography and mobile spacing stay coordinated", async () =>
   expect(planFeature).toContain("line-height: 1.45");
   expect(legalEmpty).toContain("min-height: 120px");
   expect(setupTitle).toContain("letter-spacing: -0.018em");
+  expect(headerAction).toContain("height: 44px");
   expect(styles).toMatch(
     /@media \(max-width: 680px\) \{[\s\S]*?\.subscription-page \.price\.has-promo \{[\s\S]*?padding-top: 58px/,
   );
