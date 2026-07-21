@@ -127,6 +127,72 @@ test("console hierarchy and subscription polish stay scoped and responsive", asy
   );
 });
 
+test("console typography and dashboard spacing use a compact hierarchy", async () => {
+  const styles = await Bun.file(new URL("src/styles.css", customerRoot)).text();
+  const pageTitle = getCssBlock(
+    styles,
+    ".console-page-header .console-page-title {",
+  );
+  const pageDescription = getCssBlock(styles, ".console-page-heading p {");
+  const sectionTitle = getCssBlock(
+    styles,
+    "\n.console-section-title {\n  margin-top:",
+  );
+  const walletCard = getCssBlock(styles, ".dashboard-wallet-card {");
+  const plansTitle = getCssBlock(
+    styles,
+    ".dashboard-plans-heading .console-section-title {",
+  );
+  const planFactLabel = getCssBlock(styles, ".plan-fact span {");
+  const planFactValue = getCssBlock(styles, ".plan-fact strong {");
+  const supportPanel = getCssBlock(styles, ".dashboard-support-panel {");
+  const supportHeading = getCssBlock(
+    styles,
+    ".dashboard-support-head strong {",
+  );
+  const supportCardTitle = getCssBlock(
+    styles,
+    ".dashboard-support-panel .support-copy strong {",
+  );
+  const supportCardMeta = getCssBlock(
+    styles,
+    ".dashboard-support-panel .support-copy span {",
+  );
+  const tutorialPanel = getCssBlock(styles, ".tutorial-panel {");
+  const mutedTitle = getCssBlock(styles, ".muted-title {");
+  const tutorialTitle = getCssBlock(styles, ".tutorial-card strong {");
+  const tutorialMeta = getCssBlock(
+    styles,
+    "\n.tutorial-card small {\n  margin-top:",
+  );
+
+  expect(pageTitle).toContain("font-size: 24px");
+  expect(pageTitle).toContain("font-weight: 900");
+  expect(pageTitle).toContain("letter-spacing: -0.02em");
+  expect(pageDescription).toContain("font-size: 14px");
+  expect(sectionTitle).toContain("margin-top: 22px");
+  expect(walletCard).toContain("margin-bottom: 0");
+  expect(plansTitle).toContain("margin-top: 18px");
+  expect(plansTitle).toContain("margin-bottom: 12px");
+  expect(planFactLabel).toContain("font-size: 12px");
+  expect(planFactLabel).toContain("line-height: 1.35");
+  expect(planFactValue).toContain("font-weight: 850");
+  expect(planFactValue).toContain("line-height: 1.35");
+  expect(supportPanel).toContain("padding: 18px 22px 20px");
+  expect(supportHeading).toContain("font-size: 15px");
+  expect(supportHeading).toContain("font-weight: 850");
+  expect(supportCardTitle).toContain("font-weight: 850");
+  expect(supportCardTitle).toContain("line-height: 1.35");
+  expect(supportCardMeta).toContain("font-size: 12.5px");
+  expect(tutorialPanel).toContain("padding: 18px 22px");
+  expect(mutedTitle).toContain("font-weight: 800");
+  expect(mutedTitle).toContain("line-height: 1.45");
+  expect(tutorialTitle).toContain("font-weight: 850");
+  expect(tutorialTitle).toContain("line-height: 1.35");
+  expect(tutorialMeta).toContain("font-size: 12.5px");
+  expect(tutorialMeta).toContain("line-height: 1.45");
+});
+
 test("homepage source scopes polish and observes minimal navigation", () => {
   const homeSource = readFileSync(
     new URL("../src/pages/Home/index.tsx", import.meta.url),
