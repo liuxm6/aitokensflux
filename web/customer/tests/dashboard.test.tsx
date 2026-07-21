@@ -10,13 +10,33 @@ const DashboardPage = createDashboardPage({
   TopupDialog: () => <div role="dialog">Top up dialog</div>,
 });
 
-function dashboardResponses(failSelf = false) {
-  const plan = {
-    id: 7,
-    title: "Pro",
-    price_amount: 20,
-    total_amount: 5_000_000,
-  };
+function dashboardResponses(failSelf = false, planCount = 1) {
+  const plans = Array.from({ length: planCount }, (_, index) => {
+    const id = 7 + index;
+    const plan = {
+      id,
+      title: index === 0 ? "Pro" : `Plan ${index + 1}`,
+      price_amount: 20 + index,
+      total_amount: 50_000_000 - index * 500_000,
+      duration_value: 1,
+      duration_unit: "month",
+      quota_reset_period: "monthly",
+    };
+    return {
+      plan,
+      subscription: {
+        id: 9 + index,
+        user_id: 1,
+        plan_id: id,
+        status: "active",
+        start_time: 1,
+        end_time: 4_102_444_800 - index,
+        amount_total: plan.total_amount,
+        amount_used: 1_000_000,
+      },
+    };
+  });
+
   return new Map<string, Record<string, unknown>>([
     ["/api/status", { success: true, data: { quota_per_unit: 500_000 } }],
     [
@@ -39,31 +59,21 @@ function dashboardResponses(failSelf = false) {
       "/api/subscription/self",
       {
         success: true,
-        data: {
-          subscriptions: [
-            {
-              subscription: {
-                id: 9,
-                user_id: 1,
-                plan_id: 7,
-                status: "active",
-                start_time: 1,
-                end_time: 4_102_444_800,
-                amount_total: 5_000_000,
-                amount_used: 1_000_000,
-              },
-              plan,
-            },
-          ],
-        },
+        data: { subscriptions: plans },
       },
     ],
-    ["/api/subscription/plans", { success: true, data: [{ plan }] }],
+    [
+      "/api/subscription/plans",
+      {
+        success: true,
+        data: plans.map(({ plan }) => ({ plan })),
+      },
+    ],
   ]);
 }
 
-function renderDashboard(failSelf = false) {
-  const responses = dashboardResponses(failSelf);
+function renderDashboard(failSelf = false, planCount = 1) {
+  const responses = dashboardResponses(failSelf, planCount);
   globalThis.fetch = mock(async (input: RequestInfo | URL) => {
     const url = String(input);
     if (url.startsWith("/api/log/self/stat")) {
@@ -147,6 +157,49 @@ test("dashboard gives wallet data one region with the top-up action", async () =
 
   await user.click(within(wallet).getByRole("button", { name: "Top up now" }));
   expect(screen.getByRole("dialog")).toBeTruthy();
+});
+
+test("dashboard reveals large plan collections five at a time", async () => {
+  const user = userEvent.setup({ document });
+  renderDashboard(false, 20);
+
+  expect((await screen.findAllByText("Plan 5")).length).toBeGreaterThan(0);
+  expect(screen.queryAllByText("Plan 6")).toHaveLength(0);
+
+  await user.click(
+    screen.getByRole("button", {
+      name: "Show more plans (15 remaining)",
+    }),
+  );
+
+  expect(screen.getByText("Plan 10")).toBeTruthy();
+  expect(screen.queryAllByText("Plan 11")).toHaveLength(0);
+  expect(
+    screen.getByRole("button", {
+      name: "Show more plans (10 remaining)",
+    }),
+  ).toBeTruthy();
+});
+
+test("additional plans expand without hiding the primary plan", async () => {
+  const user = userEvent.setup({ document });
+  renderDashboard(false, 6);
+
+  expect((await screen.findAllByText("Pro")).length).toBeGreaterThan(0);
+  const expand = screen.getByRole("button", { name: "Expand Plan 2" });
+  await user.click(expand);
+
+  const compactPlan = expand.closest(".dashboard-plan-disclosure-card");
+  expect(compactPlan).toBeTruthy();
+  expect(
+    within(compactPlan as HTMLElement).getByText("Plan used"),
+  ).toBeTruthy();
+  expect(
+    within(compactPlan as HTMLElement).getByText("Next reset"),
+  ).toBeTruthy();
+  expect(
+    screen.getByRole("button", { name: "Collapse Plan 2" }),
+  ).toBeTruthy();
 });
 
 test("dashboard failure keeps summaries hidden and offers retry", async () => {

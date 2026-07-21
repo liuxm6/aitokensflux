@@ -768,6 +768,8 @@ const customerRuTranslations = {
   "Account overview": "Обзор аккаунта",
   "Common actions": "Частые действия",
   "Request count": "Количество запросов",
+  "Show more plans ({{count}} remaining)":
+    "Показать ещё тарифы (осталось: {{count}})",
   X: "X",
 } satisfies Record<string, string>;
 

@@ -765,5 +765,7 @@ export const zhTranslations = {
   "Account overview": "账户概览",
   "Common actions": "常用操作",
   "Request count": "请求次数",
+  "Show more plans ({{count}} remaining)":
+    "查看更多方案（剩余 {{count}} 个）",
   X: "X",
 } as const;

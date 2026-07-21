@@ -765,5 +765,7 @@ export const zhTWTranslations = {
   "Account overview": "賬戶概覽",
   "Common actions": "常用操作",
   "Request count": "請求次數",
+  "Show more plans ({{count}} remaining)":
+    "查看更多方案（剩餘 {{count}} 個）",
   X: "X",
 } as const;

@@ -13,6 +13,7 @@ import {
   LoadingState,
 } from "../../components/common/ui/AsyncState";
 import { SectionLabel } from "../../components/common/SectionLabel";
+import { DashboardPlanList } from "../../components/dashboard/DashboardPlanList";
 import { DashboardWalletCard } from "../../components/dashboard/DashboardWalletCard";
 import { TutorialCard } from "../../components/dashboard/TutorialCard";
 import { CustomerShell } from "../../components/layout/CustomerShell";
@@ -24,18 +25,12 @@ import { LanguageContext, T } from "../../context/Language";
 import { pageMeta } from "../../constants/page-meta";
 import {
   formatQuotaMoney,
-  formatSubscriptionResetDisplayTime,
-  formatTimestamp,
   getActiveSubscriptionRecords,
   getTodayUnixRange,
   mapPlansById,
 } from "../../helpers/format";
-import {
-  formatPlanResetPeriod,
-  formatSubscriptionPeriod,
-} from "../../helpers/plans";
 import { scrollElementIntoView } from "../../helpers/motion";
-import { localizeText, localizeKey } from "../../i18n/localization";
+import { localizeKey } from "../../i18n/localization";
 import {
   fetchCustomerSelf,
   fetchCustomerStatus,
@@ -47,7 +42,6 @@ import type {
   CustomerLogStats,
   CustomerStatus,
   CustomerSubscriptionRecord,
-  SubscriptionPlan,
   SubscriptionPlanRecord,
 } from "../../types";
 
@@ -159,7 +153,6 @@ export function createDashboardPage({
                 <T id="Docs" />
               </AppLink>
             </nav>
-            <SectionLabel id="Current plan" />
           </>
         ) : null}
 
@@ -174,20 +167,12 @@ export function createDashboardPage({
               onRetry={() => setReloadKey((value) => value + 1)}
             />
           </Panel>
-        ) : activeSubscriptionRecords.length > 0 ? (
-          <div className="dashboard-plan-list">
-            {activeSubscriptionRecords.map((record, index) => (
-              <ActiveSubscriptionItem
-                key={record.subscription.id}
-                plan={record.plan ?? planMap.get(record.subscription.plan_id)}
-                record={record}
-                showBuyAction={index === 0}
-                status={status}
-              />
-            ))}
-          </div>
         ) : (
-          <NoCurrentPlanCard />
+          <DashboardPlanList
+            planMap={planMap}
+            records={activeSubscriptionRecords}
+            status={status}
+          />
         )}
         {topupDialogOpen ? (
           <TopupDialog onClose={() => setTopupDialogOpen(false)} />
@@ -223,140 +208,4 @@ export function createDashboardPage({
       </CustomerShell>
     );
   };
-}
-
-function NoCurrentPlanCard() {
-  return (
-    <Panel className="dashboard-plan-panel no-current-plan-panel">
-      <div className="no-current-plan-content">
-        <div>
-          <strong>
-            <T id="No current plan" />
-          </strong>
-          <span>
-            <T id="After purchasing a plan, quota, validity, and remaining balance will appear here." />
-          </span>
-        </div>
-        <AppLink className="btn btn-flux btn-sm" href="/subscribe">
-          <KeyRound size={15} />
-          <T id="Buy plan" />
-        </AppLink>
-      </div>
-    </Panel>
-  );
-}
-
-function PlanFact({ labelId, value }: { labelId: string; value: string }) {
-  const { language } = useContext(LanguageContext);
-
-  return (
-    <div className="plan-fact">
-      <span>{localizeKey(language, labelId)}</span>
-      <strong className="mono">{value}</strong>
-    </div>
-  );
-}
-
-function ActiveSubscriptionItem({
-  record,
-  plan,
-  showBuyAction = false,
-  status,
-}: {
-  record: CustomerSubscriptionRecord;
-  plan?: SubscriptionPlan;
-  showBuyAction?: boolean;
-  status?: CustomerStatus | null;
-}) {
-  const { language } = useContext(LanguageContext);
-  const subscription = record.subscription;
-  const title = plan?.title || `#${subscription.plan_id}`;
-  const total = Number(subscription.amount_total ?? plan?.total_amount ?? 0);
-  const used = Number(subscription.amount_used ?? 0);
-  const remaining = total > 0 ? Math.max(0, total - used) : 0;
-  const usedPercent = total > 0 ? Math.min(100, (used / total) * 100) : 0;
-  const totalMoneyLabel =
-    total > 0 ? formatQuotaMoney(total, status) : undefined;
-  const period = plan ? formatSubscriptionPeriod(plan) : null;
-  const reset = plan ? formatPlanResetPeriod(plan) : null;
-  const quotaLabel =
-    total > 0
-      ? formatQuotaMoney(total, status)
-      : localizeKey(language, "Unlimited");
-  const remainingLabel =
-    total > 0
-      ? formatQuotaMoney(remaining, status)
-      : localizeKey(language, "Unlimited");
-  const periodLabel = period
-    ? localizeText(language, period.zh, period.en)
-    : "-";
-  const resetLabel = reset
-    ? localizeText(language, reset.zh, reset.en)
-    : localizeKey(language, "No reset");
-  const nextReset = formatSubscriptionResetDisplayTime(subscription);
-
-  return (
-    <Panel className="dashboard-plan-panel subscription-plan-card">
-      <div className="plan-head">
-        <div className="plan-facts">
-          <PlanFact labelId="Current plan" value={title} />
-          <PlanFact
-            labelId="Valid until"
-            value={formatTimestamp(subscription.end_time)}
-          />
-          <PlanFact labelId="Received amount" value={quotaLabel} />
-        </div>
-        {showBuyAction ? (
-          <AppLink className="btn btn-flux btn-sm" href="/subscribe">
-            <T id="Buy now" />
-          </AppLink>
-        ) : null}
-      </div>
-      <div className="plan-divider" />
-      <div className="plan-detail-line">
-        <span className="soft-badge">
-          <T id="Active" />
-        </span>
-        <span>{title}</span>
-        <span className="bar">|</span>
-        <span>{periodLabel}</span>
-        <span className="bar">|</span>
-        <b className="mono">{quotaLabel}</b>
-        <span className="bar">|</span>
-        <span>{resetLabel}</span>
-        <span className="bar">|</span>
-        <span>
-          <T id="Next reset" /> <span className="mono">{nextReset}</span>
-        </span>
-      </div>
-      <div className="consume-grid">
-        <div className="consume-values">
-          <div className="usage-quota">
-            <span>
-              <T id="Plan used" />
-            </span>
-            <div>
-              <strong className="mono">{formatQuotaMoney(used, status)}</strong>
-              {totalMoneyLabel ? (
-                <span className="mono"> / {totalMoneyLabel}</span>
-              ) : null}
-              {totalMoneyLabel ? (
-                <span className="usage-percent mono">
-                  {usedPercent.toFixed(1)}%
-                </span>
-              ) : null}
-            </div>
-          </div>
-          <div className="usage-quota">
-            <span>
-              <T id="Plan remaining" />
-            </span>
-            <div>
-              <strong className="mono">{remainingLabel}</strong>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Panel>
-  );
 }

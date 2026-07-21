@@ -798,5 +798,7 @@ export const enTranslations = {
   "Account overview": "Account overview",
   "Common actions": "Common actions",
   "Request count": "Request count",
+  "Show more plans ({{count}} remaining)":
+    "Show more plans ({{count}} remaining)",
   X: "X",
 } as const;
