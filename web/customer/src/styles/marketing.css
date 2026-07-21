@@ -97,8 +97,16 @@
   text-wrap: balance;
 }
 
+.home-page .pricing-section {
+  padding: 48px 0 60px;
+}
+
 .home-page .pricing-section-head {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
   justify-items: stretch;
+  min-height: 0;
+  margin-bottom: 28px;
 }
 
 .home-page .pricing-section .home-section-head-left {
@@ -110,6 +118,17 @@
 .home-page .home-section-head-left .pricing-note {
   margin-right: 0;
   margin-left: 0;
+}
+
+.home-page .pricing-all-link {
+  position: static;
+  align-self: center;
+  justify-self: end;
+  margin-top: 0;
+}
+
+.home-page .pricing-section .price-grid {
+  margin-top: 0;
 }
 
 .home-page .home-features {
@@ -309,6 +328,20 @@
 }
 
 @media (max-width: 680px) {
+  .home-page .pricing-section {
+    padding: 42px 0 52px;
+  }
+
+  .home-page .pricing-section-head {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    margin-bottom: 24px;
+  }
+
+  .home-page .pricing-all-link {
+    justify-self: start;
+  }
+
   .home-page .cta-wrap {
     padding-block: 48px;
   }

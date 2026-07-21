@@ -392,6 +392,44 @@ test("desktop homepage frame binds nav height and hero top padding", () => {
   expect(desktopMedia).not.toMatch(/\.nav\.minimal-nav \.nav-inner/);
 });
 
+test("homepage plan heading stays centered and compact", () => {
+  const marketingStyles = readFileSync(
+    new URL("../src/styles/marketing.css", import.meta.url),
+    "utf8",
+  );
+  const pricingSection = getCssBlock(
+    marketingStyles,
+    ".home-page .pricing-section {",
+  );
+  const pricingHeading = getCssBlock(
+    marketingStyles,
+    ".home-page .pricing-section-head {",
+  );
+  const pricingLink = getCssBlock(
+    marketingStyles,
+    ".home-page .pricing-all-link {",
+  );
+  const pricingGrid = getCssBlock(
+    marketingStyles,
+    ".home-page .pricing-section .price-grid {",
+  );
+
+  expect(pricingSection).toContain("padding: 48px 0 60px");
+  expect(pricingHeading).toContain(
+    "grid-template-columns: minmax(0, 1fr) auto",
+  );
+  expect(pricingHeading).toContain("align-items: center");
+  expect(pricingHeading).toContain("min-height: 0");
+  expect(pricingHeading).toContain("margin-bottom: 28px");
+  expect(pricingLink).toContain("position: static");
+  expect(pricingLink).toContain("align-self: center");
+  expect(pricingLink).toContain("justify-self: end");
+  expect(pricingGrid).toContain("margin-top: 0");
+  expect(marketingStyles).toMatch(
+    /@media \(max-width: 680px\) \{[\s\S]*?\.home-page \.pricing-section-head \{[\s\S]*?grid-template-columns: 1fr[\s\S]*?\.home-page \.pricing-all-link \{[\s\S]*?justify-self: start/,
+  );
+});
+
 test("adaptive pricing table releases its max height at 760px and below", () => {
   const marketingStyles = readFileSync(
     new URL("../src/styles/marketing.css", import.meta.url),
