@@ -151,6 +151,14 @@ test("dashboard gives wallet data one region with the top-up action", async () =
   expect(within(wallet).getByText("$0.50")).toBeTruthy();
   expect(within(wallet).getByText("42")).toBeTruthy();
   expect(within(wallet).getByText("CNY and USD are settled 1:1.")).toBeTruthy();
+  const balance = wallet.querySelector(".dashboard-wallet-balance");
+  const primary = wallet.querySelector(".dashboard-wallet-primary");
+  expect(balance).toBeTruthy();
+  expect(primary).toBeTruthy();
+  expect(
+    within(balance as HTMLElement).getByText("CNY and USD are settled 1:1."),
+  ).toBeTruthy();
+  expect(within(primary as HTMLElement).getByText("Today used")).toBeTruthy();
   expect(screen.getAllByText("Wallet balance")).toHaveLength(1);
 
   await user.click(within(wallet).getByRole("button", { name: "Top up now" }));

@@ -80,6 +80,11 @@ test("styles.css remains the only stylesheet imported by the entrypoint", async 
 
 test("console hierarchy and subscription polish stay scoped and responsive", async () => {
   const styles = await Bun.file(new URL("src/styles.css", customerRoot)).text();
+  const walletCardStyles = getCssBlock(styles, ".dashboard-wallet-card {");
+  const walletPrimaryStyles = getCssBlock(
+    styles,
+    ".dashboard-wallet-primary {",
+  );
 
   expect(styles).toContain(".console-topbar {");
   expect(styles).toContain(".console-page-header {");
@@ -93,6 +98,10 @@ test("console hierarchy and subscription polish stay scoped and responsive", asy
   expect(styles).toContain(".dashboard-plans-more {");
   expect(styles).toContain(
     ".console-app .dashboard-plan-list .dashboard-plan-disclosure-card {",
+  );
+  expect(walletCardStyles).toContain("padding: 18px 22px");
+  expect(walletPrimaryStyles).toContain(
+    "grid-template-columns: minmax(220px, 1fr) minmax(280px, 0.9fr) auto",
   );
   expect(styles).toMatch(
     /@media \(max-width: 680px\) \{[\s\S]*?\.subscription-page \.price \.price-cta/,

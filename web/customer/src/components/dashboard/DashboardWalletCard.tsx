@@ -24,29 +24,29 @@ export function DashboardWalletCard({
             <T id="Wallet balance" />
           </h2>
           <strong className="mono">{balanceLabel}</strong>
+          <p className="wallet-settlement-note">
+            <T id="CNY and USD are settled 1:1." />
+          </p>
         </div>
+        <dl className="dashboard-wallet-metrics">
+          <div>
+            <dt>
+              <T id="Today used" />
+            </dt>
+            <dd className="mono">{todayUsedLabel}</dd>
+          </div>
+          <div>
+            <dt>
+              <T id="Request count" />
+            </dt>
+            <dd className="mono">{requestCount}</dd>
+          </div>
+        </dl>
         <button className="btn btn-flux btn-sm" type="button" onClick={onTopup}>
           <CircleDollarSign size={15} />
           <T id="Top up now" />
         </button>
       </div>
-      <dl className="dashboard-wallet-metrics">
-        <div>
-          <dt>
-            <T id="Today used" />
-          </dt>
-          <dd className="mono">{todayUsedLabel}</dd>
-        </div>
-        <div>
-          <dt>
-            <T id="Request count" />
-          </dt>
-          <dd className="mono">{requestCount}</dd>
-        </div>
-      </dl>
-      <p className="wallet-settlement-note">
-        <T id="CNY and USD are settled 1:1." />
-      </p>
     </section>
   );
 }
