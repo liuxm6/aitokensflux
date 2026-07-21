@@ -120,6 +120,34 @@ Do NOT directly import or call `encoding/json` in business code. `json.RawMessag
 
 For customer-facing frontend requests, homepage changes, marketing pages, pricing display changes, and other visual/UI改造, default to the customer theme under `web/customer/`. Do not modify `web/default/` unless the user explicitly asks for the default admin/frontend theme or the surrounding code clearly belongs there.
 
+### Rule 3B: Customer Theme Color and Functionality Are Locked
+
+The currently committed appearance and behavior of `web/customer/` are protected baselines. General requests such as "优化", "打磨", "重构", "统一", or "重新设计" do not authorize changing either baseline.
+
+**Color lock:**
+
+- Preserve the existing light theme, emerald brand accent, neutral surfaces, semantic status colors, gradients, borders, shadows, and illustration/logo colors.
+- Do not change existing color token values, color literals, opacity relationships, background treatments, or asset colors in `web/customer/`.
+- Do not introduce another brand accent, alternate palette, dark theme, seasonal recoloring, or provider-specific page palette.
+- New UI must reuse the existing tokens in `web/customer/src/styles/tokens.css` and established scoped styles. It must not redefine the visual tone.
+- A color change is allowed only when the user explicitly identifies the exact color or token to change and explicitly authorizes that color change. Authorization to change layout or functionality is not authorization to change color.
+
+**Functionality lock:**
+
+- Preserve every existing route, route alias, API request, request/response shape, navigation destination, permission boundary, data source, state transition, and business rule.
+- Preserve every existing action and workflow, including authentication, account actions, language switching, top-up, subscription purchase, payment providers, balance payment, billing records, usage filters, tables, pagination, API-key management, CC Switch, referrals, settings, support links, dialogs, loading/error/empty states, keyboard behavior, focus restoration, and mobile navigation.
+- Do not remove, hide, disable, rename, repurpose, merge, replace, or silently reorder user-visible controls or data fields in a way that changes discoverability or behavior.
+- Do not replace live backend data with mock, derived, hard-coded, or placeholder data. Do not change PostgreSQL data or backend behavior as part of a Customer visual task.
+- Visual work may adjust only presentation details such as spacing, alignment, typography scale, responsive layout, and accessibility, and only when those adjustments preserve the exact color system and all existing behavior.
+- A functional change is allowed only when the user explicitly names the behavior to change and explicitly authorizes that functional change. Authorization to change color or visual presentation is not authorization to change functionality.
+
+**Mandatory verification for `web/customer/` changes:**
+
+- Inspect the diff for color declarations, tokens, assets, routes, endpoint strings, handlers, control labels, and conditional rendering before completion.
+- Run the relevant Customer regression tests plus `bun test`, `bun run typecheck`, `bun run format:check`, and `bun run build` when the change touches executable frontend code.
+- Treat any unintended color or behavior difference as a regression that must be reverted before delivery.
+- If a request conflicts with this lock and does not contain the explicit authorization described above, preserve the locked baseline and report the conflict instead of guessing.
+
 **Backend test quality:** Backend tests must protect real behavior, API contracts, billing/accounting invariants, data compatibility, or regression paths.
 
 - Do not add tests that only improve coverage numbers, prove that code happens to run, or lock in implementation details without a user-visible or cross-module contract.
