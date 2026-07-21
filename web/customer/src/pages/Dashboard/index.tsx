@@ -4,18 +4,16 @@ import {
   CircleDollarSign,
   FileText,
   KeyRound,
-  Layers3,
-  Wallet,
 } from "lucide-react";
 import type { ComponentType } from "react";
 import { useContext, useEffect, useState } from "react";
 import { AppLink } from "../../components/common/AppLink";
-import { ConsoleSummary } from "../../components/common/ConsoleSummary";
 import {
   ErrorState,
   LoadingState,
 } from "../../components/common/ui/AsyncState";
 import { SectionLabel } from "../../components/common/SectionLabel";
+import { DashboardWalletCard } from "../../components/dashboard/DashboardWalletCard";
 import { TutorialCard } from "../../components/dashboard/TutorialCard";
 import { CustomerShell } from "../../components/layout/CustomerShell";
 import { ConsolePageHeader } from "../../components/layout/ConsolePageHeader";
@@ -124,68 +122,21 @@ export function createDashboardPage({
       getActiveSubscriptionRecords(subscriptions);
     const account = user ?? undefined;
     const balance = account?.quota ?? 0;
-    const primarySubscription = activeSubscriptionRecords[0];
-    const primaryPlan = primarySubscription
-      ? (primarySubscription.plan ??
-        planMap.get(primarySubscription.subscription.plan_id))
-      : undefined;
-    const currentPlanLabel = primarySubscription
-      ? primaryPlan?.title || `#${primarySubscription.subscription.plan_id}`
-      : localizeKey(language, "No current plan");
 
     return (
       <CustomerShell crumbId="Dashboard" page="dashboard">
         <ConsolePageHeader
-          action={
-            <button
-              className="btn btn-flux btn-sm"
-              type="button"
-              onClick={() => setTopupDialogOpen(true)}
-            >
-              <CircleDollarSign size={15} />
-              <T id="Top up now" />
-            </button>
-          }
           descriptionId={pageMeta.dashboard.descriptionId}
           titleId="Dashboard"
         />
 
         {!loading && !loadError ? (
           <>
-            <ConsoleSummary
-              items={[
-                {
-                  icon: Wallet,
-                  labelId: "Wallet balance",
-                  tone: "accent",
-                  value: (
-                    <span className="mono">
-                      {formatQuotaMoney(balance, status)}
-                    </span>
-                  ),
-                },
-                {
-                  icon: Activity,
-                  labelId: "Today used",
-                  value: (
-                    <span className="mono">
-                      {formatQuotaMoney(logStats?.quota ?? 0, status)}
-                    </span>
-                  ),
-                },
-                {
-                  icon: KeyRound,
-                  labelId: "Request count",
-                  value: (
-                    <span className="mono">{account?.request_count ?? 0}</span>
-                  ),
-                },
-                {
-                  icon: Layers3,
-                  labelId: "Current plan",
-                  value: currentPlanLabel,
-                },
-              ]}
+            <DashboardWalletCard
+              balanceLabel={formatQuotaMoney(balance, status)}
+              requestCount={account?.request_count ?? 0}
+              todayUsedLabel={formatQuotaMoney(logStats?.quota ?? 0, status)}
+              onTopup={() => setTopupDialogOpen(true)}
             />
             <nav
               aria-label={localizeKey(language, "Common actions")}
@@ -238,28 +189,6 @@ export function createDashboardPage({
         ) : (
           <NoCurrentPlanCard />
         )}
-
-        <div id="dashboard-wallet">
-          <Panel className="dashboard-wallet-panel">
-            <div className="wallet-panel-head">
-              <div className="wallet-line standalone">
-                <span>
-                  <T id="Wallet balance" />{" "}
-                  <b className="mono">{formatQuotaMoney(balance, status)}</b>
-                </span>
-                <span>
-                  <T id="Today used" />{" "}
-                  <span className="mono">
-                    {formatQuotaMoney(logStats?.quota ?? 0, status)}
-                  </span>
-                </span>
-                <span className="wallet-settlement-note">
-                  <T id="CNY and USD are settled 1:1." />
-                </span>
-              </div>
-            </div>
-          </Panel>
-        </div>
         {topupDialogOpen ? (
           <TopupDialog onClose={() => setTopupDialogOpen(false)} />
         ) : null}

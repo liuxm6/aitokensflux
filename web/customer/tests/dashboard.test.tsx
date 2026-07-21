@@ -1,11 +1,14 @@
 import { afterEach, expect, mock, test } from "bun:test";
 import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { createDashboardPage } from "../src/pages/Dashboard";
 import { AuthContext } from "../src/context/Auth";
 import { LanguageContext } from "../src/context/Language";
 
 const originalFetch = globalThis.fetch;
-const DashboardPage = createDashboardPage({ TopupDialog: () => null });
+const DashboardPage = createDashboardPage({
+  TopupDialog: () => <div role="dialog">Top up dialog</div>,
+});
 
 function dashboardResponses(failSelf = false) {
   const plan = {
@@ -105,16 +108,10 @@ afterEach(() => {
   globalThis.fetch = originalFetch;
 });
 
-test("dashboard summarizes live account data and exposes common actions", async () => {
+test("dashboard exposes the current plan and common actions", async () => {
   renderDashboard();
 
-  const summary = await screen.findByRole("list", {
-    name: "Account overview",
-  });
-  expect(summary.textContent).toContain("$2.00");
-  expect(summary.textContent).toContain("$0.50");
-  expect(summary.textContent).toContain("42");
-  expect(summary.textContent).toContain("Pro");
+  expect((await screen.findAllByText("Pro")).length).toBeGreaterThan(0);
 
   const actions = within(
     screen.getByRole("navigation", { name: "Common actions" }),
@@ -131,6 +128,25 @@ test("dashboard summarizes live account data and exposes common actions", async 
   expect(actions.getByRole("link", { name: "Docs" }).getAttribute("href")).toBe(
     "/setup",
   );
+});
+
+test("dashboard gives wallet data one region with the top-up action", async () => {
+  const user = userEvent.setup({ document });
+  renderDashboard();
+
+  const wallet = await screen.findByRole("region", {
+    name: "Wallet balance",
+  });
+  expect(within(wallet).getByText("$2.00")).toBeTruthy();
+  expect(within(wallet).getByText("$0.50")).toBeTruthy();
+  expect(within(wallet).getByText("42")).toBeTruthy();
+  expect(
+    within(wallet).getByText("CNY and USD are settled 1:1."),
+  ).toBeTruthy();
+  expect(screen.getAllByText("Wallet balance")).toHaveLength(1);
+
+  await user.click(within(wallet).getByRole("button", { name: "Top up now" }));
+  expect(screen.getByRole("dialog")).toBeTruthy();
 });
 
 test("dashboard failure keeps summaries hidden and offers retry", async () => {
