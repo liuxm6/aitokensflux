@@ -4741,7 +4741,7 @@
 
 .record-panel,
 .usage-panel {
-  min-height: 257px;
+  min-height: 0;
   padding: 22px 24px;
 }
 
@@ -9304,7 +9304,7 @@
   }
 
   .nav-right .btn-ghost {
-    display: none;
+    display: inline-flex;
   }
 
   .minimal-nav .nav-right .btn-ghost {
@@ -10127,6 +10127,11 @@
     display: grid;
   }
 
+  .plan-head {
+    width: 100%;
+    justify-content: stretch;
+  }
+
   .base-url-row,
   .key-row,
   .invite-hero {
@@ -10567,8 +10572,7 @@
     padding: 12px;
   }
 
-  .base-url-row .muted-url,
-  .base-url-copy {
+  .base-url-row .muted-url {
     display: block;
     min-width: 0;
     overflow: visible;
@@ -10576,7 +10580,22 @@
     white-space: normal;
   }
 
-  .base-url-row svg {
+  .base-url-copy {
+    display: inline-flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .base-url-copy svg {
+    flex: 0 0 auto;
+  }
+
+  .base-url-row > svg {
     display: none;
   }
 

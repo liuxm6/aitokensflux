@@ -252,6 +252,31 @@ test("customer-wide typography and mobile spacing stay coordinated", async () =>
   );
 });
 
+test("customer mobile actions and compact panels remain complete", async () => {
+  const styles = await Bun.file(new URL("src/styles.css", customerRoot)).text();
+  const dataPanels = getCssBlock(styles, ".record-panel,\n.usage-panel {");
+
+  expect(dataPanels).toContain("min-height: 0");
+  expect(styles).toMatch(
+    /@media \(max-width: 980px\) \{[\s\S]*?\.plan-head \{[\s\S]*?width: 100%[\s\S]*?justify-content: stretch/,
+  );
+  expect(styles).toMatch(
+    /@media \(max-width: 680px\) \{[\s\S]*?\.nav-right \.btn-ghost \{[\s\S]*?display: inline-flex/,
+  );
+  expect(styles).toMatch(
+    /@media \(max-width: 680px\) \{[\s\S]*?\.base-url-row > svg \{[\s\S]*?display: none/,
+  );
+  expect(styles).toMatch(
+    /@media \(max-width: 680px\) \{[\s\S]*?\.base-url-copy \{[\s\S]*?display: inline-flex[\s\S]*?justify-content: flex-start[\s\S]*?gap: 6px/,
+  );
+  expect(styles).not.toMatch(
+    /@media \(max-width: 680px\) \{[\s\S]*?\.base-url-row svg \{[\s\S]*?display: none/,
+  );
+  expect(styles).toMatch(
+    /@media \(max-width: 380px\) \{[\s\S]*?\.nav \.brand-logo-lockup \{[\s\S]*?display: none[\s\S]*?\.nav \.brand-logo-icon \{[\s\S]*?display: block/,
+  );
+});
+
 test("homepage source scopes polish and observes minimal navigation", () => {
   const homeSource = readFileSync(
     new URL("../src/pages/Home/index.tsx", import.meta.url),
