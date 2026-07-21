@@ -123,11 +123,13 @@ h3 {
   margin: 0;
   font-weight: 700;
   line-height: 1.12;
-  letter-spacing: 0;
+  letter-spacing: -0.018em;
+  text-wrap: balance;
 }
 
 .h-sec {
   font-size: clamp(26px, 3.4vw, 40px);
+  line-height: 1.14;
 }
 
 .lead {
@@ -135,6 +137,7 @@ h3 {
   margin: 18px auto 0;
   color: var(--muted);
   font-size: 17px;
+  line-height: 1.65;
 }
 
 .muted {

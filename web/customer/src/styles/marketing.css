@@ -87,12 +87,13 @@
 }
 
 .home-page .home-section-head {
-  margin-bottom: 46px;
+  margin-bottom: 42px;
 }
 
 .home-page .home-section-head .h-sec,
 .home-page .pricing-section .home-section-head-left .h-sec {
   margin-top: 0;
+  line-height: 1.14;
   text-wrap: balance;
 }
 
@@ -211,6 +212,7 @@
 .home-page .faq p {
   margin: 0;
   padding: 0 12px 18px;
+  line-height: 1.65;
 }
 
 .home-page ~ [data-home-section="footer"] .footer {

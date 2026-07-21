@@ -193,6 +193,60 @@ test("console typography and dashboard spacing use a compact hierarchy", async (
   expect(tutorialMeta).toContain("line-height: 1.45");
 });
 
+test("customer-wide typography and mobile spacing stay coordinated", async () => {
+  const styles = await Bun.file(new URL("src/styles.css", customerRoot)).text();
+  const base = await Bun.file(
+    new URL("src/styles/base.css", customerRoot),
+  ).text();
+  const headings = getCssBlock(base, "h1,\nh2,\nh3 {");
+  const sectionHeading = getCssBlock(base, ".h-sec {");
+  const lead = getCssBlock(base, ".lead {");
+  const button = getCssBlock(styles, ".btn {");
+  const navLink = getCssBlock(styles, ".nav-links a {");
+  const panelTitle = getCssBlock(styles, ".panel-h h2,\n.section-title {");
+  const consoleControl = getCssBlock(
+    styles,
+    ".console-input,\n.console-select {",
+  );
+  const tableHeading = getCssBlock(styles, ".usage-log-table th {");
+  const settingLabel = getCssBlock(styles, ".settings-list .set-item .sk {");
+  const settingValue = getCssBlock(styles, ".settings-list .set-item .sv {");
+  const planTitle = getCssBlock(styles, ".price .tag {");
+  const planFeature = getCssBlock(styles, ".price li {");
+  const legalEmpty = getCssBlock(styles, ".legal-page .empty {");
+  const setupTitle = getCssBlock(styles, ".setup-picker h1 {");
+
+  expect(headings).toContain("letter-spacing: -0.018em");
+  expect(headings).toContain("text-wrap: balance");
+  expect(sectionHeading).toContain("line-height: 1.14");
+  expect(lead).toContain("line-height: 1.65");
+  expect(button).toContain("line-height: 1");
+  expect(navLink).toContain("font-weight: 650");
+  expect(panelTitle).toContain("font-weight: 800");
+  expect(panelTitle).toContain("line-height: 1.35");
+  expect(consoleControl).toContain("font-size: 14px");
+  expect(tableHeading).toContain("line-height: 1.35");
+  expect(settingLabel).toContain("font-size: 15px");
+  expect(settingLabel).toContain("line-height: 1.35");
+  expect(settingValue).toContain("line-height: 1.45");
+  expect(planTitle).toContain("line-height: 1.25");
+  expect(planFeature).toContain("line-height: 1.45");
+  expect(legalEmpty).toContain("min-height: 120px");
+  expect(setupTitle).toContain("letter-spacing: -0.018em");
+  expect(styles).toMatch(
+    /@media \(max-width: 680px\) \{[\s\S]*?\.subscription-page \.price\.has-promo \{[\s\S]*?padding-top: 58px/,
+  );
+  expect(styles).toMatch(
+    /@media \(max-width: 560px\) \{[\s\S]*?\.auth-form-head \{[\s\S]*?padding-right: 40px[\s\S]*?\.auth-form h1 \{[\s\S]*?text-align: left/,
+  );
+  expect(styles).toMatch(
+    /@media \(max-width: 760px\) \{[\s\S]*?\.billing-record-table \.table \{[\s\S]*?min-width: 0[\s\S]*?\.billing-record-table \.table td:nth-child\(n\) \{[\s\S]*?width: auto/,
+  );
+  expect(styles).toMatch(
+    /@media \(max-width: 480px\) \{[\s\S]*?\.console-topbar \.lang-symbol \{[\s\S]*?display: inline/,
+  );
+});
+
 test("homepage source scopes polish and observes minimal navigation", () => {
   const homeSource = readFileSync(
     new URL("../src/pages/Home/index.tsx", import.meta.url),
