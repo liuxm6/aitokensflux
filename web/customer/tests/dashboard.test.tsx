@@ -118,26 +118,13 @@ afterEach(() => {
   globalThis.fetch = originalFetch;
 });
 
-test("dashboard exposes the current plan and common actions", async () => {
+test("dashboard exposes the current plan without duplicate quick actions", async () => {
   renderDashboard();
 
   expect((await screen.findAllByText("Pro")).length).toBeGreaterThan(0);
-
-  const actions = within(
-    screen.getByRole("navigation", { name: "Common actions" }),
-  );
   expect(
-    actions.getByRole("link", { name: "Billing" }).getAttribute("href"),
-  ).toBe("/dashboard/billing");
-  expect(
-    actions.getByRole("link", { name: "View usage" }).getAttribute("href"),
-  ).toBe("/dashboard/usage");
-  expect(
-    actions.getByRole("link", { name: "Manage API keys" }).getAttribute("href"),
-  ).toBe("/dashboard/api-key");
-  expect(actions.getByRole("link", { name: "Docs" }).getAttribute("href")).toBe(
-    "/setup",
-  );
+    screen.queryAllByRole("navigation", { name: "Common actions" }),
+  ).toHaveLength(0);
 });
 
 test("dashboard gives wallet data one region with the top-up action", async () => {

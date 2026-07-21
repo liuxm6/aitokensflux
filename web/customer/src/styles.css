@@ -3865,48 +3865,6 @@
   margin: 0;
 }
 
-.dashboard-quick-actions {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0 0 22px;
-}
-
-.dashboard-quick-actions a {
-  display: flex;
-  min-width: 0;
-  min-height: 52px;
-  align-items: center;
-  gap: 10px;
-  padding: 0 14px;
-  border: 1px solid var(--customer-line);
-  border-radius: var(--customer-radius-control);
-  background: var(--customer-panel);
-  color: var(--customer-ink);
-  font-size: 13px;
-  font-weight: 800;
-  transition:
-    transform 120ms ease,
-    border-color 160ms ease,
-    background 160ms ease;
-}
-
-.dashboard-quick-actions a:hover {
-  border-color: var(--customer-accent-line);
-  background: var(--customer-accent-soft);
-  color: var(--customer-accent-ink);
-  transform: translateY(-1px);
-}
-
-.dashboard-quick-actions a:active {
-  transform: translateY(0);
-}
-
-.dashboard-quick-actions svg {
-  flex: 0 0 auto;
-  color: var(--customer-accent-ink);
-}
-
 .dashboard-plan-list {
   display: grid;
   gap: 12px;
@@ -10093,10 +10051,6 @@
     display: grid;
   }
 
-  .dashboard-quick-actions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .plan-facts,
   .consume-values,
   .tutorial-grid,
@@ -10342,10 +10296,6 @@
 
   .console-page-actions .btn {
     justify-content: center;
-  }
-
-  .dashboard-quick-actions {
-    grid-template-columns: 1fr;
   }
 
   .dashboard-wallet-card {

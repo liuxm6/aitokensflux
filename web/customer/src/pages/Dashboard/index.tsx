@@ -1,13 +1,6 @@
-import {
-  Activity,
-  BookOpen,
-  CircleDollarSign,
-  FileText,
-  KeyRound,
-} from "lucide-react";
+import { FileText } from "lucide-react";
 import type { ComponentType } from "react";
 import { useContext, useEffect, useState } from "react";
-import { AppLink } from "../../components/common/AppLink";
 import {
   ErrorState,
   LoadingState,
@@ -21,7 +14,7 @@ import { ConsolePageHeader } from "../../components/layout/ConsolePageHeader";
 import { Panel } from "../../components/common/ui/Panel";
 import { SupportChannelGrid } from "../../components/support/SupportChannels";
 import { AuthContext } from "../../context/Auth";
-import { LanguageContext, T } from "../../context/Language";
+import { T } from "../../context/Language";
 import { pageMeta } from "../../constants/page-meta";
 import {
   formatQuotaMoney,
@@ -30,7 +23,6 @@ import {
   mapPlansById,
 } from "../../helpers/format";
 import { scrollElementIntoView } from "../../helpers/motion";
-import { localizeKey } from "../../i18n/localization";
 import {
   fetchCustomerSelf,
   fetchCustomerStatus,
@@ -54,7 +46,6 @@ export function createDashboardPage({
 }) {
   return function DashboardPage() {
     const { user, setUser } = useContext(AuthContext);
-    const { language } = useContext(LanguageContext);
     const [status, setStatus] = useState<CustomerStatus | null>(null);
     const [logStats, setLogStats] = useState<CustomerLogStats | null>(null);
     const [plans, setPlans] = useState<SubscriptionPlanRecord[]>([]);
@@ -125,35 +116,12 @@ export function createDashboardPage({
         />
 
         {!loading && !loadError ? (
-          <>
-            <DashboardWalletCard
-              balanceLabel={formatQuotaMoney(balance, status)}
-              requestCount={account?.request_count ?? 0}
-              todayUsedLabel={formatQuotaMoney(logStats?.quota ?? 0, status)}
-              onTopup={() => setTopupDialogOpen(true)}
-            />
-            <nav
-              aria-label={localizeKey(language, "Common actions")}
-              className="dashboard-quick-actions"
-            >
-              <AppLink href="/dashboard/billing">
-                <CircleDollarSign size={18} />
-                <T id="Billing" />
-              </AppLink>
-              <AppLink href="/dashboard/usage">
-                <Activity size={18} />
-                <T id="View usage" />
-              </AppLink>
-              <AppLink href="/dashboard/api-key">
-                <KeyRound size={18} />
-                <T id="Manage API keys" />
-              </AppLink>
-              <AppLink href="/setup">
-                <BookOpen size={18} />
-                <T id="Docs" />
-              </AppLink>
-            </nav>
-          </>
+          <DashboardWalletCard
+            balanceLabel={formatQuotaMoney(balance, status)}
+            requestCount={account?.request_count ?? 0}
+            todayUsedLabel={formatQuotaMoney(logStats?.quota ?? 0, status)}
+            onTopup={() => setTopupDialogOpen(true)}
+          />
         ) : null}
 
         {loading ? (

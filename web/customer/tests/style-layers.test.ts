@@ -98,6 +98,7 @@ test("console hierarchy and subscription polish stay scoped and responsive", asy
   expect(styles).toContain(".subscription-page .price.feat {");
   expect(styles).toContain(".dashboard-wallet-card {");
   expect(styles).toContain(".dashboard-wallet-balance > strong {");
+  expect(styles).not.toContain(".dashboard-quick-actions {");
   expect(styles).toContain(".dashboard-plan-disclosure {");
   expect(styles).toContain(".dashboard-plans-more {");
   expect(styles).toContain(
