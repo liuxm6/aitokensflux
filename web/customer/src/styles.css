@@ -3796,6 +3796,14 @@
   gap: 3px;
 }
 
+.dashboard-wallet-label-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .dashboard-wallet-balance h2 {
   margin: 0;
   color: var(--customer-muted);
@@ -3842,7 +3850,7 @@
 .dashboard-wallet-card .wallet-settlement-note {
   width: fit-content;
   max-width: 100%;
-  margin: 6px 0 0;
+  margin: 0;
 }
 
 .dashboard-title-row {

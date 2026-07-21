@@ -85,6 +85,10 @@ test("console hierarchy and subscription polish stay scoped and responsive", asy
     styles,
     ".dashboard-wallet-primary {",
   );
+  const walletLabelRowStyles = getCssBlock(
+    styles,
+    ".dashboard-wallet-label-row {",
+  );
 
   expect(styles).toContain(".console-topbar {");
   expect(styles).toContain(".console-page-header {");
@@ -103,6 +107,8 @@ test("console hierarchy and subscription polish stay scoped and responsive", asy
   expect(walletPrimaryStyles).toContain(
     "grid-template-columns: minmax(220px, 1fr) minmax(280px, 0.9fr) auto",
   );
+  expect(walletLabelRowStyles).toContain("display: flex");
+  expect(walletLabelRowStyles).toContain("flex-wrap: wrap");
   expect(styles).toMatch(
     /@media \(max-width: 680px\) \{[\s\S]*?\.subscription-page \.price \.price-cta/,
   );

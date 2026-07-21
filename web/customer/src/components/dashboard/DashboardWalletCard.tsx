@@ -20,13 +20,15 @@ export function DashboardWalletCard({
     >
       <div className="dashboard-wallet-primary">
         <div className="dashboard-wallet-balance">
-          <h2 id="dashboard-wallet-title">
-            <T id="Wallet balance" />
-          </h2>
+          <div className="dashboard-wallet-label-row">
+            <h2 id="dashboard-wallet-title">
+              <T id="Wallet balance" />
+            </h2>
+            <p className="wallet-settlement-note">
+              <T id="CNY and USD are settled 1:1." />
+            </p>
+          </div>
           <strong className="mono">{balanceLabel}</strong>
-          <p className="wallet-settlement-note">
-            <T id="CNY and USD are settled 1:1." />
-          </p>
         </div>
         <dl className="dashboard-wallet-metrics">
           <div>
