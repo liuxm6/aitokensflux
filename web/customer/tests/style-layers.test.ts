@@ -392,6 +392,22 @@ test("desktop homepage frame binds nav height and hero top padding", () => {
   expect(desktopMedia).not.toMatch(/\.nav\.minimal-nav \.nav-inner/);
 });
 
+test("localized homepage hero titles stay on one line", () => {
+  const marketingStyles = readFileSync(
+    new URL("../src/styles/marketing.css", import.meta.url),
+    "utf8",
+  );
+  const heroTitle = getCssBlock(marketingStyles, ".home-page .home-hero h1 {");
+
+  expect(heroTitle).toContain("width: max-content");
+  expect(heroTitle).toContain("max-width: 100%");
+  expect(heroTitle).toContain("white-space: nowrap");
+  expect(heroTitle).not.toContain("max-width: 14ch");
+  expect(marketingStyles).toMatch(
+    /@media \(max-width: 680px\) \{[\s\S]*?\.home-page \.home-hero h1:lang\(en\)[\s\S]*?font-size: clamp\(26px, 8\.2vw, 42px\)[\s\S]*?\.home-page \.home-hero h1:lang\(ru\)[\s\S]*?font-size: clamp\(23px, 7\.2vw, 38px\)/,
+  );
+});
+
 test("homepage plan heading stays centered and compact", () => {
   const marketingStyles = readFileSync(
     new URL("../src/styles/marketing.css", import.meta.url),

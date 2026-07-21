@@ -40,9 +40,10 @@
 }
 
 .home-page .home-hero h1 {
-  max-width: 14ch;
+  width: max-content;
+  max-width: 100%;
   letter-spacing: -0.035em;
-  text-wrap: balance;
+  white-space: nowrap;
 }
 
 .home-page .home-hero .hero-cta .btn,
@@ -328,6 +329,15 @@
 }
 
 @media (max-width: 680px) {
+  .home-page .home-hero h1:lang(en) {
+    font-size: clamp(26px, 8.2vw, 42px);
+  }
+
+  .home-page .home-hero h1:lang(ru) {
+    font-size: clamp(23px, 7.2vw, 38px);
+    letter-spacing: -0.045em;
+  }
+
   .home-page .pricing-section {
     padding: 42px 0 52px;
   }
