@@ -309,6 +309,8 @@ function App() {
               >
                 {content}
               </RouteFocus>
+            </Suspense>
+            <Suspense fallback={null}>
               {authOverlayOpen ? (
                 <LazyAuthPage
                   modal
