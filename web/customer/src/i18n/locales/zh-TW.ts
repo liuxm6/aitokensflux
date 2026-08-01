@@ -6,6 +6,7 @@ export const zhTWTranslations = {
   "Cache read": "快取讀取",
   "Group note": "分組備註",
   "per request": "每次請求",
+  "Check authenticity": "檢查真偽",
   "Service monitor": "服務監控",
   "Service status": "服務狀態",
   "30 days": "30 天",

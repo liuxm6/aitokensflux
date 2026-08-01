@@ -656,7 +656,16 @@ function ModelPricingSection() {
                 </span>
               </div>
               <a
-                className="mp-status-link"
+                className="mp-meta-link"
+                href="https://www.hvoy.ai"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <ShieldCheck size={14} />
+                <T id="Check authenticity" />
+              </a>
+              <a
+                className="mp-meta-link"
                 href="https://check.aitokensflux.com/group/TokenFlux"
                 target="_blank"
                 rel="noreferrer"

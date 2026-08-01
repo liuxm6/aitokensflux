@@ -5,6 +5,7 @@ export const enTranslations = {
   "Cache read": "Cache read",
   "Group note": "Group note",
   "per request": "per request",
+  "Check authenticity": "Check authenticity",
   "Service monitor": "Service monitor",
   "Service status": "Service status",
   "30 days": "30 days",

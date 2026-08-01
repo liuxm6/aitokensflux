@@ -6,6 +6,7 @@ export const zhTranslations = {
   "Cache read": "缓存读取",
   "Group note": "分组备注",
   "per request": "每次请求",
+  "Check authenticity": "检查真伪",
   "Service monitor": "服务监控",
   "Service status": "服务状态",
   "30 days": "30 天",

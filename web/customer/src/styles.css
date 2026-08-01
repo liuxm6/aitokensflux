@@ -1366,7 +1366,7 @@ h3 {
   background: var(--accent);
 }
 
-.mp-status-link {
+.mp-meta-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1378,11 +1378,11 @@ h3 {
   transition: color 0.16s ease;
 }
 
-.mp-status-link:hover {
+.mp-meta-link:hover {
   color: var(--accent-ink);
 }
 
-.mp-status-link svg {
+.mp-meta-link svg {
   flex-shrink: 0;
 }
 
@@ -1508,6 +1508,7 @@ h3 {
 .mp-model-name {
   min-width: 0;
   overflow: hidden;
+  color: var(--ink);
   text-overflow: ellipsis;
 }
 
@@ -9029,7 +9030,13 @@ h3 {
   }
 
   .mp-panel-meta {
-    justify-content: space-between;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    width: 100%;
+    gap: 10px 14px;
+  }
+
+  .mp-panel-unit {
     width: 100%;
   }
 
