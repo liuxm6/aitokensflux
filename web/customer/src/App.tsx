@@ -9,6 +9,7 @@ import { AppLink } from "./components/common/AppLink";
 import { CodeBlock } from "./components/common/CodeBlock";
 import { ConfirmActionDialog } from "./components/common/ConfirmActionDialog";
 import { Pill } from "./components/common/Pill";
+import { Seo } from "./components/common/Seo";
 import { MarketingHeader } from "./components/layout/MarketingHeader";
 import { TopupDialog } from "./components/topup/TopupDialog";
 import { createHomePage } from "./pages/Home";
@@ -36,8 +37,6 @@ import { persistUser, readStoredUser } from "./helpers/account";
 import { getAuthRedirectFromSearch } from "./helpers/auth-redirect";
 import {
   ensureTraditionalConverter,
-  isEnglish,
-  isRussian,
   isTraditionalChinese,
 } from "./i18n/localization";
 import {
@@ -48,6 +47,7 @@ import {
 } from "./i18n/languages";
 import { getPageKey, navigateTo } from "./helpers/navigation";
 import { getConfiguredServerAddress } from "./helpers/server-address";
+import { getRouteLanguage, localizePublicHref } from "./seo/metadata";
 import type {
   Language,
   PageKey,
@@ -61,10 +61,6 @@ function getCurrentPath() {
 
 function isAuthRoute(page: PageKey) {
   return page === "signin" || page === "signup";
-}
-
-function isSetupRoute(page: PageKey) {
-  return page === "setup";
 }
 
 function isConnectRoute(page: PageKey) {
@@ -90,16 +86,18 @@ const NotFoundPage = createNotFoundPage({ MarketingHeader });
 const SettingsPage = createSettingsPage({ AccountActionDialog });
 
 function App() {
-  const [language, setLanguageState] = useState<Language>(
-    detectCustomerLanguage,
+  const [language, setLanguageState] = useState<Language>(() =>
+    detectCustomerLanguage(window.location.pathname),
   );
   const setLanguage = useCallback((nextLanguage: Language) => {
     window.localStorage.setItem(
       CUSTOMER_LANGUAGE_SOURCE_STORAGE_KEY,
       CUSTOMER_LANGUAGE_SOURCE_MANUAL,
     );
+    window.localStorage.setItem(CUSTOMER_LANGUAGE_STORAGE_KEY, nextLanguage);
     setLanguageState(nextLanguage);
   }, []);
+  const [pathname, setPathname] = useState(() => window.location.pathname);
   const [translationVersion, setTranslationVersion] = useState(0);
   const [user, setCurrentUser] = useState<CustomerUser | null>(() =>
     readStoredUser(),
@@ -110,7 +108,6 @@ function App() {
   const [authReturnPath, setAuthReturnPath] = useState(() => {
     const initialPage = getPageKey(window.location.pathname);
     if (isAuthRoute(initialPage)) return getAuthRedirectFromSearch() || "/";
-    if (isSetupRoute(initialPage)) return "/";
     if (isConnectRoute(initialPage)) return getCurrentPath();
     if (protectedPages.has(initialPage) && !user?.id) return "/";
     return getCurrentPath();
@@ -121,8 +118,24 @@ function App() {
 
   useEffect(() => {
     const onPopState = () => {
-      const nextPage = getPageKey(window.location.pathname);
+      const nextPathname = window.location.pathname;
+      const nextPage = getPageKey(nextPathname);
+      const routeLanguage = getRouteLanguage(nextPathname);
+      setPathname(nextPathname);
       setPage(nextPage);
+      if (routeLanguage) {
+        const storedLanguage = window.localStorage.getItem(
+          CUSTOMER_LANGUAGE_STORAGE_KEY,
+        );
+        const preserveLocalLanguage =
+          window.localStorage.getItem(CUSTOMER_LANGUAGE_SOURCE_STORAGE_KEY) ===
+            CUSTOMER_LANGUAGE_SOURCE_MANUAL &&
+          routeLanguage === "zh" &&
+          (storedLanguage === "zh-TW" || storedLanguage === "ru");
+        setLanguageState(
+          preserveLocalLanguage ? storedLanguage : routeLanguage,
+        );
+      }
       if (isAuthRoute(nextPage)) {
         const redirectTarget = getAuthRedirectFromSearch();
         if (redirectTarget) setAuthReturnPath(redirectTarget);
@@ -130,9 +143,7 @@ function App() {
       }
       if (
         isConnectRoute(nextPage) ||
-        (!isAuthRoute(nextPage) &&
-          !isSetupRoute(nextPage) &&
-          (!protectedPages.has(nextPage) || user?.id))
+        (!isAuthRoute(nextPage) && (!protectedPages.has(nextPage) || user?.id))
       ) {
         setAuthReturnPath(getCurrentPath());
       }
@@ -143,13 +154,6 @@ function App() {
 
   useEffect(() => {
     window.localStorage.setItem(CUSTOMER_LANGUAGE_STORAGE_KEY, language);
-    document.documentElement.lang = isRussian(language)
-      ? "ru"
-      : isEnglish(language)
-        ? "en"
-        : isTraditionalChinese(language)
-          ? "zh-Hant"
-          : "zh-CN";
     if (isTraditionalChinese(language)) {
       void ensureTraditionalConverter().then(() => {
         setTranslationVersion((version) => version + 1);
@@ -202,7 +206,7 @@ function App() {
     persistUser(null);
     setCurrentUser(null);
     setAuthChecking(false);
-    navigateTo("/");
+    navigateTo(localizePublicHref("/", language));
   };
 
   const authContextValue = useMemo(
@@ -222,7 +226,7 @@ function App() {
         });
       },
     }),
-    [authChecking, user],
+    [authChecking, language, user],
   );
 
   const getAuthReturnTarget = () => {
@@ -268,7 +272,7 @@ function App() {
       case "fathersDay":
         return <FathersDayPage />;
       case "setup":
-        return <HomePage />;
+        return <SetupPage />;
       case "signin":
       case "signup":
         return <HomePage />;
@@ -287,7 +291,6 @@ function App() {
 
   const authOverlayOpen =
     isAuthRoute(page) || (!user && protectedPages.has(page));
-  const setupOverlayOpen = isSetupRoute(page);
   const authBackgroundPage = (() => {
     if (!isAuthRoute(page)) return "home";
     const targetPage = getPageKey(
@@ -299,23 +302,8 @@ function App() {
     if (targetPage === "oauthCallback") return "home";
     return targetPage;
   })();
-  const setupBackgroundPage = (() => {
-    const targetPage = getPageKey(
-      new URL(authReturnPath || "/", window.location.origin).pathname,
-    );
-    if (isAuthRoute(targetPage) || isSetupRoute(targetPage)) return "home";
-    if (!user && protectedPages.has(targetPage)) return "home";
-    if (targetPage === "oauthCallback") return "home";
-    return targetPage;
-  })();
-  const content = renderPage(
-    authOverlayOpen
-      ? authBackgroundPage
-      : setupOverlayOpen
-        ? setupBackgroundPage
-        : page,
-  );
-  const overlayScrollLocked = authOverlayOpen || setupOverlayOpen;
+  const content = renderPage(authOverlayOpen ? authBackgroundPage : page);
+  const overlayScrollLocked = authOverlayOpen;
 
   useEffect(() => {
     if (!overlayScrollLocked) return;
@@ -342,6 +330,7 @@ function App() {
 
   return (
     <LanguageContext.Provider value={languageContextValue}>
+      <Seo pathname={pathname} />
       <ToastProvider>
         <ConfirmActionContext.Provider value={confirmContextValue}>
           <AuthContext.Provider value={authContextValue}>
@@ -353,14 +342,6 @@ function App() {
                   navigateTo(getAuthReturnTarget(), { preserveScroll: true })
                 }
                 successPath={getAuthReturnTarget()}
-              />
-            ) : null}
-            {setupOverlayOpen ? (
-              <SetupPage
-                modal
-                onClose={() =>
-                  navigateTo(getAuthReturnTarget(), { preserveScroll: true })
-                }
               />
             ) : null}
             {confirmAction ? (

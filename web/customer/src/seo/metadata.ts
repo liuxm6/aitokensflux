@@ -171,7 +171,9 @@ export function resolveSeoRoute(pathname: string): SeoRouteResolution {
 export function localizePublicHref(
   href: string,
   language: Language,
-  origin: string,
+  origin = typeof window === "undefined"
+    ? manifest.siteUrl
+    : window.location.origin,
 ) {
   if (href.startsWith("#") || href.startsWith("?")) return href;
 

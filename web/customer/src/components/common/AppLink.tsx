@@ -1,5 +1,8 @@
+import { useContext } from "react";
 import type { MouseEvent, ReactNode } from "react";
+import { LanguageContext } from "../../context/Language";
 import { isInternalPath, shouldPreserveScroll } from "../../helpers/navigation";
+import { localizePublicHref } from "../../seo/metadata";
 
 export function AppLink({
   href,
@@ -12,6 +15,9 @@ export function AppLink({
   children: ReactNode;
   onNavigate?: () => void;
 }) {
+  const { language } = useContext(LanguageContext);
+  const resolvedHref = localizePublicHref(href, language);
+
   const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
     if (
       event.defaultPrevented ||
@@ -19,12 +25,12 @@ export function AppLink({
       event.altKey ||
       event.ctrlKey ||
       event.shiftKey ||
-      !isInternalPath(href)
+      !isInternalPath(resolvedHref)
     ) {
       return;
     }
 
-    const url = new URL(href, window.location.origin);
+    const url = new URL(resolvedHref, window.location.origin);
     event.preventDefault();
     window.history.pushState(
       null,
@@ -45,7 +51,7 @@ export function AppLink({
   };
 
   return (
-    <a className={className} href={href} onClick={handleClick}>
+    <a className={className} href={resolvedHref} onClick={handleClick}>
       {children}
     </a>
   );

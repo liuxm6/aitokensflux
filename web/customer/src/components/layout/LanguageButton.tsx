@@ -1,7 +1,9 @@
 import { Check, ChevronDown } from "lucide-react";
 import { useContext, useEffect, useRef, useState } from "react";
 import { LanguageContext } from "../../context/Language";
+import { navigateTo } from "../../helpers/navigation";
 import { languageOptions } from "../../i18n/languages";
+import { getLanguageSwitchHref } from "../../seo/metadata";
 
 export function LanguageButton() {
   const { language, setLanguage } = useContext(LanguageContext);
@@ -44,7 +46,14 @@ export function LanguageButton() {
               key={item.value}
               type="button"
               onClick={() => {
+                const target = getLanguageSwitchHref(
+                  window.location.pathname,
+                  window.location.search,
+                  window.location.hash,
+                  item.value,
+                );
                 setLanguage(item.value);
+                if (target) navigateTo(target, { preserveScroll: true });
                 setOpen(false);
               }}
             >
