@@ -26,7 +26,7 @@ export function Footer() {
             <AppLink href="/#features">
               <T id="Features" />
             </AppLink>
-            <AppLink href="/subscribe">
+            <AppLink href="/pricing">
               <T id="Pricing" />
             </AppLink>
             <AppLink href={user ? "/dashboard" : "/sign-in"}>
@@ -37,7 +37,7 @@ export function Footer() {
             <h4>
               <T id="Resources" />
             </h4>
-            <AppLink href="/setup">
+            <AppLink href="/docs">
               <T id="Setup guide" />
             </AppLink>
             <AppLink href="/dashboard/usage">

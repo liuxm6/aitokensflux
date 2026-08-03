@@ -27,9 +27,15 @@ import { SupportChannelGrid } from "../../components/support/SupportChannels";
 import { PaygTopupSection } from "../../components/topup/PaygTopupSection";
 import { PriceCard } from "../../components/topup/PriceCard";
 import { AuthContext } from "../../context/Auth";
-import { T } from "../../context/Language";
+import { LanguageContext, T } from "../../context/Language";
 import { navigateTo } from "../../helpers/navigation";
 import { recordsToPricePlans } from "../../helpers/plans";
+import {
+  localizeKey,
+  localizeZh,
+  usesEnglishSource,
+} from "../../i18n/localization";
+import seoPages from "../../seo/pages.json";
 import {
   fetchCustomerStatus,
   fetchModelPricing,
@@ -216,47 +222,31 @@ function FeatureColumn({
 }
 
 function FaqSection() {
+  const { language } = useContext(LanguageContext);
+  const faq = seoPages.pages.find((page) => page.key === "home")?.faq ?? [];
+
   return (
     <section className="section faq-section">
       <div className="wrap narrow">
         <h2 className="h-sec center">FAQ</h2>
         <div className="faq">
-          <details open>
-            <summary>
-              <T id="Will aitokensflux change my existing tools?" />
-              <span>+</span>
-            </summary>
-            <p>
-              <T id="No. It only reroutes at the request layer. Your Claude Code, Codex and VS Code workflows stay intact." />
-            </p>
-          </details>
-          <details>
-            <summary>
-              <T id="Do credits expire?" />
-              <span>+</span>
-            </summary>
-            <p>
-              <T id="Pay-as-you-go credits never expire. Subscription plans reset each billing cycle." />
-            </p>
-          </details>
-          <details>
-            <summary>
-              <T id="Which models are supported?" />
-              <span>+</span>
-            </summary>
-            <p>
-              <T id="Equivalent APIs for frontier models including Claude Sonnet 4.6, Claude Opus 4.7 and GPT-5.5." />
-            </p>
-          </details>
-          <details>
-            <summary>
-              <T id="Is my code and data safe?" />
-              <span>+</span>
-            </summary>
-            <p>
-              <T id="Keys are self-managed and revocable anytime; the gateway retains no request content." />
-            </p>
-          </details>
+          {faq.map((item, index) => {
+            const question = usesEnglishSource(language)
+              ? localizeKey(language, item.question.en)
+              : localizeZh(language, item.question.zh);
+            const answer = usesEnglishSource(language)
+              ? localizeKey(language, item.answer.en)
+              : localizeZh(language, item.answer.zh);
+            return (
+              <details key={item.question.en} open={index === 0}>
+                <summary>
+                  {question}
+                  <span>+</span>
+                </summary>
+                <p>{answer}</p>
+              </details>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -808,7 +798,7 @@ export function createHomePage({
           <section className="hero-mesh home-hero">
             <div className="wrap hero-inner center">
               <h1>
-                <T id="Get started, effortlessly" />
+                <T id="Unified Claude Code, Codex and Grok API gateway" />
               </h1>
               <div
                 aria-label="Claude Code, OpenAI Codex, Grok Code"
@@ -853,7 +843,7 @@ export function createHomePage({
                 </span>
               </div>
               <div className="hero-cta">
-                <AppLink className="btn btn-ghost btn-lg" href="/setup">
+                <AppLink className="btn btn-ghost btn-lg" href="/docs">
                   <BookOpen size={18} />
                   <T id="Setup guide" />
                 </AppLink>
@@ -940,7 +930,7 @@ export function createHomePage({
                 </div>
                 <AppLink
                   className="btn btn-ghost pricing-all-link"
-                  href="/subscribe"
+                  href="/pricing"
                 >
                   <T id="See all plans" />
                 </AppLink>
@@ -981,7 +971,7 @@ export function createHomePage({
                 >
                   <T id={user ? "Open dashboard" : "Sign in / Register"} />
                 </AppLink>
-                <AppLink className="btn btn-ghost btn-lg dark" href="/setup">
+                <AppLink className="btn btn-ghost btn-lg dark" href="/docs">
                   <T id="Read docs" />
                 </AppLink>
               </div>

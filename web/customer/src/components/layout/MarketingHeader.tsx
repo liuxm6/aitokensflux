@@ -60,10 +60,10 @@ export function MarketingHeader({ minimal = false }: { minimal?: boolean }) {
             <AppLink href="/#features">
               <T id="Features" />
             </AppLink>
-            <AppLink href="/subscribe">
+            <AppLink href="/pricing">
               <T id="Pricing" />
             </AppLink>
-            <AppLink href="/setup">
+            <AppLink href="/docs">
               <T id="Docs" />
             </AppLink>
           </nav>

@@ -184,7 +184,7 @@ export function createDashboardPage({
           </p>
           <div className="tutorial-grid">
             <TutorialCard
-              href="/setup"
+              href="/docs"
               icon={FileText}
               subtitleId="Claude Code · Codex · Windows / macOS / Linux"
               titleId="Terminal / VS Code text tutorial"
@@ -208,7 +208,7 @@ function NoCurrentPlanCard() {
             <T id="After purchasing a plan, quota, validity, and remaining balance will appear here." />
           </span>
         </div>
-        <AppLink className="btn btn-flux btn-sm" href="/subscribe">
+        <AppLink className="btn btn-flux btn-sm" href="/pricing">
           <KeyRound size={15} />
           <T id="Buy plan" />
         </AppLink>
@@ -279,7 +279,7 @@ function ActiveSubscriptionItem({
           <PlanFact labelId="Received amount" value={quotaLabel} />
         </div>
         {showBuyAction ? (
-          <AppLink className="btn btn-flux btn-sm" href="/subscribe">
+          <AppLink className="btn btn-flux btn-sm" href="/pricing">
             <T id="Buy now" />
           </AppLink>
         ) : null}

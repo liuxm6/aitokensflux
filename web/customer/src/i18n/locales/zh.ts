@@ -13,6 +13,11 @@ export const zhTranslations = {
   "7 days": "7 天",
   "90 days": "90 天",
   "A stable AI coding solution": "稳定好用的 AI 编程解决方案",
+  "Unified Claude Code, Codex and Grok API gateway":
+    "Claude Code、Codex 与 Grok API 统一网关",
+  "Transparent Claude Code, Codex and Grok API pricing":
+    "透明的 Claude Code、Codex 与 Grok API 价格",
+  "Claude Code and Codex API setup guide": "Claude Code 与 Codex API 接入指南",
   About: "关于我们",
   Active: "生效中",
   "Add balance alongside Pro / Max / Ultra plans":

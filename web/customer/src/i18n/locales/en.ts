@@ -12,6 +12,12 @@ export const enTranslations = {
   "7 days": "7 days",
   "90 days": "90 days",
   "A stable AI coding solution": "A stable AI coding solution",
+  "Unified Claude Code, Codex and Grok API gateway":
+    "Unified Claude Code, Codex and Grok API gateway",
+  "Transparent Claude Code, Codex and Grok API pricing":
+    "Transparent Claude Code, Codex and Grok API pricing",
+  "Claude Code and Codex API setup guide":
+    "Claude Code and Codex API setup guide",
   About: "About",
   Active: "Active",
   "Add balance alongside Pro / Max / Ultra plans":

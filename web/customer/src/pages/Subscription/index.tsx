@@ -85,7 +85,7 @@ export function createSubscribePage({
                 <T id="Pricing" />
               </Pill>
               <h1 className="h-sec">
-                <T id="Pay for how you use AI" />
+                <T id="Transparent Claude Code, Codex and Grok API pricing" />
               </h1>
               <p className="lead">
                 <T id="Pay-as-you-go credits never expire. Subscriptions fit steady builders and teams." />

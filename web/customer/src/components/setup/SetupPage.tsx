@@ -593,7 +593,9 @@ source ${profile}`,
               <Pill>
                 <T id="Unified AI gateway" />
               </Pill>
-              <h1>Claude Code / OpenAI Codex</h1>
+              <h1>
+                <T id="Claude Code and Codex API setup guide" />
+              </h1>
             </div>
           )}
           <section
@@ -659,9 +661,9 @@ source ${profile}`,
               <div className="setup-guide">
                 <div className="setup-guide-head">
                   <div>
-                    <h1>
+                    <h2>
                       {selectedTool.title} <T id="setup guide" />
-                    </h1>
+                    </h2>
                     <p>
                       <T
                         id="Follow these steps to install and configure {{tool}} on {{os}}."
@@ -716,9 +718,9 @@ source ${profile}`,
   }) {
     return (
       <div className="setup-picker">
-        <h1>
+        <h2>
           <T id={titleId} />
-        </h1>
+        </h2>
         <p>
           <T id={subtitleId} />
         </p>

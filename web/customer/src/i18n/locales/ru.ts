@@ -17,6 +17,12 @@ const customerRuTranslations = {
   "Check authenticity": "Проверить подлинность",
   "Service monitor": "Мониторинг",
   "Service status": "Статус сервиса",
+  "Unified Claude Code, Codex and Grok API gateway":
+    "Единый API-шлюз для Claude Code, Codex и Grok",
+  "Transparent Claude Code, Codex and Grok API pricing":
+    "Прозрачные цены API Claude Code, Codex и Grok",
+  "Claude Code and Codex API setup guide":
+    "Руководство по подключению API Claude Code и Codex",
   Referrals: "Реферальные бонусы",
   "Custom period": "Пользовательский период",
   "Daily reset": "Ежедневный сброс",
@@ -139,17 +145,30 @@ const customerRuTranslations = {
   "Read docs": "Инструкция",
   "Will aitokensflux change my existing tools?":
     "Изменит ли aitokensflux мои текущие инструменты?",
+  "Will AI Tokens Flux change my existing tools?":
+    "Изменит ли AI Tokens Flux мои текущие инструменты?",
   "No. It only reroutes at the request layer. Your Claude Code, Codex and VS Code workflows stay intact.":
     "Нет. Он меняет только маршрутизацию запросов. Ваши процессы Claude Code, Codex и VS Code остаются прежними.",
+  "No. It only reroutes requests, so your Claude Code, Codex and VS Code workflows, commands and scripts stay unchanged.":
+    "Нет. Сервис только перенаправляет запросы, поэтому ваши процессы, команды и скрипты Claude Code, Codex и VS Code остаются без изменений.",
   "Do credits expire?": "Сгорают ли кредиты?",
+  "Do pay-as-you-go credits expire?": "Сгорают ли кредиты с оплатой по факту?",
   "Pay-as-you-go credits never expire. Subscription plans reset each billing cycle.":
     "Кредиты с оплатой по факту не сгорают. В подписках лимит сбрасывается каждый расчетный период.",
+  "Pay-as-you-go credits never expire. Subscription plans reset on their billing cycle.":
+    "Кредиты с оплатой по факту не сгорают. Лимит подписки сбрасывается в соответствии с ее расчетным периодом.",
   "Which models are supported?": "Какие модели поддерживаются?",
   "Equivalent APIs for frontier models including Claude Sonnet 4.6, Claude Opus 4.7 and GPT-5.5.":
     "Совместимые API для передовых моделей, включая Claude Sonnet 4.6, Claude Opus 4.7 и GPT-5.5.",
+  "The platform provides compatible APIs for frontier Claude, OpenAI Codex and Grok models. Current availability is listed on the pricing page.":
+    "Платформа предоставляет совместимые API для передовых моделей Claude, OpenAI Codex и Grok. Актуальный список доступен на странице цен.",
   "Is my code and data safe?": "Безопасны ли мой код и данные?",
+  "Are my code and request data safe?":
+    "Безопасны ли мой код и данные запросов?",
   "Keys are self-managed and revocable anytime; the gateway retains no request content.":
     "Вы управляете ключами сами и можете отозвать их в любой момент; шлюз не хранит содержимое запросов.",
+  "API keys are user-managed and revocable at any time, and the gateway does not retain request content.":
+    "Пользователи самостоятельно управляют API-ключами и могут отозвать их в любой момент; шлюз не хранит содержимое запросов.",
   "Current plan": "Текущий тариф",
   "Loading current plan": "Загрузка текущего тарифа",
   "Wallet balance": "Баланс кошелька",

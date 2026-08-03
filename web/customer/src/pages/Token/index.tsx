@@ -640,7 +640,7 @@ export function ApiKeysPage() {
             </span>
           </p>
           <div>
-            <AppLink className="btn btn-ghost btn-sm" href="/setup">
+            <AppLink className="btn btn-ghost btn-sm" href="/docs">
               <T id="Examples" />
             </AppLink>
           </div>

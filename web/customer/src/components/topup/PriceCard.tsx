@@ -120,7 +120,7 @@ export function PriceCard({
               : localizeText(language, plan.ctaZh, plan.ctaEn)}
         </button>
       ) : (
-        <AppLink className={buttonClass} href="/subscribe">
+        <AppLink className={buttonClass} href="/pricing">
           {localizeText(language, plan.ctaZh, plan.ctaEn)}
         </AppLink>
       )}
