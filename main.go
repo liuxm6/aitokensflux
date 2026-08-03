@@ -58,6 +58,9 @@ var customerBuildFS embed.FS
 //go:embed web/customer/dist/index.html
 var customerIndexPage []byte
 
+//go:embed web/customer/src/seo/pages.json
+var customerSEOConfig []byte
+
 func main() {
 	startTime := time.Now()
 
@@ -212,6 +215,7 @@ func main() {
 		ClassicIndexPage:  classicIndexPage,
 		CustomerBuildFS:   customerBuildFS,
 		CustomerIndexPage: customerIndexPage,
+		CustomerSEOConfig: customerSEOConfig,
 	})
 	var port = os.Getenv("PORT")
 	if port == "" {

@@ -1,0 +1,82 @@
+{
+  "siteUrl": "https://aitokensflux.com",
+  "productionHost": "aitokensflux.com",
+  "shareImagePath": "/og/aitokensflux-social-card.png",
+  "pages": [
+    {
+      "key": "home",
+      "path": "/",
+      "aliases": [],
+      "title": {
+        "zh": "AI Tokens Flux｜Claude Code、Codex、Grok API 统一网关",
+        "en": "AI Tokens Flux | Unified Claude Code, Codex & Grok API Gateway"
+      },
+      "description": {
+        "zh": "AI Tokens Flux 提供稳定的 Claude Code、Codex 与 Grok API 统一接入，支持按量计费、透明模型价格、用量查询和快速配置。",
+        "en": "AI Tokens Flux provides unified Claude Code, Codex and Grok API access with usage-based billing, transparent model pricing and fast setup."
+      },
+      "breadcrumb": {"zh": "首页", "en": "Home"},
+      "schemas": ["Organization", "WebSite", "WebPage", "Service", "FAQPage"],
+      "faq": [
+        {
+          "question": {"zh": "AI Tokens Flux 会改变我现有的工具吗？", "en": "Will AI Tokens Flux change my existing tools?"},
+          "answer": {"zh": "不会。它只在请求层重新路由，你的 Claude Code、Codex 和 VS Code 工作流、命令与脚本保持不变。", "en": "No. It only reroutes requests, so your Claude Code, Codex and VS Code workflows, commands and scripts stay unchanged."}
+        },
+        {
+          "question": {"zh": "按量余额会过期吗？", "en": "Do pay-as-you-go credits expire?"},
+          "answer": {"zh": "按量余额永不过期；订阅方案会按各自的计费周期重置。", "en": "Pay-as-you-go credits never expire. Subscription plans reset on their billing cycle."}
+        },
+        {
+          "question": {"zh": "支持哪些模型？", "en": "Which models are supported?"},
+          "answer": {"zh": "平台提供 Claude、OpenAI Codex 和 Grok 等前沿模型的兼容 API，实际可用模型以价格页展示为准。", "en": "The platform provides compatible APIs for frontier Claude, OpenAI Codex and Grok models. Current availability is listed on the pricing page."}
+        },
+        {
+          "question": {"zh": "代码和请求数据安全吗？", "en": "Are my code and request data safe?"},
+          "answer": {"zh": "API Key 由用户自行管理并可随时吊销；网关不留存请求内容。", "en": "API keys are user-managed and revocable at any time, and the gateway does not retain request content."}
+        }
+      ]
+    },
+    {
+      "key": "pricing",
+      "path": "/pricing",
+      "aliases": ["/subscribe"],
+      "title": {"zh": "Claude Code、Codex、Grok API 价格｜AI Tokens Flux", "en": "Claude Code, Codex & Grok API Pricing | AI Tokens Flux"},
+      "description": {"zh": "查看 Claude Code、Codex 与 Grok API 的透明模型价格、按量充值和订阅方案，按实际 Token 用量付费。", "en": "Compare transparent Claude Code, Codex and Grok API pricing, pay-as-you-go credit and subscription plans based on actual token usage."},
+      "breadcrumb": {"zh": "价格", "en": "Pricing"},
+      "schemas": ["WebPage", "BreadcrumbList"]
+    },
+    {
+      "key": "docs",
+      "path": "/docs",
+      "aliases": ["/setup"],
+      "title": {"zh": "Claude Code 与 Codex API 接入文档｜AI Tokens Flux", "en": "Claude Code & Codex API Setup Guide | AI Tokens Flux"},
+      "description": {"zh": "按照分步文档在 macOS、Windows 或 Linux 配置 Claude Code 与 OpenAI Codex，接入 AI Tokens Flux 统一 API 网关。", "en": "Follow step-by-step macOS, Windows and Linux instructions to connect Claude Code and OpenAI Codex to the AI Tokens Flux API gateway."},
+      "breadcrumb": {"zh": "接入文档", "en": "Setup guide"},
+      "schemas": ["WebPage", "BreadcrumbList"]
+    },
+    {
+      "key": "userAgreement",
+      "path": "/user-agreement",
+      "aliases": [],
+      "title": {"zh": "用户协议与服务条款｜AI Tokens Flux", "en": "User Agreement and Terms of Service | AI Tokens Flux"},
+      "description": {"zh": "阅读 AI Tokens Flux 用户协议与服务条款，了解账户、API 使用、计费、退款、责任和服务规则。", "en": "Read the AI Tokens Flux user agreement and terms covering accounts, API usage, billing, refunds, responsibilities and service rules."},
+      "breadcrumb": {"zh": "用户协议", "en": "User agreement"},
+      "schemas": ["WebPage", "BreadcrumbList"]
+    },
+    {
+      "key": "privacyPolicy",
+      "path": "/privacy-policy",
+      "aliases": [],
+      "title": {"zh": "隐私政策｜AI Tokens Flux", "en": "Privacy Policy | AI Tokens Flux"},
+      "description": {"zh": "了解 AI Tokens Flux 如何收集、使用、保存和保护账户信息、支付信息、日志与相关个人数据。", "en": "Learn how AI Tokens Flux collects, uses, stores and protects account, payment, log and related personal data."},
+      "breadcrumb": {"zh": "隐私政策", "en": "Privacy policy"},
+      "schemas": ["WebPage", "BreadcrumbList"]
+    }
+  ],
+  "noindexPaths": [
+    "/dashboard", "/dashboard/billing", "/dashboard/usage", "/dashboard/api-key", "/dashboard/invite-record", "/dashboard/settings",
+    "/console/connect", "/atf-switch/connect", "/topup", "/wallet", "/usage", "/usage-logs", "/apikeys", "/keys", "/invite", "/settings",
+    "/fathers-day", "/sign-in", "/login", "/register", "/sign-up", "/user/reset", "/reset"
+  ],
+  "noindexPrefixes": ["/oauth/"]
+}
