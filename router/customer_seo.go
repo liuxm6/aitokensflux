@@ -86,11 +86,20 @@ type customerSEOResolution struct {
 	NotFound      bool
 }
 
+type customerSEORouteKind uint8
+
+const (
+	customerSEORoutePublic customerSEORouteKind = iota
+	customerSEORoutePrivate
+	customerSEORouteNotFound
+)
+
 type customerSEODocumentCacheKey struct {
-	PageKey  string
-	Language string
-	Robots   string
-	Status   int
+	RouteKind customerSEORouteKind
+	PageKey   string
+	Language  string
+	Robots    string
+	Status    int
 }
 
 type customerSEOMetadataView struct {
@@ -351,17 +360,20 @@ func (service *customerSEOService) servePage(c *gin.Context) {
 	if resolution.Page != nil && normalizeRequestHost(c.Request.Host) == service.config.ProductionHost {
 		robots = "index, follow"
 	}
-	pageKey := "private"
+	routeKind := customerSEORoutePrivate
+	pageKey := ""
 	if resolution.Page != nil {
+		routeKind = customerSEORoutePublic
 		pageKey = resolution.Page.Key
 	} else if resolution.NotFound {
-		pageKey = "not-found"
+		routeKind = customerSEORouteNotFound
 	}
 	cacheKey := customerSEODocumentCacheKey{
-		PageKey:  pageKey,
-		Language: resolution.Language,
-		Robots:   robots,
-		Status:   status,
+		RouteKind: routeKind,
+		PageKey:   pageKey,
+		Language:  resolution.Language,
+		Robots:    robots,
+		Status:    status,
 	}
 
 	document, err := service.document(cacheKey, resolution)

@@ -266,6 +266,54 @@ func TestCustomerSEOServiceEmitsParseableJSONLD(t *testing.T) {
 	assert.NotEmpty(t, graph["@graph"])
 }
 
+func TestCustomerSEOServiceCacheSeparatesPublicKeysFromInternalRouteKinds(t *testing.T) {
+	for _, pageKey := range []string{"private", "not-found"} {
+		t.Run(pageKey, func(t *testing.T) {
+			config := loadCustomerSEOTestConfig(t)
+			config.Pages[1].Key = pageKey
+			configBytes, err := common.Marshal(config)
+			require.NoError(t, err)
+
+			orders := []struct {
+				name  string
+				paths []string
+			}{
+				{name: "public then internal", paths: []string{"/pricing", "/dashboard/api-key", "/missing-page"}},
+				{name: "internal then public", paths: []string{"/dashboard/api-key", "/missing-page", "/pricing"}},
+			}
+			for _, order := range orders {
+				t.Run(order.name, func(t *testing.T) {
+					service, err := newCustomerSEOService(configBytes, []byte(customerSEOTestIndexPage))
+					require.NoError(t, err)
+
+					responses := make(map[string]*httptest.ResponseRecorder, len(order.paths))
+					for _, path := range order.paths {
+						responses[path] = performCustomerSEORequest(t, service, path, "preview.example.com")
+					}
+
+					publicBody := responses["/pricing"].Body.String()
+					assert.Equal(t, http.StatusOK, responses["/pricing"].Code)
+					assert.Contains(t, publicBody, `rel="canonical"`)
+					assert.Contains(t, publicBody, `hreflang=`)
+					assert.Contains(t, publicBody, `application/ld+json`)
+
+					privateBody := responses["/dashboard/api-key"].Body.String()
+					assert.Equal(t, http.StatusOK, responses["/dashboard/api-key"].Code)
+					assert.NotContains(t, privateBody, `rel="canonical"`)
+					assert.NotContains(t, privateBody, `hreflang=`)
+					assert.NotContains(t, privateBody, `application/ld+json`)
+
+					unknownBody := responses["/missing-page"].Body.String()
+					assert.Equal(t, http.StatusNotFound, responses["/missing-page"].Code)
+					assert.NotContains(t, unknownBody, `rel="canonical"`)
+					assert.NotContains(t, unknownBody, `hreflang=`)
+					assert.NotContains(t, unknownBody, `application/ld+json`)
+				})
+			}
+		})
+	}
+}
+
 func performCustomerSEORequest(t *testing.T, service *customerSEOService, target, host string) *httptest.ResponseRecorder {
 	t.Helper()
 	gin.SetMode(gin.TestMode)
