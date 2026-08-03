@@ -100,6 +100,12 @@ func TestParseCustomerSEOConfigValidatesManifest(t *testing.T) {
 			},
 		},
 		{
+			name: "duplicate page key",
+			mutate: func(config *customerSEOConfig) {
+				config.Pages[1].Key = config.Pages[0].Key
+			},
+		},
+		{
 			name: "canonical path",
 			mutate: func(config *customerSEOConfig) {
 				config.Pages[1].Path = config.Pages[0].Path
@@ -323,6 +329,36 @@ func TestSafeCustomerSEOServiceServesNoIndexFallbackAndReal404(t *testing.T) {
 	assert.Contains(t, root.Body.String(), "noindex, nofollow")
 	missing := performCustomerSEORequest(t, service, "/missing", "aitokensflux.com")
 	assert.Equal(t, http.StatusNotFound, missing.Code)
+}
+
+func TestSafeCustomerSEOServiceClassifiesRoutesWhenConfigIsMalformed(t *testing.T) {
+	service := newSafeCustomerSEOService([]byte("{"), []byte(customerSEOTestIndexPage))
+
+	for _, path := range []string{"/sign-in", "/en/dashboard/api-key"} {
+		t.Run(path, func(t *testing.T) {
+			recorder := performCustomerSEORequest(t, service, path, "aitokensflux.com")
+			assert.Equal(t, http.StatusOK, recorder.Code)
+			assert.Contains(t, recorder.Body.String(), "noindex, nofollow")
+		})
+	}
+
+	missing := performCustomerSEORequest(t, service, "/missing-fallback-route", "aitokensflux.com")
+	assert.Equal(t, http.StatusNotFound, missing.Code)
+}
+
+func TestSafeCustomerSEOServicePreservesExplicitEnglishForPublicRoute(t *testing.T) {
+	configBytes, err := os.ReadFile("../web/customer/src/seo/pages.json")
+	require.NoError(t, err)
+	invalidTemplate := []byte(`<!doctype html><html lang="zh-CN"><head><meta name="robots" content="noindex, nofollow" /></head></html>`)
+	service := newSafeCustomerSEOService(configBytes, invalidTemplate)
+	assets := ThemeAssets{CustomerIndexPage: invalidTemplate}
+
+	recorder := performCustomerWebNoRouteRequest(t, customerWebNoRouteHandler(assets, service), "/en/docs", "aitokensflux.com", "CN")
+
+	assert.Equal(t, http.StatusOK, recorder.Code)
+	assert.Equal(t, "en", recorder.Header().Get("Content-Language"))
+	assert.Contains(t, recorder.Body.String(), `lang="en"`)
+	assert.Contains(t, recorder.Body.String(), "noindex, nofollow")
 }
 
 func performCustomerWebNoRouteRequest(t *testing.T, handler gin.HandlerFunc, target, host, country string) *httptest.ResponseRecorder {

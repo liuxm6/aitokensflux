@@ -180,11 +180,16 @@ func parseCustomerSEOConfig(data []byte) (customerSEOConfig, error) {
 
 	canonicalPaths := make(map[string]struct{}, len(config.Pages))
 	aliases := make(map[string]struct{})
+	pageKeys := make(map[string]struct{}, len(config.Pages))
 	for pageIndex := range config.Pages {
 		page := &config.Pages[pageIndex]
 		if strings.TrimSpace(page.Key) == "" {
 			return customerSEOConfig{}, fmt.Errorf("customer SEO page %d has an empty key", pageIndex)
 		}
+		if _, exists := pageKeys[page.Key]; exists {
+			return customerSEOConfig{}, fmt.Errorf("customer SEO has duplicate page key %q", page.Key)
+		}
+		pageKeys[page.Key] = struct{}{}
 		if strings.TrimSpace(page.Path) == "" {
 			return customerSEOConfig{}, fmt.Errorf("customer SEO page %q has an empty path", page.Key)
 		}
@@ -310,10 +315,14 @@ func (config customerSEOConfig) resolve(requestPath string) customerSEOResolutio
 
 func (service *customerSEOService) servePage(c *gin.Context) {
 	resolution := customerSEOResolution{Language: "zh", NoIndex: true, NotFound: true}
+	fallbackPublic := false
 	if service.hasConfig {
 		resolution = service.config.resolve(c.Request.URL.Path)
-	} else if normalizeCustomerSEOPath(c.Request.URL.Path) == "/" {
-		resolution.NotFound = false
+	} else {
+		language, public, found := classifyCustomerSEOFallbackPath(c.Request.URL.Path)
+		resolution.Language = language
+		resolution.NotFound = !found
+		fallbackPublic = public
 	}
 
 	if resolution.RedirectPath != "" {
@@ -326,8 +335,15 @@ func (service *customerSEOService) servePage(c *gin.Context) {
 		status = http.StatusNotFound
 	}
 	if service.safeFallback {
-		applyEdgeInterfaceLanguage(c)
-		c.Data(status, "text/html; charset=utf-8", service.indexPage)
+		document := service.indexPage
+		if resolution.Page != nil || fallbackPublic {
+			language := customerSEOHTMLLanguage(resolution.Language)
+			c.Header("Content-Language", language)
+			document = bytes.Replace(document, []byte(customerSEOLanguageAnchor), []byte(`<html lang="`+language+`">`), 1)
+		} else {
+			applyEdgeInterfaceLanguage(c)
+		}
+		c.Data(status, "text/html; charset=utf-8", document)
 		return
 	}
 
@@ -361,6 +377,20 @@ func (service *customerSEOService) servePage(c *gin.Context) {
 		applyEdgeInterfaceLanguage(c)
 	}
 	c.Data(status, "text/html; charset=utf-8", document)
+}
+
+func classifyCustomerSEOFallbackPath(requestPath string) (language string, public, found bool) {
+	language, basePath := splitCustomerSEOLanguage(requestPath)
+	switch basePath {
+	case "/", "/pricing", "/subscribe", "/docs", "/setup", "/user-agreement", "/privacy-policy":
+		return language, true, true
+	case "/dashboard", "/dashboard/billing", "/dashboard/usage", "/dashboard/api-key", "/dashboard/invite-record", "/dashboard/settings",
+		"/console/connect", "/atf-switch/connect", "/topup", "/wallet", "/usage", "/usage-logs", "/apikeys", "/keys", "/invite", "/settings",
+		"/fathers-day", "/sign-in", "/login", "/register", "/sign-up", "/user/reset", "/reset":
+		return language, false, true
+	default:
+		return language, false, strings.HasPrefix(basePath, "/oauth/")
+	}
 }
 
 func (service *customerSEOService) document(cacheKey customerSEODocumentCacheKey, resolution customerSEOResolution) ([]byte, error) {
