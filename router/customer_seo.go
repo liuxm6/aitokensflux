@@ -2,6 +2,7 @@ package router
 
 import (
 	"bytes"
+	"encoding/xml"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -46,6 +47,16 @@ const customerSEOHeadTemplate = `<!--customer-seo-start-->
 <meta name="twitter:image" content="{{.ImageURL}}" />
 <script type="application/ld+json">{{.JSONLD}}</script>
 {{end}}<!--customer-seo-end-->`
+
+const customerSEORobots = `User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /v1/
+Disallow: /admin/
+Disallow: /oauth/
+
+Sitemap: https://aitokensflux.com/sitemap.xml
+`
 
 type customerSEOLocalizedText struct {
 	Zh string `json:"zh"`
@@ -113,6 +124,24 @@ type customerSEOMetadataView struct {
 	ImageURL        string
 	OpenGraphLocale string
 	JSONLD          template.JS
+}
+
+type customerSEOSitemapURLSet struct {
+	XMLName    xml.Name                `xml:"urlset"`
+	XMLNS      string                  `xml:"xmlns,attr"`
+	XMLNSXHTML string                  `xml:"xmlns:xhtml,attr"`
+	URLs       []customerSEOSitemapURL `xml:"url"`
+}
+
+type customerSEOSitemapURL struct {
+	Location   string                        `xml:"loc"`
+	Alternates []customerSEOSitemapAlternate `xml:"xhtml:link"`
+}
+
+type customerSEOSitemapAlternate struct {
+	Rel      string `xml:"rel,attr"`
+	Language string `xml:"hreflang,attr"`
+	Href     string `xml:"href,attr"`
 }
 
 type customerSEOService struct {
@@ -389,6 +418,45 @@ func (service *customerSEOService) servePage(c *gin.Context) {
 		applyEdgeInterfaceLanguage(c)
 	}
 	c.Data(status, "text/html; charset=utf-8", document)
+}
+
+func (service *customerSEOService) serveRobots(c *gin.Context) {
+	c.Data(http.StatusOK, "text/plain; charset=utf-8", []byte(customerSEORobots))
+}
+
+func (service *customerSEOService) serveSitemap(c *gin.Context) {
+	if !service.hasConfig {
+		c.Status(http.StatusNotFound)
+		return
+	}
+
+	urls := make([]customerSEOSitemapURL, 0, len(service.config.Pages)*2)
+	for _, page := range service.config.Pages {
+		zhURL := customerSEOAbsoluteURL(service.config.SiteURL, customerSEOCanonicalPath("zh", page.Path))
+		enURL := customerSEOAbsoluteURL(service.config.SiteURL, customerSEOCanonicalPath("en", page.Path))
+		alternates := []customerSEOSitemapAlternate{
+			{Rel: "alternate", Language: "zh-CN", Href: zhURL},
+			{Rel: "alternate", Language: "en", Href: enURL},
+			{Rel: "alternate", Language: "x-default", Href: zhURL},
+		}
+		urls = append(urls,
+			customerSEOSitemapURL{Location: zhURL, Alternates: alternates},
+			customerSEOSitemapURL{Location: enURL, Alternates: alternates},
+		)
+	}
+
+	document, err := xml.MarshalIndent(customerSEOSitemapURLSet{
+		XMLNS:      "http://www.sitemaps.org/schemas/sitemap/0.9",
+		XMLNSXHTML: "http://www.w3.org/1999/xhtml",
+		URLs:       urls,
+	}, "", "  ")
+	if err != nil {
+		common.SysError("marshal customer sitemap: " + err.Error())
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	document = append([]byte(xml.Header), document...)
+	c.Data(http.StatusOK, "application/xml; charset=utf-8", document)
 }
 
 func classifyCustomerSEOFallbackPath(requestPath string) (language string, public, found bool) {

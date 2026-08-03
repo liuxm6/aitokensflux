@@ -44,6 +44,8 @@ func SetWebRouter(router *gin.Engine, assets ThemeAssets) {
 	router.Use(redirectAdminRootToDashboard())
 	router.Use(static.Serve("/admin", adminFS))
 	router.Use(static.Serve("/", customerFS))
+	router.GET("/robots.txt", customerSEO.serveRobots)
+	router.GET("/sitemap.xml", customerSEO.serveSitemap)
 	router.NoRoute(customerWebNoRouteHandler(assets, customerSEO))
 }
 

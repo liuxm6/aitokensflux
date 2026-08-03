@@ -314,6 +314,76 @@ func TestCustomerSEOServiceCacheSeparatesPublicKeysFromInternalRouteKinds(t *tes
 	}
 }
 
+func TestCustomerSEOServiceServesRobots(t *testing.T) {
+	service := newCustomerSEOTestService(t)
+	recorder := performCustomerSEOEndpoint(t, service.serveRobots, "/robots.txt")
+
+	assert.Equal(t, http.StatusOK, recorder.Code)
+	assert.Equal(t, "text/plain; charset=utf-8", recorder.Header().Get("Content-Type"))
+	assert.Equal(t, `User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /v1/
+Disallow: /admin/
+Disallow: /oauth/
+
+Sitemap: https://aitokensflux.com/sitemap.xml
+`, recorder.Body.String())
+	assert.NotContains(t, recorder.Body.String(), "Disallow: /dashboard")
+}
+
+func TestCustomerSEOServiceSitemapHasOnlyCanonicalPublicURLs(t *testing.T) {
+	service := newCustomerSEOTestService(t)
+	recorder := performCustomerSEOEndpoint(t, service.serveSitemap, "/sitemap.xml")
+	body := recorder.Body.String()
+
+	assert.Equal(t, http.StatusOK, recorder.Code)
+	assert.Equal(t, "application/xml; charset=utf-8", recorder.Header().Get("Content-Type"))
+	assert.Contains(t, body, `xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"`)
+	assert.Contains(t, body, `xmlns:xhtml="http://www.w3.org/1999/xhtml"`)
+	assert.Equal(t, 10, strings.Count(body, "<url>"))
+	assert.Equal(t, 10, strings.Count(body, `hreflang="zh-CN"`))
+	assert.Equal(t, 10, strings.Count(body, `hreflang="en"`))
+	assert.Equal(t, 10, strings.Count(body, `hreflang="x-default"`))
+	for _, canonicalURL := range []string{
+		"https://aitokensflux.com/",
+		"https://aitokensflux.com/en",
+		"https://aitokensflux.com/pricing",
+		"https://aitokensflux.com/en/pricing",
+		"https://aitokensflux.com/docs",
+		"https://aitokensflux.com/en/docs",
+		"https://aitokensflux.com/user-agreement",
+		"https://aitokensflux.com/en/user-agreement",
+		"https://aitokensflux.com/privacy-policy",
+		"https://aitokensflux.com/en/privacy-policy",
+	} {
+		assert.Contains(t, body, "<loc>"+canonicalURL+"</loc>")
+	}
+	assert.NotContains(t, body, "/subscribe")
+	assert.NotContains(t, body, "/dashboard")
+	assert.NotContains(t, body, "<lastmod>")
+}
+
+func newCustomerSEOTestService(t *testing.T) *customerSEOService {
+	t.Helper()
+	configBytes, err := os.ReadFile("../web/customer/src/seo/pages.json")
+	require.NoError(t, err)
+	service, err := newCustomerSEOService(configBytes, []byte(customerSEOTestIndexPage))
+	require.NoError(t, err)
+	return service
+}
+
+func performCustomerSEOEndpoint(t *testing.T, handler gin.HandlerFunc, target string) *httptest.ResponseRecorder {
+	t.Helper()
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	router.GET(target, handler)
+	recorder := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, target, nil)
+	router.ServeHTTP(recorder, request)
+	return recorder
+}
+
 func performCustomerSEORequest(t *testing.T, service *customerSEOService, target, host string) *httptest.ResponseRecorder {
 	t.Helper()
 	gin.SetMode(gin.TestMode)
