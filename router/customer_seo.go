@@ -1,16 +1,51 @@
 package router
 
 import (
+	"bytes"
 	"fmt"
+	"html/template"
+	"net/http"
+	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/QuantumNous/new-api/common"
+	"github.com/gin-gonic/gin"
 )
 
 const (
 	customerSEOSiteURL        = "https://aitokensflux.com"
 	customerSEOProductionHost = "aitokensflux.com"
+	customerSEOStartMarker    = "<!--customer-seo-start-->"
+	customerSEOEndMarker      = "<!--customer-seo-end-->"
+	customerSEOLanguageAnchor = `<html lang="zh-CN">`
+	customerSEOBrandTitle     = "AI Tokens Flux"
+	customerSEOBrandZhDesc    = "AI Tokens Flux 提供 Claude Code、Codex 与 Grok API 统一接入。"
+	customerSEOBrandEnDesc    = "AI Tokens Flux provides unified Claude Code, Codex and Grok API access."
 )
+
+var customerSEOClosingScriptPattern = regexp.MustCompile(`(?i)</script`)
+
+const customerSEOHeadTemplate = `<!--customer-seo-start-->
+<title>{{.Title}}</title>
+<meta name="description" content="{{.Description}}" />
+<meta name="robots" content="{{.Robots}}" />
+{{if .CanonicalURL}}<link rel="canonical" href="{{.CanonicalURL}}" />
+<link rel="alternate" hreflang="zh-CN" href="{{.ZhURL}}" />
+<link rel="alternate" hreflang="en" href="{{.EnURL}}" />
+<link rel="alternate" hreflang="x-default" href="{{.DefaultURL}}" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="{{.Title}}" />
+<meta property="og:description" content="{{.Description}}" />
+<meta property="og:url" content="{{.CanonicalURL}}" />
+<meta property="og:image" content="{{.ImageURL}}" />
+<meta property="og:locale" content="{{.OpenGraphLocale}}" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="{{.Title}}" />
+<meta name="twitter:description" content="{{.Description}}" />
+<meta name="twitter:image" content="{{.ImageURL}}" />
+<script type="application/ld+json">{{.JSONLD}}</script>
+{{end}}<!--customer-seo-end-->`
 
 type customerSEOLocalizedText struct {
 	Zh string `json:"zh"`
@@ -49,6 +84,86 @@ type customerSEOResolution struct {
 	RedirectPath  string
 	NoIndex       bool
 	NotFound      bool
+}
+
+type customerSEODocumentCacheKey struct {
+	PageKey  string
+	Language string
+	Robots   string
+	Status   int
+}
+
+type customerSEOMetadataView struct {
+	Title           string
+	Description     string
+	Robots          string
+	CanonicalURL    string
+	ZhURL           string
+	EnURL           string
+	DefaultURL      string
+	ImageURL        string
+	OpenGraphLocale string
+	JSONLD          template.JS
+}
+
+type customerSEOService struct {
+	config           customerSEOConfig
+	hasConfig        bool
+	indexPage        []byte
+	headTemplate     *template.Template
+	safeFallback     bool
+	documentCache    map[customerSEODocumentCacheKey][]byte
+	documentCacheMux sync.RWMutex
+}
+
+func newCustomerSEOService(configBytes, indexPage []byte) (*customerSEOService, error) {
+	config, err := parseCustomerSEOConfig(configBytes)
+	if err != nil {
+		return nil, err
+	}
+	if err := validateCustomerSEOIndexPage(indexPage); err != nil {
+		return nil, err
+	}
+	headTemplate, err := template.New("customer-seo-head").Parse(customerSEOHeadTemplate)
+	if err != nil {
+		return nil, fmt.Errorf("parse customer SEO head template: %w", err)
+	}
+	return &customerSEOService{
+		config:        config,
+		hasConfig:     true,
+		indexPage:     bytes.Clone(indexPage),
+		headTemplate:  headTemplate,
+		documentCache: make(map[customerSEODocumentCacheKey][]byte),
+	}, nil
+}
+
+func newSafeCustomerSEOService(configBytes, indexPage []byte) *customerSEOService {
+	service := &customerSEOService{
+		indexPage:     bytes.Clone(indexPage),
+		safeFallback:  true,
+		documentCache: make(map[customerSEODocumentCacheKey][]byte),
+	}
+	config, err := parseCustomerSEOConfig(configBytes)
+	if err == nil {
+		service.config = config
+		service.hasConfig = true
+	}
+	return service
+}
+
+func validateCustomerSEOIndexPage(indexPage []byte) error {
+	if bytes.Count(indexPage, []byte(customerSEOStartMarker)) != 1 || bytes.Count(indexPage, []byte(customerSEOEndMarker)) != 1 {
+		return fmt.Errorf("customer index page must contain exactly one SEO marker block")
+	}
+	start := bytes.Index(indexPage, []byte(customerSEOStartMarker))
+	end := bytes.Index(indexPage, []byte(customerSEOEndMarker))
+	if start >= end {
+		return fmt.Errorf("customer index page SEO markers are out of order")
+	}
+	if bytes.Count(indexPage, []byte(customerSEOLanguageAnchor)) != 1 {
+		return fmt.Errorf("customer index page must contain the exact language anchor %q", customerSEOLanguageAnchor)
+	}
+	return nil
 }
 
 func parseCustomerSEOConfig(data []byte) (customerSEOConfig, error) {
@@ -191,4 +306,248 @@ func (config customerSEOConfig) resolve(requestPath string) customerSEOResolutio
 		}
 	}
 	return customerSEOResolution{Language: language, NoIndex: true, NotFound: true}
+}
+
+func (service *customerSEOService) servePage(c *gin.Context) {
+	resolution := customerSEOResolution{Language: "zh", NoIndex: true, NotFound: true}
+	if service.hasConfig {
+		resolution = service.config.resolve(c.Request.URL.Path)
+	} else if normalizeCustomerSEOPath(c.Request.URL.Path) == "/" {
+		resolution.NotFound = false
+	}
+
+	if resolution.RedirectPath != "" {
+		c.Redirect(http.StatusMovedPermanently, resolution.RedirectPath)
+		return
+	}
+
+	status := http.StatusOK
+	if resolution.NotFound {
+		status = http.StatusNotFound
+	}
+	if service.safeFallback {
+		applyEdgeInterfaceLanguage(c)
+		c.Data(status, "text/html; charset=utf-8", service.indexPage)
+		return
+	}
+
+	robots := "noindex, nofollow"
+	if resolution.Page != nil && normalizeRequestHost(c.Request.Host) == service.config.ProductionHost {
+		robots = "index, follow"
+	}
+	pageKey := "private"
+	if resolution.Page != nil {
+		pageKey = resolution.Page.Key
+	} else if resolution.NotFound {
+		pageKey = "not-found"
+	}
+	cacheKey := customerSEODocumentCacheKey{
+		PageKey:  pageKey,
+		Language: resolution.Language,
+		Robots:   robots,
+		Status:   status,
+	}
+
+	document, err := service.document(cacheKey, resolution)
+	if err != nil {
+		common.SysError("render customer SEO page: " + err.Error())
+		applyEdgeInterfaceLanguage(c)
+		c.Data(status, "text/html; charset=utf-8", service.indexPage)
+		return
+	}
+	if resolution.Page != nil {
+		c.Header("Content-Language", customerSEOHTMLLanguage(resolution.Language))
+	} else {
+		applyEdgeInterfaceLanguage(c)
+	}
+	c.Data(status, "text/html; charset=utf-8", document)
+}
+
+func (service *customerSEOService) document(cacheKey customerSEODocumentCacheKey, resolution customerSEOResolution) ([]byte, error) {
+	service.documentCacheMux.RLock()
+	document, ok := service.documentCache[cacheKey]
+	service.documentCacheMux.RUnlock()
+	if ok {
+		return document, nil
+	}
+
+	metadata, err := service.metadata(resolution, cacheKey.Robots)
+	if err != nil {
+		return nil, err
+	}
+	var renderedHead bytes.Buffer
+	if err := service.headTemplate.Execute(&renderedHead, metadata); err != nil {
+		return nil, fmt.Errorf("execute customer SEO head template: %w", err)
+	}
+
+	start := bytes.Index(service.indexPage, []byte(customerSEOStartMarker))
+	end := bytes.Index(service.indexPage, []byte(customerSEOEndMarker)) + len(customerSEOEndMarker)
+	language := customerSEOHTMLLanguage(resolution.Language)
+	document = make([]byte, 0, len(service.indexPage)+renderedHead.Len())
+	document = append(document, service.indexPage[:start]...)
+	document = append(document, renderedHead.Bytes()...)
+	document = append(document, service.indexPage[end:]...)
+	document = bytes.Replace(document, []byte(customerSEOLanguageAnchor), []byte(`<html lang="`+language+`">`), 1)
+
+	service.documentCacheMux.Lock()
+	if cached, exists := service.documentCache[cacheKey]; exists {
+		document = cached
+	} else {
+		service.documentCache[cacheKey] = document
+	}
+	service.documentCacheMux.Unlock()
+	return document, nil
+}
+
+func (service *customerSEOService) metadata(resolution customerSEOResolution, robots string) (customerSEOMetadataView, error) {
+	metadata := customerSEOMetadataView{
+		Title:       customerSEOBrandTitle,
+		Description: customerSEOBrandZhDesc,
+		Robots:      robots,
+	}
+	if resolution.Language == "en" {
+		metadata.Description = customerSEOBrandEnDesc
+	}
+	if resolution.Page == nil {
+		return metadata, nil
+	}
+
+	page := resolution.Page
+	metadata.Title = customerSEOLocalizedValue(page.Title, resolution.Language)
+	metadata.Description = customerSEOLocalizedValue(page.Description, resolution.Language)
+	metadata.CanonicalURL = customerSEOAbsoluteURL(service.config.SiteURL, resolution.CanonicalPath)
+	metadata.ZhURL = customerSEOAbsoluteURL(service.config.SiteURL, customerSEOCanonicalPath("zh", page.Path))
+	metadata.EnURL = customerSEOAbsoluteURL(service.config.SiteURL, customerSEOCanonicalPath("en", page.Path))
+	metadata.DefaultURL = metadata.ZhURL
+	metadata.ImageURL = customerSEOAbsoluteURL(service.config.SiteURL, service.config.ShareImagePath)
+	metadata.OpenGraphLocale = "zh_CN"
+	if resolution.Language == "en" {
+		metadata.OpenGraphLocale = "en_US"
+	}
+
+	graph := service.structuredDataGraph(*page, resolution.Language, metadata)
+	jsonData, err := common.Marshal(map[string]any{
+		"@context": "https://schema.org",
+		"@graph":   graph,
+	})
+	if err != nil {
+		return customerSEOMetadataView{}, fmt.Errorf("marshal customer SEO structured data: %w", err)
+	}
+	jsonData = customerSEOClosingScriptPattern.ReplaceAll(jsonData, []byte(`<\\/script`))
+	metadata.JSONLD = template.JS(jsonData)
+	return metadata, nil
+}
+
+func (service *customerSEOService) structuredDataGraph(page customerSEOPage, language string, metadata customerSEOMetadataView) []any {
+	rootURL := customerSEOAbsoluteURL(service.config.SiteURL, "/")
+	graph := []any{
+		map[string]any{
+			"@type":       "WebPage",
+			"@id":         metadata.CanonicalURL + "#webpage",
+			"url":         metadata.CanonicalURL,
+			"name":        metadata.Title,
+			"description": metadata.Description,
+			"inLanguage":  customerSEOHTMLLanguage(language),
+			"isPartOf": map[string]any{
+				"@id": rootURL + "#website",
+			},
+		},
+	}
+	if page.Key == "home" {
+		graph = append(graph,
+			map[string]any{
+				"@type": "Organization",
+				"@id":   rootURL + "#organization",
+				"name":  customerSEOBrandTitle,
+				"url":   rootURL,
+			},
+			map[string]any{
+				"@type":      "WebSite",
+				"@id":        rootURL + "#website",
+				"url":        rootURL,
+				"name":       customerSEOBrandTitle,
+				"inLanguage": customerSEOHTMLLanguage(language),
+				"publisher": map[string]any{
+					"@id": rootURL + "#organization",
+				},
+			},
+			map[string]any{
+				"@type":       "Service",
+				"@id":         rootURL + "#service",
+				"name":        customerSEOBrandTitle,
+				"description": metadata.Description,
+				"url":         metadata.CanonicalURL,
+				"provider": map[string]any{
+					"@id": rootURL + "#organization",
+				},
+			},
+			map[string]any{
+				"@type":      "FAQPage",
+				"@id":        metadata.CanonicalURL + "#faq",
+				"mainEntity": customerSEOFAQEntities(page.FAQ, language),
+			},
+		)
+		return graph
+	}
+
+	homePath := customerSEOCanonicalPath(language, "/")
+	graph = append(graph, map[string]any{
+		"@type": "BreadcrumbList",
+		"@id":   metadata.CanonicalURL + "#breadcrumb",
+		"itemListElement": []any{
+			map[string]any{
+				"@type":    "ListItem",
+				"position": 1,
+				"name":     customerSEOHomeBreadcrumb(language),
+				"item":     customerSEOAbsoluteURL(service.config.SiteURL, homePath),
+			},
+			map[string]any{
+				"@type":    "ListItem",
+				"position": 2,
+				"name":     customerSEOLocalizedValue(page.Breadcrumb, language),
+				"item":     metadata.CanonicalURL,
+			},
+		},
+	})
+	return graph
+}
+
+func customerSEOFAQEntities(faqs []customerSEOFAQ, language string) []any {
+	entities := make([]any, 0, len(faqs))
+	for _, faq := range faqs {
+		entities = append(entities, map[string]any{
+			"@type": "Question",
+			"name":  customerSEOLocalizedValue(faq.Question, language),
+			"acceptedAnswer": map[string]any{
+				"@type": "Answer",
+				"text":  customerSEOLocalizedValue(faq.Answer, language),
+			},
+		})
+	}
+	return entities
+}
+
+func customerSEOLocalizedValue(value customerSEOLocalizedText, language string) string {
+	if language == "en" {
+		return value.En
+	}
+	return value.Zh
+}
+
+func customerSEOHTMLLanguage(language string) string {
+	if language == "en" {
+		return "en"
+	}
+	return "zh-CN"
+}
+
+func customerSEOAbsoluteURL(siteURL, path string) string {
+	return strings.TrimRight(siteURL, "/") + normalizeCustomerSEOPath(path)
+}
+
+func customerSEOHomeBreadcrumb(language string) string {
+	if language == "en" {
+		return "Home"
+	}
+	return "首页"
 }

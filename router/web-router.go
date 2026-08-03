@@ -31,6 +31,11 @@ func SetWebRouter(router *gin.Engine, assets ThemeAssets) {
 	classicFS := common.EmbedFolder(assets.ClassicBuildFS, "web/classic/dist")
 	customerFS := common.EmbedFolder(assets.CustomerBuildFS, "web/customer/dist")
 	adminFS := common.NewThemeAwareFS(defaultFS, classicFS)
+	customerSEO, err := newCustomerSEOService(assets.CustomerSEOConfig, assets.CustomerIndexPage)
+	if err != nil {
+		common.SysError("initialize customer SEO service: " + err.Error())
+		customerSEO = newSafeCustomerSEOService(assets.CustomerSEOConfig, assets.CustomerIndexPage)
+	}
 
 	router.Use(gzip.Gzip(gzip.DefaultCompression))
 	router.Use(middleware.GlobalWebRateLimit())
@@ -39,7 +44,11 @@ func SetWebRouter(router *gin.Engine, assets ThemeAssets) {
 	router.Use(redirectAdminRootToDashboard())
 	router.Use(static.Serve("/admin", adminFS))
 	router.Use(static.Serve("/", customerFS))
-	router.NoRoute(func(c *gin.Context) {
+	router.NoRoute(customerWebNoRouteHandler(assets, customerSEO))
+}
+
+func customerWebNoRouteHandler(assets ThemeAssets, customerSEO *customerSEOService) gin.HandlerFunc {
+	return func(c *gin.Context) {
 		c.Set(middleware.RouteTagKey, "web")
 		path := c.Request.URL.Path
 		if shouldReturnRelayNotFound(path) {
@@ -47,17 +56,18 @@ func SetWebRouter(router *gin.Engine, assets ThemeAssets) {
 			return
 		}
 		c.Header("Cache-Control", "no-cache")
-		applyEdgeInterfaceLanguage(c)
 		if isAdminWebPath(path) && common.GetTheme() == "classic" {
+			applyEdgeInterfaceLanguage(c)
 			c.Data(http.StatusOK, "text/html; charset=utf-8", assets.ClassicIndexPage)
 			return
 		}
 		if isAdminWebPath(path) {
+			applyEdgeInterfaceLanguage(c)
 			c.Data(http.StatusOK, "text/html; charset=utf-8", assets.DefaultIndexPage)
 			return
 		}
-		c.Data(http.StatusOK, "text/html; charset=utf-8", assets.CustomerIndexPage)
-	})
+		customerSEO.servePage(c)
+	}
 }
 
 func applyEdgeInterfaceLanguage(c *gin.Context) {
