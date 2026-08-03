@@ -123,6 +123,40 @@ func TestParseCustomerSEOConfigValidatesManifest(t *testing.T) {
 				config.Pages[1].Aliases = append(config.Pages[1].Aliases, config.Pages[2].Path)
 			},
 		},
+		{
+			name: "additional sitemap page",
+			mutate: func(config *customerSEOConfig) {
+				extra := config.Pages[1]
+				extra.Key = "extra"
+				extra.Path = "/extra"
+				extra.Aliases = nil
+				config.Pages = append(config.Pages, extra)
+			},
+		},
+		{
+			name: "missing sitemap page",
+			mutate: func(config *customerSEOConfig) {
+				config.Pages = config.Pages[:len(config.Pages)-1]
+			},
+		},
+		{
+			name: "changed sitemap canonical path",
+			mutate: func(config *customerSEOConfig) {
+				config.Pages[2].Path = "/guides"
+			},
+		},
+		{
+			name: "public canonical path is noindex",
+			mutate: func(config *customerSEOConfig) {
+				config.NoIndexPaths = append(config.NoIndexPaths, config.Pages[1].Path)
+			},
+		},
+		{
+			name: "public canonical path matches noindex prefix",
+			mutate: func(config *customerSEOConfig) {
+				config.NoIndexPrefixes = append(config.NoIndexPrefixes, "/pri")
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -269,9 +303,7 @@ func TestCustomerSEOServiceEmitsParseableJSONLD(t *testing.T) {
 func TestCustomerSEOServiceCacheSeparatesPublicKeysFromInternalRouteKinds(t *testing.T) {
 	for _, pageKey := range []string{"private", "not-found"} {
 		t.Run(pageKey, func(t *testing.T) {
-			config := loadCustomerSEOTestConfig(t)
-			config.Pages[1].Key = pageKey
-			configBytes, err := common.Marshal(config)
+			configBytes, err := os.ReadFile("../web/customer/src/seo/pages.json")
 			require.NoError(t, err)
 
 			orders := []struct {
@@ -285,6 +317,7 @@ func TestCustomerSEOServiceCacheSeparatesPublicKeysFromInternalRouteKinds(t *tes
 				t.Run(order.name, func(t *testing.T) {
 					service, err := newCustomerSEOService(configBytes, []byte(customerSEOTestIndexPage))
 					require.NoError(t, err)
+					service.config.Pages[1].Key = pageKey
 
 					responses := make(map[string]*httptest.ResponseRecorder, len(order.paths))
 					for _, path := range order.paths {

@@ -27,6 +27,14 @@ const (
 
 var customerSEOClosingScriptPattern = regexp.MustCompile(`(?i)</script`)
 
+var customerSEOCanonicalPages = map[string]string{
+	"home":          "/",
+	"pricing":       "/pricing",
+	"docs":          "/docs",
+	"userAgreement": "/user-agreement",
+	"privacyPolicy": "/privacy-policy",
+}
+
 const customerSEOHeadTemplate = `<!--customer-seo-start-->
 <title>{{.Title}}</title>
 <meta name="description" content="{{.Description}}" />
@@ -215,6 +223,9 @@ func parseCustomerSEOConfig(data []byte) (customerSEOConfig, error) {
 	if config.ProductionHost != customerSEOProductionHost {
 		return customerSEOConfig{}, fmt.Errorf("customer SEO productionHost must be %q", customerSEOProductionHost)
 	}
+	if len(config.Pages) != len(customerSEOCanonicalPages) {
+		return customerSEOConfig{}, fmt.Errorf("customer SEO must contain exactly %d public pages", len(customerSEOCanonicalPages))
+	}
 
 	canonicalPaths := make(map[string]struct{}, len(config.Pages))
 	aliases := make(map[string]struct{})
@@ -231,6 +242,10 @@ func parseCustomerSEOConfig(data []byte) (customerSEOConfig, error) {
 		if strings.TrimSpace(page.Path) == "" {
 			return customerSEOConfig{}, fmt.Errorf("customer SEO page %q has an empty path", page.Key)
 		}
+		expectedPath, expectedPage := customerSEOCanonicalPages[page.Key]
+		if !expectedPage {
+			return customerSEOConfig{}, fmt.Errorf("customer SEO has unsupported public page key %q", page.Key)
+		}
 		if !customerSEOLocalizedTextIsComplete(page.Title) ||
 			!customerSEOLocalizedTextIsComplete(page.Description) ||
 			!customerSEOLocalizedTextIsComplete(page.Breadcrumb) {
@@ -243,6 +258,9 @@ func parseCustomerSEOConfig(data []byte) (customerSEOConfig, error) {
 		}
 
 		page.Path = normalizeCustomerSEOPath(page.Path)
+		if page.Path != expectedPath {
+			return customerSEOConfig{}, fmt.Errorf("customer SEO page %q path must be %q", page.Key, expectedPath)
+		}
 		if _, exists := canonicalPaths[page.Path]; exists {
 			return customerSEOConfig{}, fmt.Errorf("customer SEO has duplicate canonical path %q", page.Path)
 		}
@@ -262,12 +280,21 @@ func parseCustomerSEOConfig(data []byte) (customerSEOConfig, error) {
 		}
 	}
 	for pathIndex, path := range config.NoIndexPaths {
-		config.NoIndexPaths[pathIndex] = normalizeCustomerSEOPath(path)
+		path = normalizeCustomerSEOPath(path)
+		config.NoIndexPaths[pathIndex] = path
+		if _, exists := canonicalPaths[path]; exists {
+			return customerSEOConfig{}, fmt.Errorf("customer SEO public path %q is also configured as noindex", path)
+		}
 	}
 	for prefixIndex, prefix := range config.NoIndexPrefixes {
 		config.NoIndexPrefixes[prefixIndex] = normalizeCustomerSEOPath(prefix)
 		if strings.HasSuffix(strings.TrimSpace(prefix), "/") && config.NoIndexPrefixes[prefixIndex] != "/" {
 			config.NoIndexPrefixes[prefixIndex] += "/"
+		}
+		for path := range canonicalPaths {
+			if strings.HasPrefix(path, config.NoIndexPrefixes[prefixIndex]) {
+				return customerSEOConfig{}, fmt.Errorf("customer SEO public path %q matches noindex prefix %q", path, config.NoIndexPrefixes[prefixIndex])
+			}
 		}
 	}
 	return config, nil
