@@ -1,4 +1,6 @@
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
+import { LanguageContext } from "../../context/Language";
+import { getCustomerHtmlLanguage } from "../../i18n/languages";
 import { buildSeoMetadata } from "../../seo/metadata";
 
 function upsertMeta(
@@ -39,10 +41,12 @@ function upsertLink(rel: string, href?: string, hrefLang?: string) {
 }
 
 export function Seo({ pathname }: { pathname: string }) {
+  const { language } = useContext(LanguageContext);
+
   useEffect(() => {
     const metadata = buildSeoMetadata(pathname, window.location.host);
     document.title = metadata.title;
-    document.documentElement.lang = metadata.language === "en" ? "en" : "zh-CN";
+    document.documentElement.lang = getCustomerHtmlLanguage(language);
 
     upsertMeta("name", "description", metadata.description);
     upsertMeta("name", "robots", metadata.robots);
@@ -82,7 +86,7 @@ export function Seo({ pathname }: { pathname: string }) {
     script.textContent = JSON.stringify(metadata.schema);
     if (!script.parentNode) document.head.append(script);
     scripts.forEach((duplicate) => duplicate.remove());
-  }, [pathname]);
+  }, [language, pathname]);
 
   return null;
 }

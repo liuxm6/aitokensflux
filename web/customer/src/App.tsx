@@ -44,10 +44,12 @@ import {
   CUSTOMER_LANGUAGE_SOURCE_STORAGE_KEY,
   CUSTOMER_LANGUAGE_STORAGE_KEY,
   detectCustomerLanguage,
+  normalizeCustomerLanguage,
+  selectCustomerLanguageForPath,
 } from "./i18n/languages";
 import { getPageKey, navigateTo } from "./helpers/navigation";
 import { getConfiguredServerAddress } from "./helpers/server-address";
-import { getRouteLanguage, localizePublicHref } from "./seo/metadata";
+import { localizePublicHref } from "./seo/metadata";
 import type {
   Language,
   PageKey,
@@ -120,22 +122,21 @@ function App() {
     const onPopState = () => {
       const nextPathname = window.location.pathname;
       const nextPage = getPageKey(nextPathname);
-      const routeLanguage = getRouteLanguage(nextPathname);
       setPathname(nextPathname);
       setPage(nextPage);
-      if (routeLanguage) {
-        const storedLanguage = window.localStorage.getItem(
-          CUSTOMER_LANGUAGE_STORAGE_KEY,
-        );
-        const preserveLocalLanguage =
-          window.localStorage.getItem(CUSTOMER_LANGUAGE_SOURCE_STORAGE_KEY) ===
-            CUSTOMER_LANGUAGE_SOURCE_MANUAL &&
-          routeLanguage === "zh" &&
-          (storedLanguage === "zh-TW" || storedLanguage === "ru");
-        setLanguageState(
-          preserveLocalLanguage ? storedLanguage : routeLanguage,
-        );
-      }
+      const storedLanguage = normalizeCustomerLanguage(
+        window.localStorage.getItem(CUSTOMER_LANGUAGE_STORAGE_KEY),
+      );
+      const isManualLanguage =
+        window.localStorage.getItem(CUSTOMER_LANGUAGE_SOURCE_STORAGE_KEY) ===
+        CUSTOMER_LANGUAGE_SOURCE_MANUAL;
+      setLanguageState(
+        selectCustomerLanguageForPath(
+          nextPathname,
+          isManualLanguage ? storedLanguage : language,
+          isManualLanguage,
+        ),
+      );
       if (isAuthRoute(nextPage)) {
         const redirectTarget = getAuthRedirectFromSearch();
         if (redirectTarget) setAuthReturnPath(redirectTarget);
@@ -150,10 +151,9 @@ function App() {
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
-  }, [user?.id]);
+  }, [language, user?.id]);
 
   useEffect(() => {
-    window.localStorage.setItem(CUSTOMER_LANGUAGE_STORAGE_KEY, language);
     if (isTraditionalChinese(language)) {
       void ensureTraditionalConverter().then(() => {
         setTranslationVersion((version) => version + 1);

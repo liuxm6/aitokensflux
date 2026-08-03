@@ -30,11 +30,7 @@ import { AuthContext } from "../../context/Auth";
 import { LanguageContext, T } from "../../context/Language";
 import { navigateTo } from "../../helpers/navigation";
 import { recordsToPricePlans } from "../../helpers/plans";
-import {
-  localizeKey,
-  localizeZh,
-  usesEnglishSource,
-} from "../../i18n/localization";
+import { localizeText } from "../../i18n/localization";
 import seoPages from "../../seo/pages.json";
 import {
   fetchCustomerStatus,
@@ -231,12 +227,16 @@ function FaqSection() {
         <h2 className="h-sec center">FAQ</h2>
         <div className="faq">
           {faq.map((item, index) => {
-            const question = usesEnglishSource(language)
-              ? localizeKey(language, item.question.en)
-              : localizeZh(language, item.question.zh);
-            const answer = usesEnglishSource(language)
-              ? localizeKey(language, item.answer.en)
-              : localizeZh(language, item.answer.zh);
+            const question = localizeText(
+              language,
+              item.question.zh,
+              item.question.en,
+            );
+            const answer = localizeText(
+              language,
+              item.answer.zh,
+              item.answer.en,
+            );
             return (
               <details key={item.question.en} open={index === 0}>
                 <summary>

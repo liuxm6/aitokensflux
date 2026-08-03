@@ -45,6 +45,7 @@ function normalizeAutoCustomerLanguage(value?: string | null): Language | null {
 }
 
 export function readCookie(name: string) {
+  if (typeof document === "undefined") return null;
   const cookies = document.cookie ? document.cookie.split(";") : [];
   for (const cookie of cookies) {
     const [rawName, ...rawValueParts] = cookie.split("=");
@@ -54,18 +55,52 @@ export function readCookie(name: string) {
   return null;
 }
 
+export function selectCustomerLanguageForPath(
+  pathname: string,
+  preferredLanguage: Language | null,
+  isManualLanguage: boolean,
+): Language {
+  const routeLanguage = getRouteLanguage(pathname);
+  if (routeLanguage === "en") return "en";
+  if (routeLanguage === "zh") {
+    if (
+      isManualLanguage &&
+      (preferredLanguage === "zh-TW" || preferredLanguage === "ru")
+    ) {
+      return preferredLanguage;
+    }
+    return "zh";
+  }
+  return preferredLanguage ?? "zh-TW";
+}
+
+export function getCustomerHtmlLanguage(language: Language) {
+  if (language === "en") return "en";
+  if (language === "zh") return "zh-CN";
+  if (language === "zh-TW") return "zh-Hant";
+  return "ru";
+}
+
 export function detectCustomerLanguage(
   pathname = window.location.pathname,
 ): Language {
-  const routeLanguage = getRouteLanguage(pathname);
-  if (routeLanguage) return routeLanguage;
-
   const storedLanguage = normalizeCustomerLanguage(
-    window.localStorage.getItem(CUSTOMER_LANGUAGE_STORAGE_KEY),
+    typeof window === "undefined"
+      ? null
+      : window.localStorage.getItem(CUSTOMER_LANGUAGE_STORAGE_KEY),
   );
   const isManualLanguage =
+    typeof window !== "undefined" &&
     window.localStorage.getItem(CUSTOMER_LANGUAGE_SOURCE_STORAGE_KEY) ===
-    CUSTOMER_LANGUAGE_SOURCE_MANUAL;
+      CUSTOMER_LANGUAGE_SOURCE_MANUAL;
+  const routeLanguage = getRouteLanguage(pathname);
+  if (routeLanguage) {
+    return selectCustomerLanguageForPath(
+      pathname,
+      storedLanguage,
+      isManualLanguage,
+    );
+  }
   if (isManualLanguage && storedLanguage) return storedLanguage;
 
   const edgeLanguage = normalizeAutoCustomerLanguage(
@@ -76,6 +111,8 @@ export function detectCustomerLanguage(
     return storedLanguage === "zh" ? "zh-TW" : storedLanguage;
   }
 
-  const browserLanguage = normalizeAutoCustomerLanguage(navigator.language);
+  const browserLanguage = normalizeAutoCustomerLanguage(
+    typeof navigator === "undefined" ? null : navigator.language,
+  );
   return browserLanguage ?? "zh-TW";
 }

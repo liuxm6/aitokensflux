@@ -600,7 +600,7 @@ source ${profile}`,
             aria-label={localizeKey(language, "Setup guide")}
           >
             {modal ? null : (
-              <div className="setup-picker">
+              <div className="setup-page-heading">
                 <h1>
                   <T id="Claude Code and Codex API setup guide" />
                 </h1>

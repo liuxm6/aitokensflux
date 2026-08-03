@@ -7299,13 +7299,6 @@ h3 {
   transform: translateY(-18px);
 }
 
-.setup-wizard-bg h1 {
-  color: rgb(11 12 14 / 78%);
-  font-size: clamp(54px, 7vw, 108px);
-  font-weight: 800;
-  filter: blur(2px);
-}
-
 .setup-modal {
   position: relative;
   z-index: 1;
@@ -7389,13 +7382,15 @@ h3 {
   color: var(--ink);
 }
 
-.setup-picker h1 {
+.setup-page-heading h1,
+.setup-picker h2 {
   margin: 0;
   color: #191b2d;
   font-size: 28px;
   font-weight: 800;
 }
 
+.setup-page-heading,
 .setup-picker,
 .setup-guide {
   animation: dialog-content-in 190ms cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -7512,7 +7507,7 @@ h3 {
   flex: 1 1 360px;
 }
 
-.setup-guide-head h1 {
+.setup-guide-head h2 {
   margin: 0;
   color: #191b2d;
   font-size: 28px;
@@ -9304,10 +9299,6 @@ h3 {
     gap: 8px;
   }
 
-  .setup-wizard-bg h1 {
-    font-size: 56px;
-  }
-
   .setup-guide-step {
     gap: 12px;
   }
@@ -9406,8 +9397,9 @@ h3 {
     flex: 0 0 auto;
   }
 
-  .setup-picker h1,
-  .setup-guide-head h1 {
+  .setup-page-heading h1,
+  .setup-picker h2,
+  .setup-guide-head h2 {
     font-size: 24px;
   }
 
@@ -10225,7 +10217,7 @@ h3 {
     padding: 18px 14px;
   }
 
-  .setup-guide-head h1 {
+  .setup-guide-head h2 {
     font-size: 22px;
     line-height: 1.18;
   }
