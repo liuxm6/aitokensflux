@@ -52,6 +52,17 @@ describe("customer SEO routes", () => {
       noindex: true,
       notFound: true,
     });
+    for (const pathname of ["/%2564ocs", "/en/%2564ocs", "/en/docs%252F"]) {
+      expect(resolveSeoRoute(pathname), pathname).toMatchObject({
+        pageKey: null,
+        noindex: true,
+        notFound: true,
+      });
+      expect(
+        buildSeoMetadata(pathname, "aitokensflux.com").canonical,
+        pathname,
+      ).toBeUndefined();
+    }
 
     const malformed = resolveSeoRoute("/%");
     expect(malformed).toMatchObject({

@@ -103,16 +103,21 @@ type ResolvedSeoRoute = SeoRouteResolution & {
   page?: SeoManifestPage;
 };
 
-function normalizeSeoPath(value: string): string | null {
-  let path = value.trim();
-  try {
-    path = decodeURIComponent(path);
-  } catch {
-    return null;
-  }
+function normalizeDecodedSeoPath(value: string) {
+  let path = value;
   if (!path || path === "/") return "/";
   if (!path.startsWith("/")) path = `/${path}`;
   return path.replace(/\/+$/, "");
+}
+
+function decodeSeoPath(value: string): string | null {
+  let path: string;
+  try {
+    path = decodeURIComponent(value.trim());
+  } catch {
+    return null;
+  }
+  return normalizeDecodedSeoPath(path);
 }
 
 function normalizeManifestPath(value: string, preserveTrailingSlash = false) {
@@ -126,7 +131,7 @@ function normalizeManifestPath(value: string, preserveTrailingSlash = false) {
     return null;
   }
 
-  const normalized = normalizeSeoPath(rawPath);
+  const normalized = decodeSeoPath(rawPath);
   if (!normalized) return null;
   const segments = normalized.split("/");
   if (segments.some((segment) => segment === "." || segment === "..")) {
@@ -326,26 +331,28 @@ export function createSeoMetadataHelpers(data: unknown): SeoMetadataHelpers {
   const manifest = validateSeoManifest(data);
 
   function splitSeoLanguage(pathname: string) {
-    const path = normalizeSeoPath(pathname);
+    const path = decodeSeoPath(pathname);
     if (!path) return null;
     if (path === "/en") {
       return { language: "en" as const, basePath: "/" };
     }
     if (path.startsWith("/en/")) {
-      const basePath = normalizeSeoPath(path.slice(3));
-      return basePath ? { language: "en" as const, basePath } : null;
+      return {
+        language: "en" as const,
+        basePath: normalizeDecodedSeoPath(path.slice(3)),
+      };
     }
     return { language: "zh" as const, basePath: path };
   }
 
   function canonicalPath(language: SeoLanguage, basePath: string) {
-    const path = normalizeSeoPath(basePath) ?? "/";
+    const path = normalizeDecodedSeoPath(basePath);
     if (language !== "en") return path;
     return path === "/" ? "/en" : `/en${path}`;
   }
 
   function absoluteUrl(path: string) {
-    const normalized = normalizeSeoPath(path) ?? "/";
+    const normalized = normalizeDecodedSeoPath(path);
     return `${manifest?.siteUrl ?? customerSeoSiteUrl}${normalized}`;
   }
 

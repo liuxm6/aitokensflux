@@ -58,6 +58,9 @@ func TestSetWebRouterPreservesCustomerSEOAndNotFoundContracts(t *testing.T) {
 	encodedEnglishDocs := request("/en/%64ocs", "aitokensflux.com")
 	encodedTrailingSlashDocs := request("/docs%2F", "aitokensflux.com")
 	encodedLeadingSlashDocs := request("/%2Fdocs", "aitokensflux.com")
+	doubleEncodedDocs := request("/%2564ocs", "aitokensflux.com")
+	doubleEncodedEnglishDocs := request("/en/%2564ocs", "aitokensflux.com")
+	doubleEncodedEnglishTrailingSlashDocs := request("/en/docs%252F", "aitokensflux.com")
 	missing := request("/definitely-missing", "aitokensflux.com")
 	relayMissing := request("/v1/definitely-missing", "aitokensflux.com")
 
@@ -72,6 +75,14 @@ func TestSetWebRouterPreservesCustomerSEOAndNotFoundContracts(t *testing.T) {
 	assert.Contains(t, encodedTrailingSlashDocs.Body.String(), `<link rel="canonical" href="https://aitokensflux.com/docs"`)
 	assert.Equal(t, http.StatusNotFound, encodedLeadingSlashDocs.Code)
 	assert.NotContains(t, encodedLeadingSlashDocs.Body.String(), `rel="canonical"`)
+	for _, response := range []*httptest.ResponseRecorder{
+		doubleEncodedDocs,
+		doubleEncodedEnglishDocs,
+		doubleEncodedEnglishTrailingSlashDocs,
+	} {
+		assert.Equal(t, http.StatusNotFound, response.Code)
+		assert.NotContains(t, response.Body.String(), `rel="canonical"`)
+	}
 	assert.Equal(t, http.StatusNotFound, missing.Code)
 	assert.Contains(t, missing.Header().Get("Content-Type"), "text/html")
 	assert.Equal(t, http.StatusNotFound, relayMissing.Code)
