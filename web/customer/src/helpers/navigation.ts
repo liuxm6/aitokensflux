@@ -1,4 +1,5 @@
 import { customerRoutes } from "../constants/navigation";
+import { resolveSeoRoute } from "../seo/metadata";
 import type { PageKey } from "../types";
 
 const scrollPreservedPaths = new Set([
@@ -31,7 +32,13 @@ export function navigateTo(
 }
 
 export function getPageKey(pathname: string): PageKey {
-  const normalized = normalizePath(pathname);
+  const seoRoute = resolveSeoRoute(pathname);
+  if (seoRoute.pageKey) return seoRoute.pageKey;
+
+  let normalized = normalizePath(pathname);
+  if (normalized.startsWith("/en/")) {
+    normalized = normalizePath(normalized.slice(3));
+  }
   if (normalized.startsWith("/oauth/")) return "oauthCallback";
   return customerRoutes[normalized] ?? "notFound";
 }

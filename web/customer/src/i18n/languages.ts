@@ -1,5 +1,6 @@
 import type { LanguageOption } from "../types";
 import type { Language } from "../types";
+import { getRouteLanguage } from "../seo/metadata";
 
 export const CUSTOMER_LANGUAGE_STORAGE_KEY = "customer-lang";
 export const CUSTOMER_LANGUAGE_SOURCE_STORAGE_KEY = "customer-lang-source";
@@ -53,7 +54,12 @@ export function readCookie(name: string) {
   return null;
 }
 
-export function detectCustomerLanguage(): Language {
+export function detectCustomerLanguage(
+  pathname = window.location.pathname,
+): Language {
+  const routeLanguage = getRouteLanguage(pathname);
+  if (routeLanguage) return routeLanguage;
+
   const storedLanguage = normalizeCustomerLanguage(
     window.localStorage.getItem(CUSTOMER_LANGUAGE_STORAGE_KEY),
   );
