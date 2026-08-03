@@ -593,15 +593,19 @@ source ${profile}`,
               <Pill>
                 <T id="Unified AI gateway" />
               </Pill>
-              <h1>
-                <T id="Claude Code and Codex API setup guide" />
-              </h1>
             </div>
           )}
           <section
             className={`setup-modal${stage === "guide" ? " guide" : ""}`}
             aria-label={localizeKey(language, "Setup guide")}
           >
+            {modal ? null : (
+              <div className="setup-picker">
+                <h1>
+                  <T id="Claude Code and Codex API setup guide" />
+                </h1>
+              </div>
+            )}
             <div className="setup-modal-top">
               <button className="setup-back" type="button" onClick={goBack}>
                 <ChevronLeft size={18} />

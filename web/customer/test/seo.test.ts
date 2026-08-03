@@ -99,4 +99,25 @@ describe("customer SEO routes", () => {
     expect(source).toContain("script[data-customer-seo-jsonld]");
     expect(source).not.toContain('script[type="application/ld+json"]');
   });
+
+  test("keeps the standalone docs heading in the accessible content layer", async () => {
+    const source = await Bun.file(
+      new URL("../src/components/setup/SetupPage.tsx", import.meta.url),
+    ).text();
+    const hiddenStart = source.indexOf(
+      '<div className="setup-wizard-bg" aria-hidden="true">',
+    );
+    const hiddenEnd = source.indexOf("</div>", hiddenStart);
+    const contentStart = source.indexOf("<section", hiddenEnd);
+    const stageStart = source.indexOf('{stage === "tool"', contentStart);
+    const headingIndex = source.indexOf("<h1", contentStart);
+
+    expect(source.match(/<h1\b/g)).toHaveLength(1);
+    expect(source.slice(hiddenStart, hiddenEnd)).not.toContain("<h1");
+    expect(headingIndex).toBeGreaterThan(contentStart);
+    expect(headingIndex).toBeLessThan(stageStart);
+    expect(source.slice(headingIndex, stageStart)).toContain(
+      'id="Claude Code and Codex API setup guide"',
+    );
+  });
 });
