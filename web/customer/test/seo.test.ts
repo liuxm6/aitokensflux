@@ -90,4 +90,13 @@ describe("customer SEO routes", () => {
     expect(detectCustomerLanguage("/")).toBe("zh");
     expect(detectCustomerLanguage("/en/docs")).toBe("en");
   });
+
+  test("scopes React JSON-LD ownership to the customer marker", async () => {
+    const source = await Bun.file(
+      new URL("../src/components/common/Seo.tsx", import.meta.url),
+    ).text();
+
+    expect(source).toContain("script[data-customer-seo-jsonld]");
+    expect(source).not.toContain('script[type="application/ld+json"]');
+  });
 });

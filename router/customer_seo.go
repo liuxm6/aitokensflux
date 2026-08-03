@@ -53,7 +53,7 @@ const customerSEOHeadTemplate = `<!--customer-seo-start-->
 <meta name="twitter:title" content="{{.Title}}" />
 <meta name="twitter:description" content="{{.Description}}" />
 <meta name="twitter:image" content="{{.ImageURL}}" />
-<script type="application/ld+json">{{.JSONLD}}</script>
+<script type="application/ld+json" data-customer-seo-jsonld>{{.JSONLD}}</script>
 {{end}}<!--customer-seo-end-->`
 
 const customerSEORobots = `User-agent: *

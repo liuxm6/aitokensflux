@@ -68,7 +68,7 @@ export function Seo({ pathname }: { pathname: string }) {
 
     const scripts = Array.from(
       document.head.querySelectorAll<HTMLScriptElement>(
-        'script[data-customer-seo-jsonld], script[type="application/ld+json"]',
+        "script[data-customer-seo-jsonld]",
       ),
     );
     if (!metadata.schema) {
@@ -76,18 +76,12 @@ export function Seo({ pathname }: { pathname: string }) {
       return;
     }
 
-    const markedScript = scripts.find((script) =>
-      script.hasAttribute("data-customer-seo-jsonld"),
-    );
-    const script =
-      markedScript ?? scripts[0] ?? document.createElement("script");
+    const script = scripts.shift() ?? document.createElement("script");
     script.type = "application/ld+json";
     script.setAttribute("data-customer-seo-jsonld", "");
     script.textContent = JSON.stringify(metadata.schema);
     if (!script.parentNode) document.head.append(script);
-    scripts.forEach((duplicate) => {
-      if (duplicate !== script) duplicate.remove();
-    });
+    scripts.forEach((duplicate) => duplicate.remove());
   }, [pathname]);
 
   return null;

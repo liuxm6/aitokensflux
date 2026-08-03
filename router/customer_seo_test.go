@@ -287,7 +287,8 @@ func TestCustomerSEOServiceEmitsParseableJSONLD(t *testing.T) {
 
 	recorder := performCustomerSEORequest(t, service, "/", "aitokensflux.com")
 	body := recorder.Body.String()
-	startMarker := `<script type="application/ld+json">`
+	startMarker := `<script type="application/ld+json" data-customer-seo-jsonld>`
+	assert.Equal(t, 1, strings.Count(body, "data-customer-seo-jsonld"))
 	start := strings.Index(body, startMarker)
 	require.NotEqual(t, -1, start)
 	start += len(startMarker)
