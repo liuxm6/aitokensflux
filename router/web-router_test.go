@@ -1,14 +1,71 @@
 package router
 
 import (
+	"embed"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
 	"github.com/QuantumNous/new-api/common"
 	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+//go:embed web
+var webRouterTestBuildFS embed.FS
+
+func TestSetWebRouterPreservesCustomerSEOAndNotFoundContracts(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	t.Setenv("ADMIN_WEB_HOSTS", "")
+	originalTheme := common.GetTheme()
+	common.SetTheme("default")
+	t.Cleanup(func() { common.SetTheme(originalTheme) })
+
+	defaultIndex, err := webRouterTestBuildFS.ReadFile("web/default/dist/index.html")
+	require.NoError(t, err)
+	classicIndex, err := webRouterTestBuildFS.ReadFile("web/classic/dist/index.html")
+	require.NoError(t, err)
+	customerIndex, err := webRouterTestBuildFS.ReadFile("web/customer/dist/index.html")
+	require.NoError(t, err)
+	customerSEOConfig, err := os.ReadFile("../web/customer/src/seo/pages.json")
+	require.NoError(t, err)
+
+	engine := gin.New()
+	SetWebRouter(engine, ThemeAssets{
+		DefaultBuildFS:    webRouterTestBuildFS,
+		DefaultIndexPage:  defaultIndex,
+		ClassicBuildFS:    webRouterTestBuildFS,
+		ClassicIndexPage:  classicIndex,
+		CustomerBuildFS:   webRouterTestBuildFS,
+		CustomerIndexPage: customerIndex,
+		CustomerSEOConfig: customerSEOConfig,
+	})
+	request := func(target, host string) *httptest.ResponseRecorder {
+		t.Helper()
+		recorder := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, target, nil)
+		req.Host = host
+		engine.ServeHTTP(recorder, req)
+		return recorder
+	}
+
+	subscribe := request("/subscribe", "aitokensflux.com")
+	docs := request("/en/docs", "aitokensflux.com")
+	missing := request("/definitely-missing", "aitokensflux.com")
+	relayMissing := request("/v1/definitely-missing", "aitokensflux.com")
+
+	assert.Equal(t, http.StatusMovedPermanently, subscribe.Code)
+	assert.Equal(t, "/pricing", subscribe.Header().Get("Location"))
+	assert.Equal(t, http.StatusOK, docs.Code)
+	assert.Equal(t, http.StatusNotFound, missing.Code)
+	assert.Contains(t, missing.Header().Get("Content-Type"), "text/html")
+	assert.Equal(t, http.StatusNotFound, relayMissing.Code)
+	assert.Contains(t, relayMissing.Header().Get("Content-Type"), "application/json")
+	assert.NotContains(t, relayMissing.Body.String(), "Customer router fixture")
+}
 
 func TestParseAdminWebHosts(t *testing.T) {
 	hosts := parseAdminWebHosts("admin.example.com, https://bad.example.com, ADMIN.EXAMPLE.ORG:443, [::1]:3000")
