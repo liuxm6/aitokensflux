@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { AccessibleDialog } from "../common/ui/Dialog";
 import { LanguageContext } from "../../context/Language";
 import { getOpenAICompatibleServerAddress } from "../../helpers/server-address";
 import { localizeKey } from "../../i18n/localization";
@@ -506,6 +507,7 @@ source ${profile}`,
   function SetupPage({ modal = false, onClose }: SetupPageProps = {}) {
     const { language } = useContext(LanguageContext);
     const closeTimerRef = useRef<number | null>(null);
+    const closeButtonRef = useRef<HTMLButtonElement>(null);
     const [status, setStatus] = useState<CustomerStatus | null>(null);
     const [stage, setStage] = useState<SetupStage>("tool");
     const [tool, setTool] = useState<SetupTool | null>(null);
@@ -550,14 +552,6 @@ source ${profile}`,
       };
     }, []);
 
-    useEffect(() => {
-      const handleKeyDown = (event: globalThis.KeyboardEvent) => {
-        if (event.key === "Escape") requestClose();
-      };
-      window.addEventListener("keydown", handleKeyDown);
-      return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [requestClose]);
-
     const goBack = () => {
       if (stage === "guide") {
         setStage("os");
@@ -571,140 +565,147 @@ source ${profile}`,
       requestClose();
     };
 
+    const wizardContent = (
+      <>
+        <div className="setup-modal-top">
+          <button className="setup-back" type="button" onClick={goBack}>
+            <ChevronLeft size={18} />
+            <T id="Back" />
+          </button>
+          <button
+            ref={closeButtonRef}
+            className="setup-modal-close"
+            type="button"
+            onClick={requestClose}
+            aria-label={localizeKey(language, "Close")}
+          >
+            <X size={22} />
+          </button>
+        </div>
+
+        {stage === "tool" ? (
+          <SetupPicker
+            titleId="Setup and installation guide"
+            subtitleId="Which tool do you want to configure?"
+          >
+            <div className="setup-choice-grid two">
+              {setupTools.map((item) => (
+                <SetupChoiceCard
+                  key={item.id}
+                  item={item}
+                  onSelect={() => {
+                    setTool(item.id);
+                    setStage("os");
+                  }}
+                />
+              ))}
+            </div>
+          </SetupPicker>
+        ) : null}
+
+        {stage === "os" && selectedTool ? (
+          <SetupPicker
+            titleId="Choose operating system"
+            subtitleId="Which operating system are you using?"
+          >
+            <div className="setup-choice-grid three">
+              {setupOperatingSystems.map((item) => (
+                <SetupChoiceCard
+                  key={item.id}
+                  item={item}
+                  onSelect={() => {
+                    setOs(item.id);
+                    setStage("guide");
+                  }}
+                />
+              ))}
+            </div>
+          </SetupPicker>
+        ) : null}
+
+        {stage === "guide" && selectedTool && selectedOs ? (
+          <div className="setup-guide">
+            <div className="setup-guide-head">
+              <div>
+                <h2>
+                  {selectedTool.title} <T id="setup guide" />
+                </h2>
+                <p>
+                  <T
+                    id="Follow these steps to install and configure {{tool}} on {{os}}."
+                    values={{
+                      tool: selectedTool.title,
+                      os: selectedOs.title,
+                    }}
+                  />
+                </p>
+              </div>
+              <span className="setup-os-badge">{selectedOs.title}</span>
+            </div>
+            <div className="setup-guide-body">
+              {guide.map((step, index) => (
+                <SetupGuideStepView
+                  index={index}
+                  key={`${selectedTool.id}-${selectedOs.id}-${step.titleId}`}
+                  step={step}
+                />
+              ))}
+              <div className="setup-guide-done">
+                <Check size={18} />
+                <div>
+                  <b>
+                    <T id="Setup complete" />
+                  </b>
+                  <p>
+                    <T id="Start using it after saving. Requests will appear in Usage details." />
+                  </p>
+                </div>
+                <AppLink className="btn btn-flux btn-sm" href="/usage">
+                  <T id="View usage" />
+                </AppLink>
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </>
+    );
+
+    if (modal) {
+      return (
+        <AccessibleDialog
+          ariaLabel={localizeKey(language, "Setup guide")}
+          backdropClassName="setup-wizard-backdrop"
+          className={`setup-wizard-page overlay${isClosing ? " closing" : ""}`}
+          closeDisabled={isClosing}
+          closeLabel={localizeKey(language, "Close")}
+          initialFocusRef={closeButtonRef}
+          panelClassName={`setup-modal${stage === "guide" ? " guide" : ""}`}
+          onClose={requestClose}
+        >
+          {wizardContent}
+        </AccessibleDialog>
+      );
+    }
+
     return (
       <>
-        {modal ? null : <MarketingHeader />}
-        <main
-          className={`setup-wizard-page${modal ? " overlay" : ""}${isClosing ? " closing" : ""}`}
-          role={modal ? "dialog" : undefined}
-          aria-modal={modal ? "true" : undefined}
-          aria-label={modal ? localizeKey(language, "Setup guide") : undefined}
-        >
-          {modal ? (
-            <button
-              className="setup-wizard-backdrop"
-              type="button"
-              onClick={requestClose}
-              aria-label={localizeKey(language, "Close")}
-            />
-          ) : null}
-          {modal ? null : (
-            <div className="setup-wizard-bg" aria-hidden="true">
-              <Pill>
-                <T id="Unified AI gateway" />
-              </Pill>
-            </div>
-          )}
+        <MarketingHeader />
+        <main className={`setup-wizard-page${isClosing ? " closing" : ""}`}>
+          <div className="setup-wizard-bg" aria-hidden="true">
+            <Pill>
+              <T id="Unified AI gateway" />
+            </Pill>
+          </div>
           <section
-            className={`setup-modal${stage === "guide" ? " guide" : ""}`}
             aria-label={localizeKey(language, "Setup guide")}
+            className={`setup-modal${stage === "guide" ? " guide" : ""}`}
           >
-            {modal ? null : (
-              <div className="setup-page-heading">
-                <h1>
-                  <T id="Claude Code and Codex API setup guide" />
-                </h1>
-              </div>
-            )}
-            <div className="setup-modal-top">
-              <button className="setup-back" type="button" onClick={goBack}>
-                <ChevronLeft size={18} />
-                <T id="Back" />
-              </button>
-              <button
-                className="setup-modal-close"
-                type="button"
-                onClick={requestClose}
-                aria-label={localizeKey(language, "Close")}
-              >
-                <X size={22} />
-              </button>
+            <div className="setup-page-heading">
+              <h1>
+                <T id="Claude Code and Codex API setup guide" />
+              </h1>
             </div>
-
-            {stage === "tool" ? (
-              <SetupPicker
-                titleId="Setup and installation guide"
-                subtitleId="Which tool do you want to configure?"
-              >
-                <div className="setup-choice-grid two">
-                  {setupTools.map((item) => (
-                    <SetupChoiceCard
-                      key={item.id}
-                      item={item}
-                      onSelect={() => {
-                        setTool(item.id);
-                        setStage("os");
-                      }}
-                    />
-                  ))}
-                </div>
-              </SetupPicker>
-            ) : null}
-
-            {stage === "os" && selectedTool ? (
-              <SetupPicker
-                titleId="Choose operating system"
-                subtitleId="Which operating system are you using?"
-              >
-                <div className="setup-choice-grid three">
-                  {setupOperatingSystems.map((item) => (
-                    <SetupChoiceCard
-                      key={item.id}
-                      item={item}
-                      onSelect={() => {
-                        setOs(item.id);
-                        setStage("guide");
-                      }}
-                    />
-                  ))}
-                </div>
-              </SetupPicker>
-            ) : null}
-
-            {stage === "guide" && selectedTool && selectedOs ? (
-              <div className="setup-guide">
-                <div className="setup-guide-head">
-                  <div>
-                    <h2>
-                      {selectedTool.title} <T id="setup guide" />
-                    </h2>
-                    <p>
-                      <T
-                        id="Follow these steps to install and configure {{tool}} on {{os}}."
-                        values={{
-                          tool: selectedTool.title,
-                          os: selectedOs.title,
-                        }}
-                      />
-                    </p>
-                  </div>
-                  <span className="setup-os-badge">{selectedOs.title}</span>
-                </div>
-                <div className="setup-guide-body">
-                  {guide.map((step, index) => (
-                    <SetupGuideStepView
-                      index={index}
-                      key={`${selectedTool.id}-${selectedOs.id}-${step.titleId}`}
-                      step={step}
-                    />
-                  ))}
-                  <div className="setup-guide-done">
-                    <Check size={18} />
-                    <div>
-                      <b>
-                        <T id="Setup complete" />
-                      </b>
-                      <p>
-                        <T id="Start using it after saving. Requests will appear in Usage details." />
-                      </p>
-                    </div>
-                    <AppLink className="btn btn-flux btn-sm" href="/usage">
-                      <T id="View usage" />
-                    </AppLink>
-                  </div>
-                </div>
-              </div>
-            ) : null}
+            {wizardContent}
           </section>
         </main>
       </>

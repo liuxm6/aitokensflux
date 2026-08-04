@@ -10,13 +10,16 @@ import {
 } from "lucide-react";
 import { type FormEvent, useContext, useEffect, useRef, useState } from "react";
 import { AppLink } from "../../components/common/AppLink";
-import { EmptyState } from "../../components/common/EmptyState";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+} from "../../components/common/ui/AsyncState";
 import { SectionLabel } from "../../components/common/SectionLabel";
 import { Panel } from "../../components/common/ui/Panel";
-import {
-  ConsolePageTitle,
-  CustomerShell,
-} from "../../components/layout/CustomerShell";
+import { CustomerShell } from "../../components/layout/CustomerShell";
+import { ConsolePageHeader } from "../../components/layout/ConsolePageHeader";
+import { pageMeta } from "../../constants/page-meta";
 import { ConfirmActionContext } from "../../context/ConfirmAction";
 import { LanguageContext, T } from "../../context/Language";
 import { useToastMessage } from "../../context/Toast";
@@ -139,6 +142,7 @@ export function ApiKeysPage() {
   const [tokenPageSize, setTokenPageSize] = useState(tokenPageSizeDefault);
   const [tokenTotal, setTokenTotal] = useState(0);
   const [loadingTokens, setLoadingTokens] = useState(true);
+  const [tokenLoadError, setTokenLoadError] = useState(false);
   const [tokenMessage, setTokenMessage] = useState("");
   const [copiedBaseUrl, setCopiedBaseUrl] = useState("");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -177,6 +181,7 @@ export function ApiKeysPage() {
   const loadTokens = async (nextPage = tokenPage) => {
     const normalizedPage = Math.max(1, nextPage);
     setLoadingTokens(true);
+    setTokenLoadError(false);
     const response = await apiRequest<PageData<CustomerToken>>(
       `/api/token/${buildQueryFromValues({
         p: normalizedPage,
@@ -205,8 +210,10 @@ export function ApiKeysPage() {
       setTokenPage(Math.min(Math.max(1, pageData.page), maxPage));
       setTokenPageSize(resolvedPageSize);
       setTokenTotal(pageData.total);
+      setTokenLoadError(false);
       setTokenMessage("");
     } else {
+      setTokenLoadError(true);
       setTokenMessage(
         response.message || localizeKey(language, "Failed to load API keys"),
       );
@@ -630,7 +637,20 @@ export function ApiKeysPage() {
 
   return (
     <CustomerShell crumbId="API Access" page="apikeys">
-      <ConsolePageTitle id="API Access" />
+      <ConsolePageHeader
+        action={
+          <button
+            className="btn btn-flux btn-sm"
+            type="button"
+            onClick={openCreateDialog}
+          >
+            <KeyRound size={15} />
+            <T id="Create key" />
+          </button>
+        }
+        descriptionId={pageMeta.apikeys.descriptionId}
+        titleId="API Access"
+      />
       <Panel className="api-access-panel">
         <div className="api-access-head">
           <p>
@@ -665,18 +685,13 @@ export function ApiKeysPage() {
 
       <SectionLabel id="API Keys" />
       <Panel className="key-panel">
-        <div className="key-toolbar">
-          <button
-            className="btn btn-flux btn-sm"
-            type="button"
-            onClick={openCreateDialog}
-          >
-            <KeyRound size={15} />
-            <T id="Create key" />
-          </button>
-        </div>
         {loadingTokens ? (
-          <EmptyState id="Loading API keys" />
+          <LoadingState id="Loading API keys" />
+        ) : tokenLoadError ? (
+          <ErrorState
+            id="Failed to load API keys"
+            onRetry={() => void loadTokens(1)}
+          />
         ) : tokens.length > 0 ? (
           <div className="key-list">
             {tokens.map((token) => {

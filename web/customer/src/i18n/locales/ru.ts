@@ -19,8 +19,12 @@ const customerRuTranslations = {
   "Service status": "Статус сервиса",
   "Unified Claude Code, Codex and Grok API gateway":
     "Единый API-шлюз для Claude Code, Codex и Grok",
+  "Unified Claude Code, Codex, Grok and Gemini API gateway":
+    "Единый API-шлюз для Claude Code, Codex, Grok и Gemini",
   "Transparent Claude Code, Codex and Grok API pricing":
     "Прозрачные цены API Claude Code, Codex и Grok",
+  "Transparent Claude Code, Codex, Grok and Gemini API pricing":
+    "Прозрачные цены API Claude Code, Codex, Grok и Gemini",
   "Claude Code and Codex API setup guide":
     "Руководство по подключению API Claude Code и Codex",
   Referrals: "Реферальные бонусы",
@@ -714,6 +718,82 @@ const customerRuTranslations = {
   "Support groups are best for real-time help. Email is best for account, order, and security issues.":
     "Группы поддержки подходят для быстрой помощи. Email лучше использовать для вопросов аккаунта, заказов и безопасности.",
   "Telegram support group": "Группа поддержки Telegram",
+  "AI API gateway": "Шлюз AI API",
+  "Connect ATF Switch": "Подключение ATF Switch",
+  "Father's Day special": "Предложение ко Дню отца",
+  "Page not found": "Страница не найдена",
+  "Skip to content": "Перейти к содержимому",
+  "Show password": "Показать пароль",
+  "Hide password": "Скрыть пароль",
+  "Unified access to Claude, Codex, Grok, and Gemini with one balance.":
+    "Единый доступ к Claude, Codex, Grok и Gemini с одного баланса.",
+  "View your balance, subscription, usage, and account shortcuts.":
+    "Просматривайте баланс, подписку, использование и действия аккаунта.",
+  "Manage plans, balance top-ups, payments, and billing records.":
+    "Управляйте тарифами, пополнениями, платежами и историей списаний.",
+  "Review request usage, token counts, and billing details.":
+    "Просматривайте запросы, количество токенов и детали списаний.",
+  "Create and manage API keys for your applications.":
+    "Создавайте API-ключи для приложений и управляйте ими.",
+  "Track invitations, rewards, and referral records.":
+    "Отслеживайте приглашения, награды и реферальные записи.",
+  "Manage language, account security, and profile settings.":
+    "Управляйте языком, безопасностью аккаунта и профилем.",
+  "Authorize the desktop app without copying an API key manually.":
+    "Авторизуйте настольное приложение без ручного копирования API-ключа.",
+  "Compare available plans and choose how to add balance.":
+    "Сравните тарифы и выберите способ пополнения баланса.",
+  "View the current seasonal offer and purchase options.":
+    "Просмотрите сезонное предложение и варианты покупки.",
+  "Configure Claude Code or Codex for the unified gateway.":
+    "Настройте Claude Code или Codex для единого шлюза.",
+  "Sign in to manage your gateway account and API access.":
+    "Войдите, чтобы управлять аккаунтом шлюза и доступом к API.",
+  "Create an account for gateway access and usage billing.":
+    "Создайте аккаунт для доступа к шлюзу и оплаты по использованию.",
+  "Complete the external account sign-in process.":
+    "Завершите вход через внешний аккаунт.",
+  "Confirm a password reset request for your account.":
+    "Подтвердите запрос на сброс пароля аккаунта.",
+  "Review the terms that apply to this service.":
+    "Ознакомьтесь с условиями использования сервиса.",
+  "Review how account and usage data are handled.":
+    "Узнайте, как обрабатываются данные аккаунта и использования.",
+  "The requested customer portal page could not be found.":
+    "Запрошенная страница клиентского портала не найдена.",
+  "Try again": "Повторить",
+  "Data table": "Таблица данных",
+  "Loading model pricing": "Загрузка тарифов моделей",
+  "Failed to load model pricing": "Не удалось загрузить тарифы моделей",
+  "Failed to load page": "Не удалось загрузить страницу",
+  "No model pricing is available": "Тарифы моделей недоступны",
+  "Failed to load plans": "Не удалось загрузить тарифы",
+  "Failed to load dashboard data": "Не удалось загрузить данные панели",
+  "Usage records": "Записи использования",
+  "Loading page": "Загрузка страницы",
+  "One gateway for every coding model.":
+    "Один шлюз для всех моделей программирования.",
+  "Use one balance, see every request, and keep your existing workflow.":
+    "Единый баланс, история каждого запроса и привычный рабочий процесс.",
+  "View setup guide": "Открыть руководство по настройке",
+  "Create account": "Создать аккаунт",
+  "Usage billing": "Оплата по использованию",
+  "Model rates": "Тарифы моделей",
+  "Compare per-model input, output, cache, and request rates before you send traffic.":
+    "Сравните стоимость входных, выходных, кэшированных токенов и запросов для каждой модели.",
+  "Purchase options": "Способы покупки",
+  "Plans and balance": "Тарифы и баланс",
+  "Plans add recurring quota; pay-as-you-go balance stays available for flexible usage.":
+    "Тарифы дают периодическую квоту, а баланс по использованию остаётся доступным для гибких расходов.",
+  "Choose the model. Keep the workflow.":
+    "Выберите модель. Сохраните рабочий процесс.",
+  "Create one account, follow the setup guide once, and manage every request from the same dashboard.":
+    "Создайте один аккаунт, один раз выполните настройку и управляйте всеми запросами в одной панели.",
+  "Account overview": "Обзор аккаунта",
+  "Common actions": "Частые действия",
+  "Request count": "Количество запросов",
+  "Show more plans ({{count}} remaining)":
+    "Показать ещё тарифы (осталось: {{count}})",
   X: "X",
 } satisfies Record<string, string>;
 

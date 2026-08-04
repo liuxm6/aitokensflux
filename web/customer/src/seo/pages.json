@@ -8,12 +8,12 @@
       "path": "/",
       "aliases": [],
       "title": {
-        "zh": "AI Tokens Flux｜Claude Code、Codex、Grok API 统一网关",
-        "en": "AI Tokens Flux | Unified Claude Code, Codex & Grok API Gateway"
+        "zh": "AI Tokens Flux｜Claude Code、Codex、Grok、Gemini API 统一网关",
+        "en": "AI Tokens Flux | Unified Claude Code, Codex, Grok & Gemini API Gateway"
       },
       "description": {
-        "zh": "AI Tokens Flux 提供稳定的 Claude Code、Codex 与 Grok API 统一接入，支持按量计费、透明模型价格、用量查询和快速配置。",
-        "en": "AI Tokens Flux provides unified Claude Code, Codex and Grok API access with usage-based billing, transparent model pricing and fast setup."
+        "zh": "AI Tokens Flux 提供稳定的 Claude Code、Codex、Grok 与 Gemini API 统一接入，支持按量计费、透明模型价格、用量查询和快速配置。",
+        "en": "AI Tokens Flux provides unified Claude Code, Codex, Grok and Gemini API access with usage-based billing, transparent model pricing and fast setup."
       },
       "breadcrumb": { "zh": "首页", "en": "Home" },
       "schemas": ["Organization", "WebSite", "WebPage", "Service", "FAQPage"],
@@ -44,8 +44,8 @@
             "en": "Which models are supported?"
           },
           "answer": {
-            "zh": "平台提供 Claude、OpenAI Codex 和 Grok 等前沿模型的兼容 API，实际可用模型以价格页展示为准。",
-            "en": "The platform provides compatible APIs for frontier Claude, OpenAI Codex and Grok models. Current availability is listed on the pricing page."
+            "zh": "平台提供 Claude、OpenAI Codex、Grok 和 Gemini 等前沿模型的兼容 API，实际可用模型以价格页展示为准。",
+            "en": "The platform provides compatible APIs for frontier Claude, OpenAI Codex, Grok and Gemini models. Current availability is listed on the pricing page."
           }
         },
         {
@@ -65,12 +65,12 @@
       "path": "/pricing",
       "aliases": ["/subscribe"],
       "title": {
-        "zh": "Claude Code、Codex、Grok API 价格｜AI Tokens Flux",
-        "en": "Claude Code, Codex & Grok API Pricing | AI Tokens Flux"
+        "zh": "Claude Code、Codex、Grok、Gemini API 价格｜AI Tokens Flux",
+        "en": "Claude Code, Codex, Grok & Gemini API Pricing | AI Tokens Flux"
       },
       "description": {
-        "zh": "查看 Claude Code、Codex 与 Grok API 的透明模型价格、按量充值和订阅方案，按实际 Token 用量付费。",
-        "en": "Compare transparent Claude Code, Codex and Grok API pricing, pay-as-you-go credit and subscription plans based on actual token usage."
+        "zh": "查看 Claude Code、Codex、Grok 与 Gemini API 的透明模型价格、按量充值和订阅方案，按实际 Token 用量付费。",
+        "en": "Compare transparent Claude Code, Codex, Grok and Gemini API pricing, pay-as-you-go credit and subscription plans based on actual token usage."
       },
       "breadcrumb": { "zh": "价格", "en": "Pricing" },
       "schemas": ["WebPage", "BreadcrumbList"]

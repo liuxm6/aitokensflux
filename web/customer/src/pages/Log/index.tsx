@@ -9,13 +9,16 @@ import {
   Search,
 } from "lucide-react";
 import { useContext, useEffect, useMemo, useState } from "react";
-import { EmptyState } from "../../components/common/EmptyState";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+} from "../../components/common/ui/AsyncState";
 import { ModelIcon } from "../../components/common/ModelIcon";
 import { Panel } from "../../components/common/ui/Panel";
-import {
-  ConsolePageTitle,
-  CustomerShell,
-} from "../../components/layout/CustomerShell";
+import { CustomerShell } from "../../components/layout/CustomerShell";
+import { ConsolePageHeader } from "../../components/layout/ConsolePageHeader";
+import { pageMeta } from "../../constants/page-meta";
 import { LanguageContext, T } from "../../context/Language";
 import { useToastMessage } from "../../context/Toast";
 import { getQuotaPerUnit, normalizePageItems } from "../../helpers/format";
@@ -391,6 +394,7 @@ export function UsagePage() {
   const [usagePageSize, setUsagePageSize] = useState(usagePageSizeDefault);
   const [usageTotal, setUsageTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [message, setMessage] = useState("");
   useToastMessage(message);
 
@@ -416,6 +420,7 @@ export function UsagePage() {
       return;
     }
     setLoading(true);
+    setLoadError(false);
     const trimmedFilters = {
       modelName: query.modelName.trim() || undefined,
       type: 2,
@@ -452,8 +457,10 @@ export function UsagePage() {
           ? items.length
           : (logsRes.data?.total ?? items.length),
       );
+      setLoadError(false);
       setMessage("");
     } else {
+      setLoadError(true);
       setMessage(
         logsRes.message ||
           localizeKey(language, "Failed to load usage details"),
@@ -501,7 +508,10 @@ export function UsagePage() {
 
   return (
     <CustomerShell crumbId="Usage" page="usage">
-      <ConsolePageTitle id="Usage details" />
+      <ConsolePageHeader
+        descriptionId={pageMeta.usage.descriptionId}
+        titleId="Usage details"
+      />
       <Panel className="usage-panel usage-detail-panel">
         <div className="usage-toolbar">
           <div className="usage-filter-grid">
@@ -565,10 +575,23 @@ export function UsagePage() {
         </div>
 
         {loading ? (
-          <EmptyState id="Loading usage details" />
+          <LoadingState id="Loading usage details" />
+        ) : loadError ? (
+          <ErrorState
+            id="Failed to load usage details"
+            onRetry={() => void loadUsage(1)}
+          />
         ) : logs.length > 0 ? (
-          <div className="usage-table-wrap">
+          <div
+            aria-labelledby="usage-records-caption"
+            className="usage-table-wrap"
+            role="region"
+            tabIndex={0}
+          >
             <table className="usage-log-table">
+              <caption className="sr-only" id="usage-records-caption">
+                {localizeKey(language, "Usage records")}
+              </caption>
               <thead>
                 <tr>
                   {[
@@ -580,7 +603,9 @@ export function UsagePage() {
                     "Cost",
                     "Details",
                   ].map((header) => (
-                    <th key={header}>{localizeKey(language, header)}</th>
+                    <th key={header} scope="col">
+                      {localizeKey(language, header)}
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -619,7 +644,7 @@ export function UsagePage() {
 
                   return (
                     <tr key={`${log.id}-${log.created_at}-${log.request_id}`}>
-                      <td>
+                      <td data-label={localizeKey(language, "Time")}>
                         <div className="usage-time-main mono">
                           {formatUsageDateTime(log.created_at)}
                         </div>
@@ -629,13 +654,13 @@ export function UsagePage() {
                           {localizeKey(language, typeMeta.labelId)}
                         </span>
                       </td>
-                      <td>
+                      <td data-label={localizeKey(language, "Token")}>
                         <div className="usage-token-pill">
                           <KeyRound size={14} />
                           <span className="mono">{log.token_name || "-"}</span>
                         </div>
                       </td>
-                      <td>
+                      <td data-label={localizeKey(language, "Model")}>
                         <div className="usage-model-pill">
                           <span className="usage-model-icon">
                             <ModelIcon modelName={log.model_name} />
@@ -648,7 +673,7 @@ export function UsagePage() {
                           </div>
                         ) : null}
                       </td>
-                      <td>
+                      <td data-label={localizeKey(language, "Latency")}>
                         <div className="usage-latency-row">
                           <span className={`usage-latency-pill ${latencyTone}`}>
                             {formatDuration(log.use_time)}
@@ -669,7 +694,7 @@ export function UsagePage() {
                             : localizeKey(language, "Non-stream")}
                         </div>
                       </td>
-                      <td>
+                      <td data-label={localizeKey(language, "Tokens")}>
                         <div className="usage-token-count mono">
                           {formatInteger(getDisplayInputTokens(log, other))} /{" "}
                           {formatInteger(completionTokens)}
@@ -678,7 +703,7 @@ export function UsagePage() {
                           {cacheTokenLine}
                         </div>
                       </td>
-                      <td>
+                      <td data-label={localizeKey(language, "Cost")}>
                         <span
                           className={`usage-cost-pill mono${
                             isSubscriptionBilling ? " subscription" : ""
@@ -694,7 +719,7 @@ export function UsagePage() {
                           </div>
                         ) : null}
                       </td>
-                      <td>
+                      <td data-label={localizeKey(language, "Details")}>
                         <div className="usage-detail-stack">
                           {visibleDetailSegments.map((segment, index) => (
                             <div

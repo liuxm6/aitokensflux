@@ -303,11 +303,8 @@ export function usePlanPurchase({
       });
 
       const epayParams =
-        response.data && typeof response.data === "object"
-          ? response.data
-          : {};
-      const paymentUrl =
-        response.data?.pay_link || response.data?.checkout_url;
+        response.data && typeof response.data === "object" ? response.data : {};
+      const paymentUrl = response.data?.pay_link || response.data?.checkout_url;
       const launch =
         provider === "epay" && response.url
           ? ({

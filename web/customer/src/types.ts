@@ -465,11 +465,7 @@ export type PurchaseStepKey = "order" | "paymentInfo" | "launch";
 export type PurchaseStepState = "pending" | "processing" | "done" | "error";
 
 export type PurchasePaymentProvider =
-  | "balance"
-  | "stripe"
-  | "creem"
-  | "waffoPancake"
-  | "epay";
+  "balance" | "stripe" | "creem" | "waffoPancake" | "epay";
 
 export type PurchaseLaunch =
   | {

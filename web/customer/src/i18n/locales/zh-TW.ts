@@ -15,8 +15,12 @@ export const zhTWTranslations = {
   "A stable AI coding solution": "穩定好用的 AI 編程解決方案",
   "Unified Claude Code, Codex and Grok API gateway":
     "Claude Code、Codex 與 Grok API 統一閘道",
+  "Unified Claude Code, Codex, Grok and Gemini API gateway":
+    "Claude Code、Codex、Grok 與 Gemini API 統一閘道",
   "Transparent Claude Code, Codex and Grok API pricing":
     "透明的 Claude Code、Codex 與 Grok API 價格",
+  "Transparent Claude Code, Codex, Grok and Gemini API pricing":
+    "透明的 Claude Code、Codex、Grok 與 Gemini API 價格",
   "Claude Code and Codex API setup guide": "Claude Code 與 Codex API 接入指南",
   About: "關於我們",
   Active: "生效中",
@@ -700,5 +704,77 @@ export const zhTWTranslations = {
   "Support groups are best for real-time help. Email is best for account, order, and security issues.":
     "售後群適合即時溝通，郵件適合賬號、訂單和安全相關問題。",
   "Telegram support group": "Telegram 售後群",
+  "AI API gateway": "AI API 閘道",
+  "Connect ATF Switch": "連接 ATF Switch",
+  "Father's Day special": "父親節特惠",
+  "Page not found": "找不到頁面",
+  "Skip to content": "跳到主要內容",
+  "Show password": "顯示密碼",
+  "Hide password": "隱藏密碼",
+  "Unified access to Claude, Codex, Grok, and Gemini with one balance.":
+    "使用一個餘額統一存取 Claude、Codex、Grok 和 Gemini。",
+  "View your balance, subscription, usage, and account shortcuts.":
+    "查看餘額、訂閱、用量和常用賬號操作。",
+  "Manage plans, balance top-ups, payments, and billing records.":
+    "管理套餐、餘額充值、支付方式和賬單記錄。",
+  "Review request usage, token counts, and billing details.":
+    "查看請求用量、Token 數量和計費明細。",
+  "Create and manage API keys for your applications.":
+    "為應用建立和管理 API 密鑰。",
+  "Track invitations, rewards, and referral records.":
+    "查看邀請、獎勵和推廣記錄。",
+  "Manage language, account security, and profile settings.":
+    "管理語言、賬號安全和個人設定。",
+  "Authorize the desktop app without copying an API key manually.":
+    "無需手動複製 API 密鑰即可授權桌面應用。",
+  "Compare available plans and choose how to add balance.":
+    "比較可用套餐並選擇餘額補充方式。",
+  "View the current seasonal offer and purchase options.":
+    "查看目前節日優惠和購買方式。",
+  "Configure Claude Code or Codex for the unified gateway.":
+    "為統一閘道配置 Claude Code 或 Codex。",
+  "Sign in to manage your gateway account and API access.":
+    "登入後管理閘道賬號和 API 接入。",
+  "Create an account for gateway access and usage billing.":
+    "建立賬號以使用閘道和按量計費。",
+  "Complete the external account sign-in process.": "完成外部賬號登入流程。",
+  "Confirm a password reset request for your account.":
+    "確認賬號密碼重置請求。",
+  "Review the terms that apply to this service.":
+    "查看適用於本服務的使用條款。",
+  "Review how account and usage data are handled.":
+    "查看賬號和用量資料的處理方式。",
+  "The requested customer portal page could not be found.":
+    "找不到請求的客戶入口網站頁面。",
+  "Try again": "重試",
+  "Data table": "資料表格",
+  "Loading model pricing": "正在載入模型費率",
+  "Failed to load model pricing": "模型費率載入失敗",
+  "Failed to load page": "頁面載入失敗",
+  "No model pricing is available": "暫無模型費率",
+  "Failed to load plans": "套餐載入失敗",
+  "Failed to load dashboard data": "控制台資料載入失敗",
+  "Usage records": "用量記錄",
+  "Loading page": "正在載入頁面",
+  "One gateway for every coding model.": "一個閘道，統一使用所有程式模型。",
+  "Use one balance, see every request, and keep your existing workflow.":
+    "一個餘額、完整請求明細，原有工作流程無需改變。",
+  "View setup guide": "查看接入指南",
+  "Create account": "建立賬號",
+  "Usage billing": "按量計費",
+  "Model rates": "模型費率",
+  "Compare per-model input, output, cache, and request rates before you send traffic.":
+    "傳送請求前比較各模型的輸入、輸出、快取和按次費率。",
+  "Purchase options": "購買方式",
+  "Plans and balance": "套餐與餘額",
+  "Plans add recurring quota; pay-as-you-go balance stays available for flexible usage.":
+    "套餐提供週期額度；按量餘額可隨時補充，靈活使用。",
+  "Choose the model. Keep the workflow.": "選擇模型，工作流程保持不變。",
+  "Create one account, follow the setup guide once, and manage every request from the same dashboard.":
+    "建立一個賬號，只需完成一次接入，所有請求都在同一控制台管理。",
+  "Account overview": "賬戶概覽",
+  "Common actions": "常用操作",
+  "Request count": "請求次數",
+  "Show more plans ({{count}} remaining)": "查看更多方案（剩餘 {{count}} 個）",
   X: "X",
 } as const;

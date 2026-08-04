@@ -264,14 +264,14 @@ describe("customer SEO routes", () => {
     );
     const hiddenEnd = source.indexOf("</div>", hiddenStart);
     const contentStart = source.indexOf("<section", hiddenEnd);
-    const stageStart = source.indexOf('{stage === "tool"', contentStart);
+    const wizardContentIndex = source.indexOf("{wizardContent}", contentStart);
     const headingIndex = source.indexOf("<h1", contentStart);
 
     expect(source.match(/<h1\b/g)).toHaveLength(1);
     expect(source.slice(hiddenStart, hiddenEnd)).not.toContain("<h1");
     expect(headingIndex).toBeGreaterThan(contentStart);
-    expect(headingIndex).toBeLessThan(stageStart);
-    expect(source.slice(headingIndex, stageStart)).toContain(
+    expect(headingIndex).toBeLessThan(wizardContentIndex);
+    expect(source.slice(headingIndex, wizardContentIndex)).toContain(
       'id="Claude Code and Codex API setup guide"',
     );
   });

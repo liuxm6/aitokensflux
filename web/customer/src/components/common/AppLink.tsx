@@ -1,58 +1,74 @@
-import { useContext } from "react";
-import type { MouseEvent, ReactNode } from "react";
+import {
+  forwardRef,
+  useContext,
+  type AnchorHTMLAttributes,
+  type MouseEvent,
+  type ReactNode,
+} from "react";
 import { LanguageContext } from "../../context/Language";
 import { isInternalPath, shouldPreserveScroll } from "../../helpers/navigation";
+import { scrollElementIntoView, scrollToPosition } from "../../helpers/motion";
 import { localizePublicHref } from "../../seo/metadata";
 
-export function AppLink({
-  href,
-  className,
-  children,
-  onNavigate,
-}: {
+type AppLinkProps = Omit<
+  AnchorHTMLAttributes<HTMLAnchorElement>,
+  "children" | "href"
+> & {
   href: string;
-  className?: string;
   children: ReactNode;
   onNavigate?: () => void;
-}) {
-  const { language } = useContext(LanguageContext);
-  const resolvedHref = localizePublicHref(href, language);
+};
 
-  const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    if (
-      event.defaultPrevented ||
-      event.metaKey ||
-      event.altKey ||
-      event.ctrlKey ||
-      event.shiftKey ||
-      !isInternalPath(resolvedHref)
-    ) {
-      return;
-    }
+export const AppLink = forwardRef<HTMLAnchorElement, AppLinkProps>(
+  function AppLink(
+    { href, className, children, onClick, onNavigate, ...anchorProps },
+    ref,
+  ) {
+    const { language } = useContext(LanguageContext);
+    const resolvedHref = localizePublicHref(href, language);
 
-    const url = new URL(resolvedHref, window.location.origin);
-    event.preventDefault();
-    window.history.pushState(
-      null,
-      "",
-      `${url.pathname}${url.search}${url.hash}`,
+    const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
+      onClick?.(event);
+      if (
+        event.defaultPrevented ||
+        event.metaKey ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        !isInternalPath(resolvedHref)
+      ) {
+        return;
+      }
+
+      const url = new URL(resolvedHref, window.location.origin);
+      event.preventDefault();
+      window.history.pushState(
+        null,
+        "",
+        `${url.pathname}${url.search}${url.hash}`,
+      );
+      window.dispatchEvent(new PopStateEvent("popstate"));
+      if (url.hash) {
+        window.setTimeout(() => {
+          const target = document.querySelector(url.hash);
+          if (target) scrollElementIntoView(target);
+        });
+      } else if (!shouldPreserveScroll(url.pathname)) {
+        scrollToPosition(0);
+      }
+      onNavigate?.();
+    };
+
+    return (
+      <a
+        {...anchorProps}
+        className={className}
+        href={resolvedHref}
+        ref={ref}
+        onClick={handleClick}
+      >
+        {children}
+      </a>
     );
-    window.dispatchEvent(new PopStateEvent("popstate"));
-    if (url.hash) {
-      window.setTimeout(() => {
-        document
-          .querySelector(url.hash)
-          ?.scrollIntoView({ behavior: "smooth" });
-      });
-    } else if (!shouldPreserveScroll(url.pathname)) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-    onNavigate?.();
-  };
-
-  return (
-    <a className={className} href={resolvedHref} onClick={handleClick}>
-      {children}
-    </a>
-  );
-}
+  },
+);

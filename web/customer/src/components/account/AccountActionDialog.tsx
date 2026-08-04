@@ -4,15 +4,17 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useId,
   useRef,
   useState,
 } from "react";
+import { AccessibleDialog } from "../common/ui/Dialog";
 import Turnstile from "react-turnstile";
 import { AuthInput } from "../auth/AuthInput";
 import { LanguageContext } from "../../context/Language";
 import { useToastMessage } from "../../context/Toast";
 import { getBoundEmail } from "../../helpers/account";
-import { localizeCopy } from "../../i18n/localization";
+import { localizeCopy, localizeKey } from "../../i18n/localization";
 import {
   apiRequest,
   buildQuery,
@@ -54,6 +56,14 @@ export function AccountActionDialog({
   const isEmailMode = mode === "email";
   const currentEmail = getBoundEmail(user);
   const closeTimerRef = useRef<number | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const currentPasswordInputRef = useRef<HTMLInputElement>(null);
+  const newPasswordInputRef = useRef<HTMLInputElement>(null);
+  const confirmPasswordInputRef = useRef<HTMLInputElement>(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const codeInputRef = useRef<HTMLInputElement>(null);
+  const titleId = useId();
+  const descriptionId = useId();
   const [status, setStatus] = useState<CustomerStatus | null>(null);
   const [statusLoaded, setStatusLoaded] = useState(!isEmailMode);
   const [turnstileToken, setTurnstileToken] = useState("");
@@ -61,6 +71,9 @@ export function AccountActionDialog({
     type: "info" | "error" | "success";
     text: string;
   } | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<"current" | "next" | "confirm" | "email" | "code", string>>
+  >({});
   useToastMessage(message);
   const [loading, setLoading] = useState(false);
   const [codeLoading, setCodeLoading] = useState(false);
@@ -86,14 +99,6 @@ export function AccountActionDialog({
     setIsClosing(true);
     closeTimerRef.current = window.setTimeout(onClose, getDialogExitDelay());
   }, [isClosing, onClose]);
-
-  useEffect(() => {
-    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.key === "Escape") requestClose();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [requestClose]);
 
   useEffect(() => {
     return () => {
@@ -169,12 +174,30 @@ export function AccountActionDialog({
     value: string,
   ) => {
     setPasswordForm((current) => ({ ...current, [key]: value }));
+    setFieldErrors((current) => ({ ...current, [key]: undefined }));
     setMessage(null);
   };
 
   const updateEmailValue = (key: keyof typeof emailForm, value: string) => {
     setEmailForm((current) => ({ ...current, [key]: value }));
+    setFieldErrors((current) => ({ ...current, [key]: undefined }));
     setMessage(null);
+  };
+
+  const showFieldError = (
+    field: "current" | "next" | "confirm" | "email" | "code",
+    text: string,
+  ) => {
+    setFieldErrors({ [field]: text });
+    setMessage(null);
+    const fieldRefs = {
+      current: currentPasswordInputRef,
+      next: newPasswordInputRef,
+      confirm: confirmPasswordInputRef,
+      email: emailInputRef,
+      code: codeInputRef,
+    };
+    fieldRefs[field].current?.focus();
   };
 
   const closeAfterSuccess = () => {
@@ -186,21 +209,22 @@ export function AccountActionDialog({
     const currentPassword = passwordForm.current;
     const nextPassword = passwordForm.next;
     if (!currentPassword) {
-      setMessage({ type: "error", text: copy.currentRequired });
+      showFieldError("current", copy.currentRequired);
       return;
     }
     if (nextPassword.length < 8 || nextPassword.length > 20) {
-      setMessage({ type: "error", text: copy.passwordRule });
+      showFieldError("next", copy.passwordRule);
       return;
     }
     if (currentPassword === nextPassword) {
-      setMessage({ type: "error", text: copy.passwordSame });
+      showFieldError("next", copy.passwordSame);
       return;
     }
     if (nextPassword !== passwordForm.confirm) {
-      setMessage({ type: "error", text: copy.passwordMismatch });
+      showFieldError("confirm", copy.passwordMismatch);
       return;
     }
+    setFieldErrors({});
     setLoading(true);
     const response = await apiRequest("/api/user/self", {
       method: "PUT",
@@ -224,11 +248,11 @@ export function AccountActionDialog({
   const handleSendEmailCode = async () => {
     const email = emailForm.email.trim();
     if (!isValidEmail(email)) {
-      setMessage({ type: "error", text: copy.emailRule });
+      showFieldError("email", copy.emailRule);
       return;
     }
     if (currentEmail && email === currentEmail) {
-      setMessage({ type: "error", text: copy.sameEmail });
+      showFieldError("email", copy.sameEmail);
       return;
     }
     if (!statusLoaded) {
@@ -239,6 +263,7 @@ export function AccountActionDialog({
       setMessage({ type: "error", text: copy.turnstileRequired });
       return;
     }
+    setFieldErrors((current) => ({ ...current, email: undefined }));
     setCodeLoading(true);
     const response = await apiRequest(
       `/api/verification${buildQuery({
@@ -263,17 +288,18 @@ export function AccountActionDialog({
     const email = emailForm.email.trim();
     const code = emailForm.code.trim();
     if (!isValidEmail(email)) {
-      setMessage({ type: "error", text: copy.emailRule });
+      showFieldError("email", copy.emailRule);
       return;
     }
     if (currentEmail && email === currentEmail) {
-      setMessage({ type: "error", text: copy.sameEmail });
+      showFieldError("email", copy.sameEmail);
       return;
     }
     if (!code) {
-      setMessage({ type: "error", text: copy.codeRequired });
+      showFieldError("code", copy.codeRequired);
       return;
     }
+    setFieldErrors({});
     setLoading(true);
     const response = await apiRequest("/api/oauth/email/bind", {
       method: "POST",
@@ -293,177 +319,182 @@ export function AccountActionDialog({
   };
 
   return (
-    <div
+    <AccessibleDialog
+      ariaDescribedBy={descriptionId}
+      ariaLabelledBy={titleId}
+      backdropClassName="account-dialog-backdrop"
       className={`account-dialog${isClosing ? " closing" : ""}`}
-      role="presentation"
+      closeDisabled={isClosing}
+      closeLabel={copy.close}
+      initialFocusRef={closeButtonRef}
+      panelClassName="account-dialog-panel"
+      onClose={requestClose}
     >
       <button
-        className="account-dialog-backdrop"
+        ref={closeButtonRef}
+        className="account-dialog-close"
         type="button"
         onClick={requestClose}
         aria-label={copy.close}
-      />
-      <section className="account-dialog-panel" aria-label={copy.title}>
-        <button
-          className="account-dialog-close"
-          type="button"
-          onClick={requestClose}
-          aria-label={copy.close}
-        >
-          <X size={20} />
-        </button>
-        <div className="account-dialog-head">
-          <h2>{copy.title}</h2>
-          <p>{copy.subtitle}</p>
-        </div>
-        <div className="account-readonly">
-          <span>{copy.currentEmail}</span>
-          <strong>{currentEmail || copy.notBound}</strong>
-        </div>
-        {isEmailMode ? (
-          <form className="account-dialog-form" onSubmit={handleEmailSubmit}>
-            <AuthInput
-              autoComplete="email"
-              label={copy.newEmail}
-              maxLength={50}
-              placeholder={copy.newEmailPlaceholder}
-              type="email"
-              value={emailForm.email}
-              onChange={(value) => updateEmailValue("email", value)}
-            />
-            <AuthInput
-              button={
-                <button
-                  disabled={codeLoading || cooldown > 0}
-                  type="button"
-                  onClick={() => void handleSendEmailCode()}
-                >
-                  {codeLoading ? (
-                    <LoaderCircle className="spin" size={16} />
-                  ) : (
-                    copy.getCode
-                  )}
-                </button>
-              }
-              autoComplete="one-time-code"
-              label={copy.code}
-              placeholder={copy.codePlaceholder}
-              value={emailForm.code}
-              onChange={(value) => updateEmailValue("code", value)}
-            />
-            {turnstileEnabled && status?.turnstile_site_key ? (
-              <div className="auth-turnstile">
-                <Turnstile
-                  sitekey={status.turnstile_site_key}
-                  onVerify={setTurnstileToken}
-                  onExpire={() => setTurnstileToken("")}
-                  onError={() => setTurnstileToken("")}
-                />
-              </div>
-            ) : null}
-            <div className="account-dialog-actions">
+      >
+        <X size={20} />
+      </button>
+      <div className="account-dialog-head">
+        <h2 id={titleId}>{copy.title}</h2>
+        <p id={descriptionId}>{copy.subtitle}</p>
+      </div>
+      <div className="account-readonly">
+        <span>{copy.currentEmail}</span>
+        <strong>{currentEmail || copy.notBound}</strong>
+      </div>
+      {isEmailMode ? (
+        <form className="account-dialog-form" onSubmit={handleEmailSubmit}>
+          <AuthInput
+            autoComplete="email"
+            error={fieldErrors.email}
+            inputRef={emailInputRef}
+            label={copy.newEmail}
+            maxLength={50}
+            placeholder={copy.newEmailPlaceholder}
+            type="email"
+            value={emailForm.email}
+            onChange={(value) => updateEmailValue("email", value)}
+          />
+          <AuthInput
+            button={
               <button
-                className="auth-secondary"
+                disabled={codeLoading || cooldown > 0}
                 type="button"
-                onClick={requestClose}
+                onClick={() => void handleSendEmailCode()}
               >
-                {copy.cancel}
-              </button>
-              <button className="auth-submit" disabled={loading} type="submit">
-                {loading ? (
-                  <LoaderCircle className="spin" size={17} />
+                {codeLoading ? (
+                  <LoaderCircle className="spin" size={16} />
                 ) : (
-                  copy.submit
+                  copy.getCode
                 )}
               </button>
+            }
+            autoComplete="one-time-code"
+            error={fieldErrors.code}
+            inputRef={codeInputRef}
+            label={copy.code}
+            placeholder={copy.codePlaceholder}
+            value={emailForm.code}
+            onChange={(value) => updateEmailValue("code", value)}
+          />
+          {turnstileEnabled && status?.turnstile_site_key ? (
+            <div className="auth-turnstile">
+              <Turnstile
+                sitekey={status.turnstile_site_key}
+                onVerify={setTurnstileToken}
+                onExpire={() => setTurnstileToken("")}
+                onError={() => setTurnstileToken("")}
+              />
             </div>
-          </form>
-        ) : (
-          <form className="account-dialog-form" onSubmit={handlePasswordSubmit}>
-            <AuthInput
-              button={
-                <button
-                  type="button"
-                  onClick={() => setShowCurrentPassword((value) => !value)}
-                  aria-label={
-                    showCurrentPassword ? "Hide password" : "Show password"
-                  }
-                >
-                  {showCurrentPassword ? (
-                    <EyeOff size={18} />
-                  ) : (
-                    <Eye size={18} />
-                  )}
-                </button>
-              }
-              autoComplete="current-password"
-              label={copy.currentPassword}
-              placeholder={copy.currentPasswordPlaceholder}
-              type={showCurrentPassword ? "text" : "password"}
-              value={passwordForm.current}
-              onChange={(value) => updatePasswordValue("current", value)}
-            />
-            <AuthInput
-              button={
-                <button
-                  type="button"
-                  onClick={() => setShowNewPassword((value) => !value)}
-                  aria-label={
-                    showNewPassword ? "Hide password" : "Show password"
-                  }
-                >
-                  {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              }
-              autoComplete="new-password"
-              label={copy.newPassword}
-              placeholder={copy.newPasswordPlaceholder}
-              type={showNewPassword ? "text" : "password"}
-              value={passwordForm.next}
-              onChange={(value) => updatePasswordValue("next", value)}
-            />
-            <AuthInput
-              button={
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword((value) => !value)}
-                  aria-label={
-                    showConfirmPassword ? "Hide password" : "Show password"
-                  }
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff size={18} />
-                  ) : (
-                    <Eye size={18} />
-                  )}
-                </button>
-              }
-              autoComplete="new-password"
-              label={copy.confirmPassword}
-              placeholder={copy.confirmPasswordPlaceholder}
-              type={showConfirmPassword ? "text" : "password"}
-              value={passwordForm.confirm}
-              onChange={(value) => updatePasswordValue("confirm", value)}
-            />
-            <div className="account-dialog-actions">
+          ) : null}
+          <div className="account-dialog-actions">
+            <button
+              className="auth-secondary"
+              type="button"
+              onClick={requestClose}
+            >
+              {copy.cancel}
+            </button>
+            <button className="auth-submit" disabled={loading} type="submit">
+              {loading ? (
+                <LoaderCircle className="spin" size={17} />
+              ) : (
+                copy.submit
+              )}
+            </button>
+          </div>
+        </form>
+      ) : (
+        <form className="account-dialog-form" onSubmit={handlePasswordSubmit}>
+          <AuthInput
+            button={
               <button
-                className="auth-secondary"
                 type="button"
-                onClick={requestClose}
-              >
-                {copy.cancel}
-              </button>
-              <button className="auth-submit" disabled={loading} type="submit">
-                {loading ? (
-                  <LoaderCircle className="spin" size={17} />
-                ) : (
-                  copy.submit
+                onClick={() => setShowCurrentPassword((value) => !value)}
+                aria-label={localizeKey(
+                  language,
+                  showCurrentPassword ? "Hide password" : "Show password",
                 )}
+              >
+                {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
-            </div>
-          </form>
-        )}
-      </section>
-    </div>
+            }
+            autoComplete="current-password"
+            error={fieldErrors.current}
+            inputRef={currentPasswordInputRef}
+            label={copy.currentPassword}
+            placeholder={copy.currentPasswordPlaceholder}
+            type={showCurrentPassword ? "text" : "password"}
+            value={passwordForm.current}
+            onChange={(value) => updatePasswordValue("current", value)}
+          />
+          <AuthInput
+            button={
+              <button
+                type="button"
+                onClick={() => setShowNewPassword((value) => !value)}
+                aria-label={localizeKey(
+                  language,
+                  showNewPassword ? "Hide password" : "Show password",
+                )}
+              >
+                {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            }
+            autoComplete="new-password"
+            error={fieldErrors.next}
+            inputRef={newPasswordInputRef}
+            label={copy.newPassword}
+            placeholder={copy.newPasswordPlaceholder}
+            type={showNewPassword ? "text" : "password"}
+            value={passwordForm.next}
+            onChange={(value) => updatePasswordValue("next", value)}
+          />
+          <AuthInput
+            button={
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((value) => !value)}
+                aria-label={localizeKey(
+                  language,
+                  showConfirmPassword ? "Hide password" : "Show password",
+                )}
+              >
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            }
+            autoComplete="new-password"
+            error={fieldErrors.confirm}
+            inputRef={confirmPasswordInputRef}
+            label={copy.confirmPassword}
+            placeholder={copy.confirmPasswordPlaceholder}
+            type={showConfirmPassword ? "text" : "password"}
+            value={passwordForm.confirm}
+            onChange={(value) => updatePasswordValue("confirm", value)}
+          />
+          <div className="account-dialog-actions">
+            <button
+              className="auth-secondary"
+              type="button"
+              onClick={requestClose}
+            >
+              {copy.cancel}
+            </button>
+            <button className="auth-submit" disabled={loading} type="submit">
+              {loading ? (
+                <LoaderCircle className="spin" size={17} />
+              ) : (
+                copy.submit
+              )}
+            </button>
+          </div>
+        </form>
+      )}
+    </AccessibleDialog>
   );
 }

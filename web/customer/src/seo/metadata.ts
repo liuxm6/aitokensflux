@@ -95,8 +95,8 @@ const customerSeoProductionHost = "aitokensflux.com";
 const customerSeoShareImagePath = "/og/aitokensflux-social-card.png";
 const brandTitle = "AI Tokens Flux";
 const brandDescription = {
-  zh: "AI Tokens Flux 提供 Claude Code、Codex 与 Grok API 统一接入。",
-  en: "AI Tokens Flux provides unified Claude Code, Codex and Grok API access.",
+  zh: "AI Tokens Flux 提供 Claude Code、Codex、Grok 与 Gemini API 统一接入。",
+  en: "AI Tokens Flux provides unified Claude Code, Codex, Grok and Gemini API access.",
 } satisfies SeoLocalizedText;
 
 type ResolvedSeoRoute = SeoRouteResolution & {

@@ -15,6 +15,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -22,6 +23,7 @@ import {
 import { AuthInput } from "../../components/auth/AuthInput";
 import { AppLink } from "../../components/common/AppLink";
 import { Brand } from "../../components/common/Brand";
+import { AccessibleDialog } from "../../components/common/ui/Dialog";
 import { LanguageButton } from "../../components/layout/LanguageButton";
 import { AuthContext } from "../../context/Auth";
 import { LanguageContext, T } from "../../context/Language";
@@ -166,6 +168,9 @@ type AuthPageProps = {
   successPath?: string;
 };
 
+type AuthFieldName =
+  "email" | "password" | "verificationCode" | "twoFaCode" | "wechatCode";
+
 function GitHubMark() {
   return (
     <svg className="github-mark" viewBox="0 0 24 24" aria-hidden="true">
@@ -211,6 +216,15 @@ export function AuthPage({
   const closeTimerRef = useRef<number | null>(null);
   const modeExitTimerRef = useRef<number | null>(null);
   const modeEnterTimerRef = useRef<number | null>(null);
+  const authCloseButtonRef = useRef<HTMLButtonElement>(null);
+  const wechatCloseButtonRef = useRef<HTMLButtonElement>(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const passwordInputRef = useRef<HTMLInputElement>(null);
+  const verificationCodeInputRef = useRef<HTMLInputElement>(null);
+  const twoFaCodeInputRef = useRef<HTMLInputElement>(null);
+  const wechatCodeInputRef = useRef<HTMLInputElement>(null);
+  const wechatTitleId = useId();
+  const wechatDescriptionId = useId();
   const [activeMode, setActiveMode] = useState<AuthMode>(() =>
     ["/register", "/sign-up"].includes(window.location.pathname)
       ? "register"
@@ -230,6 +244,9 @@ export function AuthPage({
     type: "info" | "error" | "success";
     text: string;
   } | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<AuthFieldName, string>>
+  >({});
   useToastMessage(message);
   const [loading, setLoading] = useState(false);
   const [codeLoading, setCodeLoading] = useState(false);
@@ -317,15 +334,6 @@ export function AuthPage({
       }
     };
   }, []);
-
-  useEffect(() => {
-    if (!modal) return;
-    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.key === "Escape") requestClose();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [modal, requestClose]);
 
   useEffect(() => {
     let mounted = true;
@@ -451,6 +459,7 @@ export function AuthPage({
         nextMode === "register" ? "/register" : "/sign-in",
       );
       setMessage(null);
+      setFieldErrors({});
       setUseBackupCode(false);
       setTwoFaCode("");
       setValues((current) => ({
@@ -481,29 +490,40 @@ export function AuthPage({
 
   const updateValue = (key: keyof AuthFormValues, value: string) => {
     setValues((current) => ({ ...current, [key]: value }));
+    setFieldErrors((current) => ({ ...current, [key]: undefined }));
     setMessage(null);
+  };
+
+  const showFieldError = (field: AuthFieldName, text: string) => {
+    setFieldErrors({ [field]: text });
+    setMessage(null);
+    const fieldRefs: Record<AuthFieldName, typeof emailInputRef> = {
+      email: emailInputRef,
+      password: passwordInputRef,
+      verificationCode: verificationCodeInputRef,
+      twoFaCode: twoFaCodeInputRef,
+      wechatCode: wechatCodeInputRef,
+    };
+    fieldRefs[field].current?.focus();
+    return false;
   };
 
   const validateBase = () => {
     const account = values.email.trim();
     if (isRegister && !isValidEmail(account)) {
-      setMessage({ type: "error", text: copy.emailRule });
-      return false;
+      return showFieldError("email", copy.emailRule);
     }
     if (!isRegister && (account.length === 0 || account.length > 50)) {
-      setMessage({ type: "error", text: copy.accountRule });
-      return false;
+      return showFieldError("email", copy.accountRule);
     }
     if (
       isRegister &&
       (values.password.length < 8 || values.password.length > 20)
     ) {
-      setMessage({ type: "error", text: copy.passwordRule });
-      return false;
+      return showFieldError("password", copy.passwordRule);
     }
     if (!isRegister && values.password.length === 0) {
-      setMessage({ type: "error", text: copy.loginPasswordRule });
-      return false;
+      return showFieldError("password", copy.loginPasswordRule);
     }
     if (requiresLegalConsent && !agreed) {
       setMessage({ type: "error", text: copy.agreementRequired });
@@ -513,17 +533,16 @@ export function AuthPage({
       setMessage({ type: "error", text: copy.turnstileRequired });
       return false;
     }
+    setFieldErrors({});
     return true;
   };
 
   const validateEmailCodeLogin = () => {
     if (!isValidEmail(values.email)) {
-      setMessage({ type: "error", text: copy.emailRule });
-      return false;
+      return showFieldError("email", copy.emailRule);
     }
     if (!values.verificationCode.trim()) {
-      setMessage({ type: "error", text: copy.codeRequired });
-      return false;
+      return showFieldError("verificationCode", copy.codeRequired);
     }
     if (requiresLegalConsent && !agreed) {
       setMessage({ type: "error", text: copy.agreementRequired });
@@ -533,6 +552,7 @@ export function AuthPage({
       setMessage({ type: "error", text: copy.turnstileRequired });
       return false;
     }
+    setFieldErrors({});
     return true;
   };
 
@@ -544,17 +564,14 @@ export function AuthPage({
     if (!validateBase()) return;
     setLoading(true);
     try {
-      const response = await apiRequest<LoginData>(
-        "/api/user/login",
-        {
-          method: "POST",
-          headers: withTurnstileHeader(turnstileToken),
-          body: JSON.stringify({
-            username: values.email.trim(),
-            password: values.password,
-          }),
-        },
-      );
+      const response = await apiRequest<LoginData>("/api/user/login", {
+        method: "POST",
+        headers: withTurnstileHeader(turnstileToken),
+        body: JSON.stringify({
+          username: values.email.trim(),
+          password: values.password,
+        }),
+      });
 
       if (!response.success || !response.data) {
         setMessage({
@@ -619,7 +636,7 @@ export function AuthPage({
     }
     if (!validateBase()) return;
     if (emailVerificationRequired && !values.verificationCode.trim()) {
-      setMessage({ type: "error", text: copy.codeRequired });
+      showFieldError("verificationCode", copy.codeRequired);
       return;
     }
 
@@ -627,21 +644,17 @@ export function AuthPage({
     try {
       const email = values.email.trim();
       const username = generateUsernameFromEmail(email);
-      const registerResponse = await apiRequest(
-        "/api/user/register",
-        {
-          method: "POST",
-          headers: withTurnstileHeader(turnstileToken),
-          body: JSON.stringify({
-            username,
-            email,
-            password: values.password,
-            verification_code: values.verificationCode.trim() || undefined,
-            aff_code:
-              values.inviteCode.trim() || getStoredAffCode() || undefined,
-          }),
-        },
-      );
+      const registerResponse = await apiRequest("/api/user/register", {
+        method: "POST",
+        headers: withTurnstileHeader(turnstileToken),
+        body: JSON.stringify({
+          username,
+          email,
+          password: values.password,
+          verification_code: values.verificationCode.trim() || undefined,
+          aff_code: values.inviteCode.trim() || getStoredAffCode() || undefined,
+        }),
+      });
 
       if (!registerResponse.success) {
         setMessage({
@@ -652,16 +665,13 @@ export function AuthPage({
       }
 
       setMessage({ type: "success", text: copy.success });
-      const loginResponse = await apiRequest<LoginData>(
-        "/api/user/login",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            username: email,
-            password: values.password,
-          }),
-        },
-      );
+      const loginResponse = await apiRequest<LoginData>("/api/user/login", {
+        method: "POST",
+        body: JSON.stringify({
+          username: email,
+          password: values.password,
+        }),
+      });
 
       if (loginResponse.success && loginResponse.data) {
         setUser(loginResponse.data);
@@ -686,7 +696,7 @@ export function AuthPage({
 
   const handleSendCode = async () => {
     if (!isValidEmail(values.email)) {
-      setMessage({ type: "error", text: copy.emailRule });
+      showFieldError("email", copy.emailRule);
       return;
     }
     if (!isEmailCodeLogin && !emailVerificationRequired) {
@@ -697,6 +707,7 @@ export function AuthPage({
       setMessage({ type: "error", text: copy.turnstileRequired });
       return;
     }
+    setFieldErrors((current) => ({ ...current, email: undefined }));
     setCodeLoading(true);
     const response = await apiRequest(
       `/api/verification${buildQuery({
@@ -725,10 +736,10 @@ export function AuthPage({
 
   const handleForgotPassword = async () => {
     if (!isValidEmail(values.email)) {
-      setMessage({
-        type: "error",
-        text: values.email.trim() ? copy.emailRule : copy.resetNeedEmail,
-      });
+      showFieldError(
+        "email",
+        values.email.trim() ? copy.emailRule : copy.resetNeedEmail,
+      );
       return;
     }
     if (!turnstileReady) {
@@ -805,13 +816,10 @@ export function AuthPage({
     if (!requireTurnstile()) return;
     setOAuthLoading("passkey");
     try {
-      const begin = await apiRequest(
-        "/api/user/passkey/login/begin",
-        {
-          method: "POST",
-          headers: withTurnstileHeader(turnstileToken),
-        },
-      );
+      const begin = await apiRequest("/api/user/passkey/login/begin", {
+        method: "POST",
+        headers: withTurnstileHeader(turnstileToken),
+      });
       if (!begin.success || !begin.data) {
         setMessage({
           type: "error",
@@ -863,7 +871,7 @@ export function AuthPage({
       return;
     }
     if (!wechatCode.trim()) {
-      setMessage({ type: "error", text: copy.codeRequired });
+      showFieldError("wechatCode", copy.codeRequired);
       return;
     }
     if (!turnstileReady) {
@@ -926,7 +934,7 @@ export function AuthPage({
   const handleTwoFaSubmit = async () => {
     const code = twoFaCode.trim();
     if (useBackupCode ? code.length !== 8 : !/^\d{6}$/.test(code)) {
-      setMessage({ type: "error", text: copy.codeRequired });
+      showFieldError("twoFaCode", copy.codeRequired);
       return;
     }
     setLoading(true);
@@ -1134,21 +1142,19 @@ export function AuthPage({
   ) => {
     if (modal) {
       return (
-        <div
+        <AccessibleDialog
+          ariaLabel={label}
+          backdropClassName="auth-overlay-backdrop"
           className={`auth-overlay${isClosing ? " closing" : ""}`}
-          role="dialog"
-          aria-modal="true"
-          aria-label={label}
+          closeDisabled={isClosing}
+          closeLabel={localizeKey(language, "Close")}
+          initialFocusRef={authCloseButtonRef}
+          panelClassName="auth-overlay-panel"
+          onClose={requestClose}
         >
-          <button
-            className="auth-overlay-backdrop"
-            type="button"
-            onClick={requestClose}
-            aria-label={localizeKey(language, "Close")}
-          />
           {content}
           {extra}
-        </div>
+        </AccessibleDialog>
       );
     }
 
@@ -1181,6 +1187,7 @@ export function AuthPage({
       <>
         <section className="auth-modal" aria-label={copy.twoFaTitle}>
           <button
+            ref={authCloseButtonRef}
             className="auth-close"
             type="button"
             onClick={requestClose}
@@ -1193,11 +1200,19 @@ export function AuthPage({
             <p className="auth-note">{copy.twoFaText}</p>
             <AuthInput
               autoComplete="one-time-code"
+              error={fieldErrors.twoFaCode}
               icon={KeyRound}
+              inputRef={twoFaCodeInputRef}
               label={copy.twoFaCode}
               placeholder={copy.twoFaPlaceholder}
               value={twoFaCode}
-              onChange={setTwoFaCode}
+              onChange={(value) => {
+                setTwoFaCode(value);
+                setFieldErrors((current) => ({
+                  ...current,
+                  twoFaCode: undefined,
+                }));
+              }}
             />
             <button
               className="auth-submit"
@@ -1247,6 +1262,7 @@ export function AuthPage({
         aria-label={copy.title}
       >
         <button
+          ref={authCloseButtonRef}
           className="auth-close"
           type="button"
           onClick={requestClose}
@@ -1259,6 +1275,8 @@ export function AuthPage({
             <h1>{copy.title}</h1>
           </div>
           <AuthInput
+            error={fieldErrors.email}
+            inputRef={emailInputRef}
             label={copy.email}
             maxLength={50}
             placeholder={copy.emailPlaceholder}
@@ -1273,7 +1291,10 @@ export function AuthPage({
                 <button
                   type="button"
                   onClick={() => setShowPassword((value) => !value)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={localizeKey(
+                    language,
+                    showPassword ? "Hide password" : "Show password",
+                  )}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -1282,6 +1303,8 @@ export function AuthPage({
               placeholder={copy.passwordPlaceholder}
               type={showPassword ? "text" : "password"}
               autoComplete={isRegister ? "new-password" : "current-password"}
+              error={fieldErrors.password}
+              inputRef={passwordInputRef}
               value={values.password}
               onChange={(value) => updateValue("password", value)}
             />
@@ -1304,6 +1327,8 @@ export function AuthPage({
                     </button>
                   }
                   autoComplete="one-time-code"
+                  error={fieldErrors.verificationCode}
+                  inputRef={verificationCodeInputRef}
                   label={copy.verificationCode}
                   placeholder={copy.verificationPlaceholder}
                   value={values.verificationCode}
@@ -1334,6 +1359,8 @@ export function AuthPage({
                 </button>
               }
               autoComplete="one-time-code"
+              error={fieldErrors.verificationCode}
+              inputRef={verificationCodeInputRef}
               label={copy.verificationCode}
               placeholder={copy.verificationPlaceholder}
               value={values.verificationCode}
@@ -1391,48 +1418,60 @@ export function AuthPage({
       </section>
     </>,
     wechatOpen ? (
-      <div className="auth-dialog">
-        <div
-          className="auth-dialog-backdrop"
+      <AccessibleDialog
+        ariaDescribedBy={wechatDescriptionId}
+        ariaLabelledBy={wechatTitleId}
+        backdropClassName="auth-dialog-backdrop"
+        className="auth-dialog"
+        closeLabel={localizeKey(language, "Close")}
+        initialFocusRef={wechatCloseButtonRef}
+        panelClassName="auth-dialog-panel"
+        onClose={() => setWeChatOpen(false)}
+      >
+        <button
+          ref={wechatCloseButtonRef}
+          className="auth-close"
+          type="button"
           onClick={() => setWeChatOpen(false)}
+          aria-label={localizeKey(language, "Close")}
+        >
+          <X size={22} />
+        </button>
+        <h2 id={wechatTitleId}>{copy.wechatTitle}</h2>
+        {wechatQrCode ? (
+          <img className="wechat-qr" src={wechatQrCode} alt="WeChat QR" />
+        ) : (
+          <div className="wechat-empty">{copy.noWechatQr}</div>
+        )}
+        <p id={wechatDescriptionId}>{copy.wechatHelp}</p>
+        <AuthInput
+          autoComplete="one-time-code"
+          error={fieldErrors.wechatCode}
+          inputRef={wechatCodeInputRef}
+          label={copy.verificationCode}
+          placeholder={copy.wechatPlaceholder}
+          value={wechatCode}
+          onChange={(value) => {
+            setWeChatCode(value);
+            setFieldErrors((current) => ({
+              ...current,
+              wechatCode: undefined,
+            }));
+          }}
         />
-        <section className="auth-dialog-panel">
-          <button
-            className="auth-close"
-            type="button"
-            onClick={() => setWeChatOpen(false)}
-            aria-label={localizeKey(language, "Close")}
-          >
-            <X size={22} />
-          </button>
-          <h2>{copy.wechatTitle}</h2>
-          {wechatQrCode ? (
-            <img className="wechat-qr" src={wechatQrCode} alt="WeChat QR" />
+        <button
+          className="auth-submit"
+          disabled={oauthLoading === "wechat"}
+          type="button"
+          onClick={() => void handleWeChatSubmit()}
+        >
+          {oauthLoading === "wechat" ? (
+            <LoaderCircle className="spin" size={18} />
           ) : (
-            <div className="wechat-empty">{copy.noWechatQr}</div>
+            copy.submitWechat
           )}
-          <p>{copy.wechatHelp}</p>
-          <AuthInput
-            autoComplete="one-time-code"
-            label={copy.verificationCode}
-            placeholder={copy.wechatPlaceholder}
-            value={wechatCode}
-            onChange={setWeChatCode}
-          />
-          <button
-            className="auth-submit"
-            disabled={oauthLoading === "wechat"}
-            type="button"
-            onClick={() => void handleWeChatSubmit()}
-          >
-            {oauthLoading === "wechat" ? (
-              <LoaderCircle className="spin" size={18} />
-            ) : (
-              copy.submitWechat
-            )}
-          </button>
-        </section>
-      </div>
+        </button>
+      </AccessibleDialog>
     ) : null,
     true,
   );

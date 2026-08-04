@@ -21,8 +21,8 @@ const (
 	customerSEOEndMarker      = "<!--customer-seo-end-->"
 	customerSEOLanguageAnchor = `<html lang="zh-CN">`
 	customerSEOBrandTitle     = "AI Tokens Flux"
-	customerSEOBrandZhDesc    = "AI Tokens Flux 提供 Claude Code、Codex 与 Grok API 统一接入。"
-	customerSEOBrandEnDesc    = "AI Tokens Flux provides unified Claude Code, Codex and Grok API access."
+	customerSEOBrandZhDesc    = "AI Tokens Flux 提供 Claude Code、Codex、Grok 与 Gemini API 统一接入。"
+	customerSEOBrandEnDesc    = "AI Tokens Flux provides unified Claude Code, Codex, Grok and Gemini API access."
 )
 
 var customerSEOClosingScriptPattern = regexp.MustCompile(`(?i)</script`)

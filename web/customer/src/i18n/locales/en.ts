@@ -14,8 +14,12 @@ export const enTranslations = {
   "A stable AI coding solution": "A stable AI coding solution",
   "Unified Claude Code, Codex and Grok API gateway":
     "Unified Claude Code, Codex and Grok API gateway",
+  "Unified Claude Code, Codex, Grok and Gemini API gateway":
+    "Unified Claude Code, Codex, Grok and Gemini API gateway",
   "Transparent Claude Code, Codex and Grok API pricing":
     "Transparent Claude Code, Codex and Grok API pricing",
+  "Transparent Claude Code, Codex, Grok and Gemini API pricing":
+    "Transparent Claude Code, Codex, Grok and Gemini API pricing",
   "Claude Code and Codex API setup guide":
     "Claude Code and Codex API setup guide",
   About: "About",
@@ -732,5 +736,80 @@ export const enTranslations = {
   "Support groups are best for real-time help. Email is best for account, order, and security issues.":
     "Support groups are best for real-time help. Email is best for account, order, and security issues.",
   "Telegram support group": "Telegram support group",
+  "AI API gateway": "AI API gateway",
+  "Connect ATF Switch": "Connect ATF Switch",
+  "Father's Day special": "Father's Day special",
+  "Page not found": "Page not found",
+  "Skip to content": "Skip to content",
+  "Show password": "Show password",
+  "Hide password": "Hide password",
+  "Unified access to Claude, Codex, Grok, and Gemini with one balance.":
+    "Unified access to Claude, Codex, Grok, and Gemini with one balance.",
+  "View your balance, subscription, usage, and account shortcuts.":
+    "View your balance, subscription, usage, and account shortcuts.",
+  "Manage plans, balance top-ups, payments, and billing records.":
+    "Manage plans, balance top-ups, payments, and billing records.",
+  "Review request usage, token counts, and billing details.":
+    "Review request usage, token counts, and billing details.",
+  "Create and manage API keys for your applications.":
+    "Create and manage API keys for your applications.",
+  "Track invitations, rewards, and referral records.":
+    "Track invitations, rewards, and referral records.",
+  "Manage language, account security, and profile settings.":
+    "Manage language, account security, and profile settings.",
+  "Authorize the desktop app without copying an API key manually.":
+    "Authorize the desktop app without copying an API key manually.",
+  "Compare available plans and choose how to add balance.":
+    "Compare available plans and choose how to add balance.",
+  "View the current seasonal offer and purchase options.":
+    "View the current seasonal offer and purchase options.",
+  "Configure Claude Code or Codex for the unified gateway.":
+    "Configure Claude Code or Codex for the unified gateway.",
+  "Sign in to manage your gateway account and API access.":
+    "Sign in to manage your gateway account and API access.",
+  "Create an account for gateway access and usage billing.":
+    "Create an account for gateway access and usage billing.",
+  "Complete the external account sign-in process.":
+    "Complete the external account sign-in process.",
+  "Confirm a password reset request for your account.":
+    "Confirm a password reset request for your account.",
+  "Review the terms that apply to this service.":
+    "Review the terms that apply to this service.",
+  "Review how account and usage data are handled.":
+    "Review how account and usage data are handled.",
+  "The requested customer portal page could not be found.":
+    "The requested customer portal page could not be found.",
+  "Try again": "Try again",
+  "Data table": "Data table",
+  "Loading model pricing": "Loading model pricing",
+  "Failed to load model pricing": "Failed to load model pricing",
+  "Failed to load page": "Failed to load page",
+  "No model pricing is available": "No model pricing is available",
+  "Failed to load plans": "Failed to load plans",
+  "Failed to load dashboard data": "Failed to load dashboard data",
+  "Usage records": "Usage records",
+  "Loading page": "Loading page",
+  "One gateway for every coding model.": "One gateway for every coding model.",
+  "Use one balance, see every request, and keep your existing workflow.":
+    "Use one balance, see every request, and keep your existing workflow.",
+  "View setup guide": "View setup guide",
+  "Create account": "Create account",
+  "Usage billing": "Usage billing",
+  "Model rates": "Model rates",
+  "Compare per-model input, output, cache, and request rates before you send traffic.":
+    "Compare per-model input, output, cache, and request rates before you send traffic.",
+  "Purchase options": "Purchase options",
+  "Plans and balance": "Plans and balance",
+  "Plans add recurring quota; pay-as-you-go balance stays available for flexible usage.":
+    "Plans add recurring quota; pay-as-you-go balance stays available for flexible usage.",
+  "Choose the model. Keep the workflow.":
+    "Choose the model. Keep the workflow.",
+  "Create one account, follow the setup guide once, and manage every request from the same dashboard.":
+    "Create one account, follow the setup guide once, and manage every request from the same dashboard.",
+  "Account overview": "Account overview",
+  "Common actions": "Common actions",
+  "Request count": "Request count",
+  "Show more plans ({{count}} remaining)":
+    "Show more plans ({{count}} remaining)",
   X: "X",
 } as const;

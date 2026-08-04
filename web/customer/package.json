@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "rsbuild dev",
+    "test": "bun test",
     "build": "rsbuild build",
     "build:check": "tsc -b && rsbuild build",
     "test:seo": "bun test test/seo.test.ts",
@@ -22,8 +23,11 @@
     "react-turnstile": "^1.0.5"
   },
   "devDependencies": {
+    "@happy-dom/global-registrator": "^20.11.0",
     "@rsbuild/core": "^2.0.7",
     "@rsbuild/plugin-react": "^2.0.0",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^25.9.1",
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",

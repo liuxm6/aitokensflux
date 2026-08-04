@@ -1,5 +1,6 @@
 import { LoaderCircle, X } from "lucide-react";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useId, useRef, useState } from "react";
+import { AccessibleDialog } from "./ui/Dialog";
 import { LanguageContext } from "../../context/Language";
 import { localizeKey } from "../../i18n/localization";
 import type { ConfirmActionConfig } from "../../types";
@@ -13,15 +14,9 @@ export function ConfirmActionDialog({
 }) {
   const { language } = useContext(LanguageContext);
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (submitting) return;
-    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose, submitting]);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const titleId = useId();
+  const descriptionId = useId();
 
   const handleConfirm = async () => {
     setSubmitting(true);
@@ -36,46 +31,52 @@ export function ConfirmActionDialog({
   const confirmText = config.confirmText ?? { id: "Confirm" };
 
   return (
-    <div className="confirm-dialog" role="dialog" aria-modal="true">
+    <AccessibleDialog
+      ariaDescribedBy={descriptionId}
+      ariaLabelledBy={titleId}
+      backdropClassName="confirm-dialog-backdrop"
+      className="confirm-dialog"
+      closeDisabled={submitting}
+      closeLabel={localizeKey(language, "Close")}
+      initialFocusRef={closeRef}
+      panelClassName="confirm-dialog-panel"
+      onClose={onClose}
+    >
       <button
+        ref={closeRef}
         aria-label={localizeKey(language, "Close")}
-        className="confirm-dialog-backdrop"
+        className="confirm-dialog-close"
         disabled={submitting}
         type="button"
         onClick={onClose}
-      />
-      <section className="confirm-dialog-panel">
+      >
+        <X size={20} />
+      </button>
+      <h2 id={titleId}>
+        {localizeKey(language, config.title.id, config.title.values)}
+      </h2>
+      <p id={descriptionId}>
+        {localizeKey(language, config.message.id, config.message.values)}
+      </p>
+      <div className="confirm-dialog-actions">
         <button
-          aria-label={localizeKey(language, "Close")}
-          className="confirm-dialog-close"
+          className="confirm-dialog-cancel"
           disabled={submitting}
           type="button"
           onClick={onClose}
         >
-          <X size={20} />
+          {localizeKey(language, cancelText.id, cancelText.values)}
         </button>
-        <h2>{localizeKey(language, config.title.id, config.title.values)}</h2>
-        <p>{localizeKey(language, config.message.id, config.message.values)}</p>
-        <div className="confirm-dialog-actions">
-          <button
-            className="confirm-dialog-cancel"
-            disabled={submitting}
-            type="button"
-            onClick={onClose}
-          >
-            {localizeKey(language, cancelText.id, cancelText.values)}
-          </button>
-          <button
-            className="confirm-dialog-confirm"
-            disabled={submitting}
-            type="button"
-            onClick={() => void handleConfirm()}
-          >
-            {submitting ? <LoaderCircle className="spin" size={18} /> : null}
-            {localizeKey(language, confirmText.id, confirmText.values)}
-          </button>
-        </div>
-      </section>
-    </div>
+        <button
+          className="confirm-dialog-confirm"
+          disabled={submitting}
+          type="button"
+          onClick={() => void handleConfirm()}
+        >
+          {submitting ? <LoaderCircle className="spin" size={18} /> : null}
+          {localizeKey(language, confirmText.id, confirmText.values)}
+        </button>
+      </div>
+    </AccessibleDialog>
   );
 }

@@ -1,12 +1,16 @@
 import { Calendar, CircleDollarSign, RefreshCw } from "lucide-react";
 import { useContext, useEffect, useMemo, useState } from "react";
-import { EmptyState } from "../../components/common/EmptyState";
 import {
-  ConsolePageTitle,
-  CustomerShell,
-} from "../../components/layout/CustomerShell";
+  EmptyState,
+  ErrorState,
+  LoadingState,
+} from "../../components/common/ui/AsyncState";
+import { CustomerShell } from "../../components/layout/CustomerShell";
+import { ConsolePageHeader } from "../../components/layout/ConsolePageHeader";
 import { Panel } from "../../components/common/ui/Panel";
 import { DataTable } from "../../components/table/DataTable";
+import { TopupDialog } from "../../components/topup/TopupDialog";
+import { pageMeta } from "../../constants/page-meta";
 import { AuthContext } from "../../context/Auth";
 import { LanguageContext, T } from "../../context/Language";
 import { useToastMessage } from "../../context/Toast";
@@ -96,11 +100,14 @@ export function TopupPage() {
   const [recordType, setRecordType] = useState<BillingRecordType>("all");
   const [billingPage, setBillingPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [message, setMessage] = useState("");
+  const [topupDialogOpen, setTopupDialogOpen] = useState(false);
   useToastMessage(message);
 
   const loadBilling = async () => {
     setLoading(true);
+    setLoadError(false);
     const [statusRes, selfRes, recordsRes, subRes] = await Promise.all([
       fetchCustomerStatus(),
       fetchCustomerSelf(),
@@ -120,8 +127,10 @@ export function TopupPage() {
       setSubscriptionRecords([]);
     }
     if (recordsRes.success && subRes.success) {
+      setLoadError(false);
       setMessage("");
     } else {
+      setLoadError(true);
       setMessage(
         recordsRes.message ||
           subRes.message ||
@@ -248,7 +257,30 @@ export function TopupPage() {
 
   return (
     <CustomerShell crumbId="Billing" page="topup">
-      <ConsolePageTitle id="Billing records" />
+      <ConsolePageHeader
+        action={
+          <>
+            <button
+              className="btn btn-ghost btn-sm"
+              type="button"
+              onClick={() => void loadBilling()}
+            >
+              <RefreshCw size={15} />
+              <T id="Refresh" />
+            </button>
+            <button
+              className="btn btn-flux btn-sm"
+              type="button"
+              onClick={() => setTopupDialogOpen(true)}
+            >
+              <CircleDollarSign size={15} />
+              <T id="Top up now" />
+            </button>
+          </>
+        }
+        descriptionId={pageMeta.topup.descriptionId}
+        titleId="Billing records"
+      />
       <Panel className="record-panel">
         <div className="record-toolbar">
           <div className="record-left">
@@ -265,21 +297,28 @@ export function TopupPage() {
               <T id="PAYG left" /> <b className="mono">{paygLeft}</b>
             </span>
           </div>
-          <button
-            className="btn btn-flux btn-sm"
-            type="button"
-            onClick={() => void loadBilling()}
-          >
-            <RefreshCw size={15} />
-            <T id="Refresh" />
-          </button>
         </div>
         {loading ? (
-          <EmptyState id="Loading billing records" />
+          <LoadingState id="Loading billing records" />
+        ) : loadError ? (
+          <ErrorState
+            id="Failed to load billing records"
+            onRetry={() => void loadBilling()}
+          />
         ) : billingRows.length > 0 ? (
           <DataTable
+            caption="Billing records"
             className="billing-record-table"
             headers={[
+              "Time",
+              "Type",
+              "Name / Trade No.",
+              "Method",
+              "Quota",
+              "Paid",
+              "Status",
+            ]}
+            mobileLabels={[
               "Time",
               "Type",
               "Name / Trade No.",
@@ -327,6 +366,9 @@ export function TopupPage() {
           </div>
         ) : null}
       </Panel>
+      {topupDialogOpen ? (
+        <TopupDialog onClose={() => setTopupDialogOpen(false)} />
+      ) : null}
     </CustomerShell>
   );
 }

@@ -1,0 +1,424 @@
+.minimal-nav-sentinel {
+  position: absolute;
+  top: 12px;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.home-page .home-hero {
+  min-height: 100dvh;
+  background:
+    radial-gradient(
+      62% 82% at 11% 14%,
+      rgb(150 205 240 / 42%),
+      transparent 60%
+    ),
+    radial-gradient(56% 76% at 5% 95%, rgb(138 228 184 / 42%), transparent 60%),
+    radial-gradient(
+      58% 80% at 95% 24%,
+      rgb(255 201 150 / 38%),
+      transparent 60%
+    ),
+    radial-gradient(
+      54% 66% at 91% 99%,
+      rgb(255 224 178 / 32%),
+      transparent 62%
+    ),
+    #fff;
+}
+
+.home-page .home-hero .hero-inner {
+  padding-top: 96px;
+}
+
+.home-page .home-hero::before,
+.home-page .home-hero::after {
+  filter: blur(34px) saturate(1.04);
+  opacity: 0.68;
+}
+
+.home-page .home-hero h1 {
+  width: max-content;
+  max-width: 100%;
+  letter-spacing: -0.035em;
+  white-space: nowrap;
+}
+
+.home-page .home-hero .hero-cta .btn,
+.home-page .cta-banner .btn {
+  box-shadow: 0 12px 30px rgb(15 180 119 / 12%);
+  transition: transform 0.16s ease;
+}
+
+.home-page .btn-flux,
+.home-page .support-reward-action {
+  color: var(--accent-ink);
+}
+
+.home-page .btn-flux:hover {
+  color: var(--ink);
+}
+
+.home-page .home-hero .hero-cta .btn-ghost {
+  box-shadow: 0 12px 28px rgb(75 116 132 / 10%);
+}
+
+.home-page .home-hero .hero-cta .btn:active {
+  transform: translateY(1px) scale(0.985);
+}
+
+.home-page .support-reward-callout,
+.home-page .support-card {
+  transition: transform 0.16s ease;
+}
+
+.home-page .support-reward-callout {
+  width: min(720px, 100%);
+  box-shadow: 0 18px 44px rgb(15 143 91 / 11%);
+}
+
+.home-page .support-reward-callout:hover {
+  box-shadow: 0 22px 52px rgb(15 143 91 / 14%);
+}
+
+.home-page .support-reward-callout:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.home-page .home-section-head {
+  margin-bottom: 42px;
+}
+
+.home-page .home-section-head .h-sec,
+.home-page .pricing-section .home-section-head-left .h-sec {
+  margin-top: 0;
+  line-height: 1.14;
+  text-wrap: balance;
+}
+
+.home-page .pricing-section {
+  padding: 48px 0 60px;
+}
+
+.home-page .pricing-section-head {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  justify-items: stretch;
+  min-height: 0;
+  margin-bottom: 28px;
+}
+
+.home-page .pricing-section .home-section-head-left {
+  max-width: 720px;
+  margin: 0;
+  text-align: left;
+}
+
+.home-page .home-section-head-left .pricing-note {
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.home-page .pricing-all-link {
+  position: static;
+  align-self: center;
+  justify-self: end;
+  margin-top: 0;
+}
+
+.home-page .pricing-section .price-grid {
+  margin-top: 0;
+}
+
+.home-page .home-features {
+  padding-top: 96px;
+  padding-bottom: 48px;
+}
+
+.home-page .home-features .feat-cols {
+  margin-top: 0;
+}
+
+.home-page .mp-table-wrap-adaptive {
+  height: auto;
+  min-height: 0;
+  max-height: min(430px, calc(100dvh - 260px));
+}
+
+.home-page .pricing-section-empty {
+  padding-block: 52px 58px;
+}
+
+.home-page .pricing-section-empty .pricing-section-head {
+  min-height: 0;
+  margin-bottom: 16px;
+}
+
+.home-page .pricing-section-empty .empty-state {
+  min-height: 96px;
+  padding-block: 12px;
+}
+
+.home-page .pricing-section-empty .payg-service-section {
+  margin-top: 28px;
+  padding-top: 22px;
+}
+
+.home-page .pricing-section-empty .payg-service-divider {
+  margin-bottom: 16px;
+}
+
+.home-page .cta-wrap {
+  padding-block: 64px;
+}
+
+.home-page .cta-banner {
+  padding: 52px 40px;
+  background: var(--ink);
+}
+
+.home-page .cta-banner .btn:active {
+  transform: translateY(1px) scale(0.985);
+}
+
+.home-page .support-section {
+  padding-block: 68px;
+  background: var(--surface-2);
+}
+
+.home-page .support-card {
+  background: var(--surface);
+}
+
+.home-page .support-card.qq .support-logo {
+  background: rgb(18 183 245 / 14%);
+}
+
+.home-page .support-card.telegram .support-logo {
+  background: rgb(38 165 228 / 14%);
+}
+
+.home-page .support-card.x .support-logo {
+  background: rgb(17 17 17 / 9%);
+}
+
+.home-page .support-card.linuxdo .support-logo {
+  background: rgb(255 176 3 / 18%);
+}
+
+.home-page .support-card.gmail .support-logo {
+  background: rgb(234 67 53 / 12%);
+}
+
+.home-page .faq details {
+  padding: 0;
+}
+
+.home-page .faq details[open] {
+  background: var(--accent-soft);
+}
+
+.home-page .faq summary {
+  min-height: 52px;
+  padding: 14px 12px;
+}
+
+.home-page .faq details[open] summary {
+  color: var(--accent-ink);
+}
+
+.home-page .faq p {
+  margin: 0;
+  padding: 0 12px 18px;
+  line-height: 1.65;
+}
+
+.home-page ~ [data-home-section="footer"] .footer {
+  background: var(--surface);
+}
+
+.home-page ~ [data-home-section="footer"] .footer .brand.sm {
+  width: 160px;
+  height: 34px;
+}
+
+.home-page ~ [data-home-section="footer"] .footer h4 {
+  color: var(--ink-2);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+
+.home-page ~ [data-home-section="footer"] .footer a {
+  padding-block: 6px;
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.home-page ~ [data-home-section="footer"] .footer .footer-copy {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.home-page ~ [data-home-section="footer"] .footer .copy {
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+@media (min-width: 681px) {
+  .nav.minimal-nav.home-nav .nav-inner {
+    height: 80px;
+  }
+}
+
+@media (min-width: 681px) and (max-width: 900px) {
+  .model-pricing-section .mp-panel-top {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 18px;
+  }
+
+  .model-pricing-section .mp-tabs {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .model-pricing-section .mp-panel-meta {
+    justify-content: space-between;
+    width: 100%;
+  }
+}
+
+@media (max-width: 900px) {
+  .home-page .feat-cols {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 32px;
+  }
+
+  .home-page .feat-cols .fc:nth-child(odd) {
+    padding-left: 0;
+    border-left: none;
+  }
+
+  .home-page .support-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .home-page .support-card {
+    grid-column: span 2;
+  }
+
+  .home-page .support-card:nth-child(4) {
+    grid-column: 2 / span 2;
+  }
+
+  .home-page .support-card:nth-child(5) {
+    grid-column: 4 / span 2;
+  }
+}
+
+@media (max-width: 760px) {
+  .home-page .mp-table-wrap-adaptive {
+    max-height: none;
+  }
+}
+
+@media (max-width: 680px) {
+  .home-page .home-hero h1:lang(en) {
+    font-size: clamp(26px, 8.2vw, 42px);
+  }
+
+  .home-page .home-hero h1:lang(ru) {
+    font-size: clamp(23px, 7.2vw, 38px);
+    letter-spacing: -0.045em;
+  }
+
+  .home-page .pricing-section {
+    padding: 42px 0 52px;
+  }
+
+  .home-page .pricing-section-head {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    margin-bottom: 24px;
+  }
+
+  .home-page .pricing-all-link {
+    justify-self: start;
+  }
+
+  .home-page .cta-wrap {
+    padding-block: 48px;
+  }
+
+  .home-page .cta-banner {
+    padding: 40px 20px;
+  }
+
+  .home-page .cta-banner > div {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .home-page .cta-banner .btn {
+    width: 100%;
+    white-space: nowrap;
+  }
+
+  .home-page .support-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .home-page .support-card,
+  .home-page .support-card:nth-child(4),
+  .home-page .support-card:nth-child(5) {
+    grid-column: auto;
+  }
+
+  .home-page ~ [data-home-section="footer"] .footer .footer-inner {
+    padding: 40px 22px 28px;
+    text-align: left;
+  }
+
+  .home-page ~ [data-home-section="footer"] .footer .footer-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .home-page ~ [data-home-section="footer"] .footer .copy {
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 6px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    text-align: left;
+  }
+}
+
+@media (max-width: 560px) {
+  .home-page .feat-cols {
+    grid-template-columns: 1fr;
+  }
+
+  .home-page .feat-cols .fc {
+    padding: 0;
+    border-left: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-page .home-hero .hero-cta .btn,
+  .home-page .cta-banner .btn,
+  .home-page .support-reward-callout,
+  .home-page .support-card {
+    transition: none;
+  }
+}

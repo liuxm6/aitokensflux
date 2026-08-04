@@ -1,4 +1,4 @@
-import { XAI } from "@lobehub/icons";
+import { Gemini, XAI } from "@lobehub/icons";
 import {
   Activity,
   BookOpen,
@@ -10,13 +10,19 @@ import {
 import type { LucideIcon } from "lucide-react";
 import {
   type ComponentType,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { AppLink } from "../../components/common/AppLink";
-import { EmptyState } from "../../components/common/EmptyState";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+} from "../../components/common/ui/AsyncState";
 import {
   FathersDayGifts,
   FathersDayGiftEntry,
@@ -30,7 +36,7 @@ import { AuthContext } from "../../context/Auth";
 import { LanguageContext, T } from "../../context/Language";
 import { navigateTo } from "../../helpers/navigation";
 import { recordsToPricePlans } from "../../helpers/plans";
-import { localizeText } from "../../i18n/localization";
+import { localizeKey, localizeText } from "../../i18n/localization";
 import seoPages from "../../seo/pages.json";
 import {
   fetchCustomerStatus,
@@ -183,17 +189,62 @@ function GrokLogo({ className }: { className?: string }) {
   return <XAI aria-hidden="true" className={className} focusable="false" />;
 }
 
-const HERO_MODELS = [
+function GeminiLogo({ className }: { className?: string }) {
+  return (
+    <Gemini.Color aria-hidden="true" className={className} focusable="false" />
+  );
+}
+
+export const HERO_MODELS = [
   { id: "claude", label: "Claude Code", Logo: ClaudeLogo },
   { id: "openai", label: "OpenAI Codex", Logo: OpenAILogo },
   { id: "grok", label: "Grok Code", Logo: GrokLogo },
+  { id: "gemini", label: "Google Gemini", Logo: GeminiLogo },
 ] as const;
 
-const HERO_MODEL_PAIRS = [
+export const HERO_MODEL_PAIRS = [
   [HERO_MODELS[0], HERO_MODELS[1]],
   [HERO_MODELS[1], HERO_MODELS[2]],
-  [HERO_MODELS[2], HERO_MODELS[0]],
+  [HERO_MODELS[2], HERO_MODELS[3]],
+  [HERO_MODELS[3], HERO_MODELS[0]],
 ] as const;
+
+export const HOME_SECTION_ORDER = [
+  "hero",
+  "support-benefit",
+  "capabilities",
+  "model-rates",
+  "plans-balance",
+  "cta",
+  "support",
+  "faq",
+  "footer",
+] as const;
+
+export const HOME_DESTINATIONS = {
+  dashboard: "/dashboard",
+  onboarding: "/sign-in",
+  plans: "/pricing",
+  setup: "/docs",
+  support: "/#support",
+} as const;
+
+export const HOME_HERO_COPY = {
+  title: "Unified Claude Code, Codex, Grok and Gemini API gateway",
+  tagline: "A stable AI coding solution",
+  setupCta: "Setup guide",
+  primaryCta: "Start now",
+} as const;
+
+export const HOME_SECTION_HEADINGS = {
+  modelRates: "Pay only for the tokens you use",
+  plansBalance: "Transparent pricing that scales down",
+} as const;
+
+export const HOME_PRICING_LAYOUT = {
+  tableClassName: "mp-table-wrap mp-table-wrap-adaptive",
+  emptyPlansClassName: "pricing-section-empty",
+} as const;
 
 function FeatureColumn({
   icon: Icon,
@@ -222,7 +273,7 @@ function FaqSection() {
   const faq = seoPages.pages.find((page) => page.key === "home")?.faq ?? [];
 
   return (
-    <section className="section faq-section">
+    <section className="section faq-section" data-home-section="faq">
       <div className="wrap narrow">
         <h2 className="h-sec center">FAQ</h2>
         <div className="faq">
@@ -255,7 +306,11 @@ function FaqSection() {
 
 function SupportSection() {
   return (
-    <section className="section support-section" id="support">
+    <section
+      className="section support-section"
+      data-home-section="support"
+      id="support"
+    >
       <div className="wrap">
         <div className="support-head">
           <div>
@@ -276,7 +331,7 @@ function SupportSection() {
   );
 }
 
-type PricingGroup = "claude" | "codex" | "grok";
+type PricingGroup = "claude" | "codex" | "grok" | "gemini";
 
 type PriceRow = {
   name: string;
@@ -293,20 +348,33 @@ type GroupPricingRows = {
 };
 
 const RATIO_TO_USD_PER_M = 2;
-const PRICING_GROUP_ORDER: PricingGroup[] = ["claude", "codex", "grok"];
+const PRICING_GROUP_ORDER: PricingGroup[] = [
+  "claude",
+  "codex",
+  "grok",
+  "gemini",
+];
 
-function classifyFallbackGroup(
+export function classifyFallbackGroup(
   modelName: string,
   vendorName?: string,
   ownerBy?: string,
 ): PricingGroup | null {
   const vendor = `${vendorName ?? ""} ${ownerBy ?? ""}`.toLowerCase();
+  const name = modelName.toLowerCase();
   if (vendor.includes("anthropic")) return "claude";
   if (vendor.includes("openai")) return "codex";
   if (vendor.includes("xai") || vendor.includes("grok")) return "grok";
-  const name = modelName.toLowerCase();
+  if (
+    vendor.includes("gemini") ||
+    ((vendor.includes("google") || vendor.includes("deepmind")) &&
+      name.includes("gemini"))
+  ) {
+    return "gemini";
+  }
   if (name.includes("claude")) return "claude";
   if (name.includes("grok") || name.includes("xai")) return "grok";
+  if (name.includes("gemini")) return "gemini";
   if (
     /^(gpt|chatgpt|codex|o1|o3|o4|text-embedding|dall-e|whisper|davinci|babbage|tts)/.test(
       name,
@@ -325,10 +393,17 @@ function modelBelongsToGroup(
   const enableGroups = Array.isArray(model.enable_groups)
     ? model.enable_groups
     : [];
-  if (enableGroups.includes(group) || enableGroups.includes("all")) {
+  const explicitPricingGroups = enableGroups.filter(
+    (value) =>
+      value === "all" || PRICING_GROUP_ORDER.includes(value as PricingGroup),
+  );
+  if (
+    explicitPricingGroups.includes(group) ||
+    explicitPricingGroups.includes("all")
+  ) {
     return true;
   }
-  if (enableGroups.length > 0) return false;
+  if (explicitPricingGroups.length > 0) return false;
   return (
     classifyFallbackGroup(model.model_name, vendorName, model.owner_by) ===
     group
@@ -356,14 +431,14 @@ function toPriceRow(model: PricingModel, groupRatio: number): PriceRow {
 }
 
 function formatUsd(value: number | null): string {
-  if (value == null) return "—";
+  if (value == null) return "-";
   if (value === 0) return "$0";
   const digits = value < 0.01 ? 4 : 2;
   return `$${value.toFixed(digits)}`;
 }
 
 function TokenPrice({ value }: { value: number | null }) {
-  if (value == null) return <>—</>;
+  if (value == null) return <>-</>;
   return (
     <span className="mp-price">
       <span>{formatUsd(value)}</span>
@@ -375,112 +450,6 @@ function TokenPrice({ value }: { value: number | null }) {
 function comparePriceRows(a: PriceRow, b: PriceRow) {
   return (b.input ?? -1) - (a.input ?? -1) || a.name.localeCompare(b.name);
 }
-
-const DEV_SAMPLE_PRICING: ModelPricingData = {
-  group_ratio: { claude: 1, codex: 0.6, grok: 1 },
-  usable_group: {
-    claude: "cc-Max(满血)-不限客户端",
-    codex: "cx-Pro(满血)-不限客户端",
-    grok: "",
-  },
-  vendors: [
-    { id: 1, name: "Anthropic" },
-    { id: 2, name: "OpenAI" },
-    { id: 3, name: "xAI" },
-  ],
-  data: [
-    {
-      model_name: "Claude Opus 4.8",
-      quota_type: 0,
-      model_ratio: 2.5,
-      model_price: 0,
-      completion_ratio: 5,
-      cache_ratio: 0.1,
-      vendor_id: 1,
-      enable_groups: ["claude"],
-    },
-    {
-      model_name: "Claude Sonnet 4.6",
-      quota_type: 0,
-      model_ratio: 1.5,
-      model_price: 0,
-      completion_ratio: 5,
-      cache_ratio: 0.1,
-      vendor_id: 1,
-      enable_groups: ["claude"],
-    },
-    {
-      model_name: "Claude Haiku 4.5",
-      quota_type: 0,
-      model_ratio: 0.5,
-      model_price: 0,
-      completion_ratio: 5,
-      cache_ratio: 0.1,
-      vendor_id: 1,
-      enable_groups: ["claude"],
-    },
-    {
-      model_name: "GPT-5.5",
-      quota_type: 0,
-      model_ratio: 0.625,
-      model_price: 0,
-      completion_ratio: 8,
-      cache_ratio: 0.1,
-      vendor_id: 2,
-      enable_groups: ["codex"],
-    },
-    {
-      model_name: "GPT-5.5 mini",
-      quota_type: 0,
-      model_ratio: 0.125,
-      model_price: 0,
-      completion_ratio: 8,
-      cache_ratio: 0.1,
-      vendor_id: 2,
-      enable_groups: ["codex"],
-    },
-    {
-      model_name: "o4-mini",
-      quota_type: 0,
-      model_ratio: 0.55,
-      model_price: 0,
-      completion_ratio: 4,
-      cache_ratio: 0.25,
-      vendor_id: 2,
-      enable_groups: ["codex"],
-    },
-    {
-      model_name: "grok-3-fast-beta",
-      quota_type: 0,
-      model_ratio: 2.5,
-      model_price: 0,
-      completion_ratio: 5,
-      cache_ratio: 0.25,
-      vendor_id: 3,
-      enable_groups: ["grok"],
-    },
-    {
-      model_name: "grok-3-beta",
-      quota_type: 0,
-      model_ratio: 1.5,
-      model_price: 0,
-      completion_ratio: 5,
-      cache_ratio: 0.25,
-      vendor_id: 3,
-      enable_groups: ["grok"],
-    },
-    {
-      model_name: "grok-3-mini-beta",
-      quota_type: 0,
-      model_ratio: 0.15,
-      model_price: 0,
-      completion_ratio: 5 / 3,
-      cache_ratio: 0.25,
-      vendor_id: 3,
-      enable_groups: ["grok"],
-    },
-  ],
-};
 
 const GROUP_META: Record<
   PricingGroup,
@@ -501,6 +470,10 @@ const GROUP_META: Record<
     label: "grok",
     Logo: GrokLogo,
   },
+  gemini: {
+    label: "gemini",
+    Logo: GeminiLogo,
+  },
 };
 
 function formatGroupMultiplier(value: number): string {
@@ -508,7 +481,7 @@ function formatGroupMultiplier(value: number): string {
   return `${Number(value.toFixed(4))}x`;
 }
 
-function groupPricing(
+export function groupPricing(
   source: ModelPricingData,
 ): Record<PricingGroup, GroupPricingRows> {
   const vendorName = new Map<number, string>();
@@ -530,6 +503,11 @@ function groupPricing(
       note: source.usable_group?.grok ?? "",
       rows: [],
     },
+    gemini: {
+      ratio: source.group_ratio?.gemini ?? 1,
+      note: source.usable_group?.gemini ?? "",
+      rows: [],
+    },
   };
   for (const model of source.data ?? []) {
     const vendor =
@@ -546,40 +524,48 @@ function groupPricing(
 }
 
 function ModelPricingSection() {
+  const { language } = useContext(LanguageContext);
   const [grouped, setGrouped] = useState<Record<
     PricingGroup,
     GroupPricingRows
   > | null>(null);
+  const [pricingError, setPricingError] = useState(false);
   const [tab, setTab] = useState<PricingGroup>("claude");
+  const pricingRequestRef = useRef(0);
 
-  useEffect(() => {
-    let mounted = true;
+  const loadPricing = useCallback(() => {
+    const requestId = pricingRequestRef.current + 1;
+    pricingRequestRef.current = requestId;
+    setGrouped(null);
+    setPricingError(false);
     void fetchModelPricing()
       .then((res) => {
-        if (!mounted) return;
-        const hasData = res.success && (res.data?.length ?? 0) > 0;
-        const next = groupPricing(
-          hasData
-            ? {
-                data: res.data,
-                vendors: res.vendors,
-                group_ratio: res.group_ratio,
-                usable_group: res.usable_group,
-              }
-            : import.meta.env.DEV
-              ? DEV_SAMPLE_PRICING
-              : {},
+        if (pricingRequestRef.current !== requestId) return;
+        if (!res.success) {
+          setPricingError(true);
+          return;
+        }
+        setGrouped(
+          groupPricing({
+            data: res.data,
+            vendors: res.vendors,
+            group_ratio: res.group_ratio,
+            usable_group: res.usable_group,
+          }),
         );
-        setGrouped(next);
       })
       .catch(() => {
-        if (!mounted || !import.meta.env.DEV) return;
-        setGrouped(groupPricing(DEV_SAMPLE_PRICING));
+        if (pricingRequestRef.current !== requestId) return;
+        setPricingError(true);
       });
-    return () => {
-      mounted = false;
-    };
   }, []);
+
+  useEffect(() => {
+    loadPricing();
+    return () => {
+      pricingRequestRef.current += 1;
+    };
+  }, [loadPricing]);
 
   const providers = useMemo(
     () =>
@@ -595,22 +581,57 @@ function ModelPricingSection() {
     }
   }, [providers, tab]);
 
-  if (!grouped) return null;
-  if (providers.length === 0) return null;
+  if (!grouped) {
+    return (
+      <section
+        className="section model-pricing-section"
+        data-home-section="model-rates"
+        id="model-pricing"
+      >
+        <div className="wrap">
+          {pricingError ? (
+            <ErrorState
+              id="Failed to load model pricing"
+              onRetry={loadPricing}
+            />
+          ) : (
+            <LoadingState id="Loading model pricing" />
+          )}
+        </div>
+      </section>
+    );
+  }
+  if (providers.length === 0) {
+    return (
+      <section
+        className="section model-pricing-section"
+        data-home-section="model-rates"
+        id="model-pricing"
+      >
+        <div className="wrap">
+          <EmptyState id="No model pricing is available" />
+        </div>
+      </section>
+    );
+  }
 
   const rows = grouped[tab]?.rows ?? [];
   const groupNote = (grouped[tab]?.note ?? "").trim();
   const TabLogo = GROUP_META[tab].Logo;
 
   return (
-    <section className="section model-pricing-section" id="model-pricing">
+    <section
+      className="section model-pricing-section"
+      data-home-section="model-rates"
+      id="model-pricing"
+    >
       <div className="wrap">
         <div className="center">
           <Pill>
             <T id="Model pricing" />
           </Pill>
           <h2 className="h-sec">
-            <T id="Pay only for the tokens you use" />
+            <T id={HOME_SECTION_HEADINGS.modelRates} />
           </h2>
         </div>
 
@@ -675,20 +696,28 @@ function ModelPricingSection() {
             </div>
           ) : null}
 
-          <div className="mp-table-wrap">
+          <div
+            aria-labelledby="model-pricing-caption"
+            className={HOME_PRICING_LAYOUT.tableClassName}
+            role="region"
+            tabIndex={0}
+          >
             <table className="mp-table">
+              <caption className="sr-only" id="model-pricing-caption">
+                <T id="Model pricing" />
+              </caption>
               <thead>
                 <tr>
-                  <th className="mp-col-model">
+                  <th className="mp-col-model" scope="col">
                     <T id="Model" />
                   </th>
-                  <th>
+                  <th scope="col">
                     <T id="Input" />
                   </th>
-                  <th>
+                  <th scope="col">
                     <T id="Output" />
                   </th>
-                  <th>
+                  <th scope="col">
                     <T id="Cache read" />
                   </th>
                 </tr>
@@ -696,7 +725,10 @@ function ModelPricingSection() {
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.name}>
-                    <td className="mp-col-model">
+                    <td
+                      className="mp-col-model"
+                      data-label={localizeKey(language, "Model")}
+                    >
                       <span className="mp-model-cell">
                         <span
                           className={`mp-model-mark ${tab}`}
@@ -708,7 +740,11 @@ function ModelPricingSection() {
                       </span>
                     </td>
                     {row.perCall != null ? (
-                      <td className="mp-percall" colSpan={3}>
+                      <td
+                        className="mp-percall"
+                        colSpan={3}
+                        data-label={localizeKey(language, "Price")}
+                      >
                         <span className="mp-price">
                           <span>{formatUsd(row.perCall)}</span>
                           <span className="mp-unit">
@@ -718,13 +754,16 @@ function ModelPricingSection() {
                       </td>
                     ) : (
                       <>
-                        <td>
+                        <td data-label={localizeKey(language, "Input")}>
                           <TokenPrice value={row.input} />
                         </td>
-                        <td>
+                        <td data-label={localizeKey(language, "Output")}>
                           <TokenPrice value={row.output} />
                         </td>
-                        <td className="mp-muted">
+                        <td
+                          className="mp-muted"
+                          data-label={localizeKey(language, "Cache read")}
+                        >
                           <TokenPrice value={row.cacheRead} />
                         </td>
                       </>
@@ -744,7 +783,10 @@ export function createHomePage({
   MarketingHeader,
   TopupDialog,
 }: {
-  MarketingHeader: ComponentType<{ minimal?: boolean }>;
+  MarketingHeader: ComponentType<{
+    minimal?: boolean;
+    homePage?: boolean;
+  }>;
   TopupDialog: ComponentType<{ onClose: () => void }>;
 }) {
   return function HomePage() {
@@ -753,11 +795,14 @@ export function createHomePage({
     const [plans, setPlans] = useState<SubscriptionPlanRecord[]>([]);
     const [topupInfo, setTopupInfo] = useState<TopupInfo | null>(null);
     const [plansLoading, setPlansLoading] = useState(true);
+    const [plansError, setPlansError] = useState(false);
+    const [reloadKey, setReloadKey] = useState(0);
     const [topupDialogOpen, setTopupDialogOpen] = useState(false);
 
     useEffect(() => {
       let mounted = true;
       setPlansLoading(true);
+      setPlansError(false);
       void Promise.all([
         fetchCustomerStatus(),
         fetchPublicPlans(),
@@ -766,6 +811,7 @@ export function createHomePage({
         if (!mounted) return;
         if (statusRes.success && statusRes.data) setStatus(statusRes.data);
         setPlans(plansRes.success && plansRes.data ? plansRes.data : []);
+        setPlansError(!plansRes.success);
         if (topupInfoRes.success && topupInfoRes.data) {
           setTopupInfo(topupInfoRes.data);
         }
@@ -774,16 +820,18 @@ export function createHomePage({
       return () => {
         mounted = false;
       };
-    }, []);
+    }, [reloadKey]);
 
     const displayPlans = useMemo(
       () => recordsToPricePlans(plans, status),
       [plans, status],
     );
+    const showEmptyPlans =
+      !plansLoading && !plansError && displayPlans.length === 0;
 
     const handleOpenTopup = () => {
       if (!user?.id) {
-        navigateTo("/sign-in");
+        navigateTo(HOME_DESTINATIONS.onboarding);
         return;
       }
       setTopupDialogOpen(true);
@@ -793,15 +841,15 @@ export function createHomePage({
       <>
         <FathersDayGifts />
         <FathersDayGiftEntry />
-        <MarketingHeader minimal />
-        <main>
-          <section className="hero-mesh home-hero">
+        <MarketingHeader minimal homePage />
+        <main className="home-page">
+          <section className="hero-mesh home-hero" data-home-section="hero">
             <div className="wrap hero-inner center">
               <h1>
-                <T id="Unified Claude Code, Codex and Grok API gateway" />
+                <T id={HOME_HERO_COPY.title} />
               </h1>
               <div
-                aria-label="Claude Code, OpenAI Codex, Grok Code"
+                aria-label="Claude Code, OpenAI Codex, Grok Code, Google Gemini"
                 className="hero-sub hero-model-switcher"
                 role="group"
               >
@@ -829,7 +877,7 @@ export function createHomePage({
                 ))}
               </div>
               <p className="hero-tagline">
-                <T id="A stable AI coding solution" />
+                <T id={HOME_HERO_COPY.tagline} />
               </p>
               <div className="os-icons" aria-label="macOS Windows Linux">
                 <span className="os-icon" aria-label="macOS">
@@ -843,19 +891,30 @@ export function createHomePage({
                 </span>
               </div>
               <div className="hero-cta">
-                <AppLink className="btn btn-ghost btn-lg" href="/docs">
+                <AppLink
+                  className="btn btn-ghost btn-lg"
+                  href={HOME_DESTINATIONS.setup}
+                >
                   <BookOpen size={18} />
-                  <T id="Setup guide" />
+                  <T id={HOME_HERO_COPY.setupCta} />
                 </AppLink>
                 <AppLink
                   className="btn btn-flux btn-lg"
-                  href={user ? "/dashboard" : "/sign-in"}
+                  href={
+                    user
+                      ? HOME_DESTINATIONS.dashboard
+                      : HOME_DESTINATIONS.onboarding
+                  }
                 >
                   <Play size={18} />
-                  <T id={user ? "Open dashboard" : "Start now"} />
+                  <T id={user ? "Open dashboard" : HOME_HERO_COPY.primaryCta} />
                 </AppLink>
               </div>
-              <AppLink className="support-reward-callout" href="/#support">
+              <AppLink
+                className="support-reward-callout"
+                data-home-section="support-benefit"
+                href={HOME_DESTINATIONS.support}
+              >
                 <span className="support-reward-mascot">
                   <SupportRewardMascot />
                 </span>
@@ -877,12 +936,13 @@ export function createHomePage({
             </div>
           </section>
 
-          <section className="section home-features" id="features">
+          <section
+            className="section home-features"
+            data-home-section="capabilities"
+            id="features"
+          >
             <div className="wrap">
-              <div className="center">
-                <Pill>
-                  <T id="Why aitokensflux" />
-                </Pill>
+              <div className="home-section-head center">
                 <h2 className="h-sec">
                   <T id="Keep your workflow. Bill it smarter." />
                 </h2>
@@ -914,15 +974,19 @@ export function createHomePage({
 
           <ModelPricingSection />
 
-          <section className="section surface-band pricing-section">
+          <section
+            className={`section surface-band pricing-section${
+              showEmptyPlans
+                ? ` ${HOME_PRICING_LAYOUT.emptyPlansClassName}`
+                : ""
+            }`}
+            data-home-section="plans-balance"
+          >
             <div className="wrap">
               <div className="pricing-section-head">
-                <div className="pricing-title center">
-                  <Pill>
-                    <T id="Pricing" />
-                  </Pill>
+                <div className="pricing-title home-section-head-left">
                   <h2 className="h-sec">
-                    <T id="Transparent pricing that scales down" />
+                    <T id={HOME_SECTION_HEADINGS.plansBalance} />
                   </h2>
                   <p className="pricing-note">
                     <T id="CNY and USD are settled 1:1." />
@@ -930,13 +994,18 @@ export function createHomePage({
                 </div>
                 <AppLink
                   className="btn btn-ghost pricing-all-link"
-                  href="/pricing"
+                  href={HOME_DESTINATIONS.plans}
                 >
                   <T id="See all plans" />
                 </AppLink>
               </div>
               {plansLoading ? (
-                <EmptyState id="Loading plans" />
+                <LoadingState id="Loading plans" />
+              ) : plansError ? (
+                <ErrorState
+                  id="Failed to load plans"
+                  onRetry={() => setReloadKey((value) => value + 1)}
+                />
               ) : displayPlans.length > 0 ? (
                 <div className="price-grid">
                   {displayPlans.map((plan) => (
@@ -956,7 +1025,7 @@ export function createHomePage({
             </div>
           </section>
 
-          <section className="wrap cta-wrap">
+          <section className="wrap cta-wrap" data-home-section="cta">
             <div className="cta-banner">
               <h2>
                 <T id="Plug in in 5 minutes. Start saving today." />
@@ -967,11 +1036,18 @@ export function createHomePage({
               <div>
                 <AppLink
                   className="btn btn-flux btn-lg"
-                  href={user ? "/dashboard" : "/sign-in"}
+                  href={
+                    user
+                      ? HOME_DESTINATIONS.dashboard
+                      : HOME_DESTINATIONS.onboarding
+                  }
                 >
                   <T id={user ? "Open dashboard" : "Sign in / Register"} />
                 </AppLink>
-                <AppLink className="btn btn-ghost btn-lg dark" href="/docs">
+                <AppLink
+                  className="btn btn-ghost btn-lg dark"
+                  href={HOME_DESTINATIONS.setup}
+                >
                   <T id="Read docs" />
                 </AppLink>
               </div>
@@ -985,7 +1061,9 @@ export function createHomePage({
         {topupDialogOpen ? (
           <TopupDialog onClose={() => setTopupDialogOpen(false)} />
         ) : null}
-        <Footer />
+        <div data-home-section="footer">
+          <Footer />
+        </div>
       </>
     );
   };
