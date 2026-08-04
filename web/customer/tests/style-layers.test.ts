@@ -379,10 +379,13 @@ test("desktop homepage frame binds nav height and hero top padding", () => {
     new URL("../src/styles/marketing.css", import.meta.url),
     "utf8",
   );
-
-  expect(marketingStyles).toMatch(
-    /\.home-page \.home-hero \.hero-inner\s*\{\s*padding-top:\s*96px;\s*\}/,
+  const heroInner = getCssBlock(
+    marketingStyles,
+    ".home-page .home-hero .hero-inner {",
   );
+
+  expect(heroInner).toContain("width: 100%");
+  expect(heroInner).toContain("padding-top: 96px");
 
   const desktopMediaStart = marketingStyles.indexOf(
     "@media (min-width: 681px) {",
@@ -433,6 +436,50 @@ test("localized homepage hero titles stay on one line", () => {
   expect(heroTitle).not.toContain("max-width: 14ch");
   expect(marketingStyles).toMatch(
     /@media \(max-width: 680px\) \{[\s\S]*?\.home-page \.home-hero h1:lang\(en\)[\s\S]*?font-size: clamp\(26px, 8\.2vw, 42px\)[\s\S]*?\.home-page \.home-hero h1:lang\(ru\)[\s\S]*?font-size: clamp\(23px, 7\.2vw, 38px\)/,
+  );
+});
+
+test("homepage visual hero stays centered independently from its SEO heading", () => {
+  const marketingStyles = readFileSync(
+    new URL("../src/styles/marketing.css", import.meta.url),
+    "utf8",
+  );
+  const heroInner = getCssBlock(
+    marketingStyles,
+    ".home-page .home-hero .hero-inner {",
+  );
+  const heroSwitcher = getCssBlock(
+    marketingStyles,
+    ".home-page .home-hero .hero-model-switcher {",
+  );
+
+  expect(heroInner).toContain("width: 100%");
+  expect(heroSwitcher).toContain("min-width: 0");
+  expect(heroSwitcher).toContain("width: 100%");
+  expect(heroSwitcher).toContain("max-width: 100%");
+});
+
+test("model pricing header keeps metadata inside the panel", () => {
+  const styles = readFileSync(
+    new URL("../src/styles.css", import.meta.url),
+    "utf8",
+  );
+  const panelTop = getCssBlock(styles, ".mp-panel-top {");
+  const tabs = getCssBlock(styles, ".mp-tabs {");
+  const panelMeta = getCssBlock(styles, ".mp-panel-meta {");
+
+  expect(panelTop).toContain("flex-wrap: wrap");
+  expect(tabs).toContain("min-width: 0");
+  expect(tabs).toContain("max-width: 100%");
+  expect(tabs).toContain("overflow-x: auto");
+  expect(panelMeta).toContain("max-width: 100%");
+  expect(panelMeta).toContain("margin-left: auto");
+  expect(panelMeta).toContain("flex-wrap: wrap");
+  expect(styles).toMatch(
+    /@media \(max-width: 680px\) \{[\s\S]*?\.mp-panel-meta \{[\s\S]*?margin-left: 0/,
+  );
+  expect(styles).toMatch(
+    /@media \(max-width: 680px\) \{[\s\S]*?\.mp-tabs \{[\s\S]*?max-width: 100%/,
   );
 });
 

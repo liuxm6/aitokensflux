@@ -977,15 +977,19 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 16px;
   padding: 20px 24px 18px;
 }
 
 .mp-tabs {
   display: flex;
+  min-width: 0;
+  max-width: 100%;
   justify-content: flex-start;
   width: fit-content;
   gap: 4px;
+  overflow-x: auto;
 }
 
 .mp-tab {
@@ -1062,9 +1066,12 @@
 
 .mp-panel-meta {
   display: inline-flex;
+  max-width: 100%;
   align-items: center;
   flex-shrink: 0;
+  flex-wrap: wrap;
   gap: 14px;
+  margin-left: auto;
 }
 
 .mp-panel-unit span:first-child {
@@ -9370,7 +9377,7 @@
   }
 
   .mp-tabs {
-    max-width: calc(100vw - 32px);
+    max-width: 100%;
     overflow-x: auto;
   }
 
@@ -9379,6 +9386,7 @@
     justify-content: flex-start;
     width: 100%;
     gap: 10px 14px;
+    margin-left: 0;
   }
 
   .mp-panel-unit {

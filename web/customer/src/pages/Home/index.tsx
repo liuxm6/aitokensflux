@@ -845,7 +845,7 @@ export function createHomePage({
         <main className="home-page">
           <section className="hero-mesh home-hero" data-home-section="hero">
             <div className="wrap hero-inner center">
-              <h1>
+              <h1 className="sr-only hero-seo-title">
                 <T id={HOME_HERO_COPY.title} />
               </h1>
               <div

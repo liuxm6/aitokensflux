@@ -81,3 +81,12 @@ test("only the homepage requests the compact desktop marketing header", () => {
   expect(fathersDaySource).toContain("<MarketingHeader minimal />");
   expect(fathersDaySource).not.toContain("homePage");
 });
+
+test("homepage keeps the semantic SEO heading out of the visual hero flow", () => {
+  const homeSource = readFileSync(
+    new URL("../src/pages/Home/index.tsx", import.meta.url),
+    "utf8",
+  );
+
+  expect(homeSource).toContain('<h1 className="sr-only hero-seo-title">');
+});
