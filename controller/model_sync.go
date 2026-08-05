@@ -89,15 +89,17 @@ type syncRequest struct {
 	Locale    string           `json:"locale"`
 }
 
-func newHTTPClient() *http.Client {
-	timeoutSec := common.GetEnvOrDefault("SYNC_HTTP_TIMEOUT_SECONDS", 10)
-	dialer := &net.Dialer{Timeout: time.Duration(timeoutSec) * time.Second}
+// newSyncHTTPClient builds the HTTP client used to pull metadata from upstream
+// sync sources. github.io is dialed over IPv4 first because its IPv6 endpoints
+// are unreachable from some deployments.
+func newSyncHTTPClient(timeout time.Duration) *http.Client {
+	dialer := &net.Dialer{Timeout: timeout}
 	transport := &http.Transport{
 		MaxIdleConns:          100,
 		IdleConnTimeout:       90 * time.Second,
-		TLSHandshakeTimeout:   time.Duration(timeoutSec) * time.Second,
+		TLSHandshakeTimeout:   timeout,
 		ExpectContinueTimeout: 1 * time.Second,
-		ResponseHeaderTimeout: time.Duration(timeoutSec) * time.Second,
+		ResponseHeaderTimeout: timeout,
 	}
 	if common.TLSInsecureSkipVerify {
 		transport.TLSClientConfig = common.InsecureTLSConfig
@@ -125,9 +127,29 @@ var (
 
 func getHTTPClient() *http.Client {
 	httpClientOnce.Do(func() {
-		httpClient = newHTTPClient()
+		timeoutSec := common.GetEnvOrDefault("SYNC_HTTP_TIMEOUT_SECONDS", 10)
+		httpClient = newSyncHTTPClient(time.Duration(timeoutSec) * time.Second)
 	})
 	return httpClient
+}
+
+// decodeUpstreamPayload accepts either the `{success, message, data}` envelope
+// or a bare JSON array of items.
+func decodeUpstreamPayload[T any](buf []byte, out *upstreamEnvelope[T]) error {
+	if err := common.Unmarshal(buf, out); err != nil {
+		var arr []T
+		if arrErr := common.Unmarshal(buf, &arr); arrErr != nil {
+			return err
+		}
+		out.Success = true
+		out.Data = arr
+		out.Message = ""
+		return nil
+	}
+	if !out.Success && len(out.Data) == 0 && out.Message == "" {
+		out.Success = true
+	}
+	return nil
 }
 
 func fetchJSON[T any](ctx context.Context, url string, out *upstreamEnvelope[T]) error {
@@ -179,21 +201,9 @@ func fetchJSON[T any](ctx context.Context, url string, out *upstreamEnvelope[T])
 				bodyCache[url] = buf
 				cacheMutex.Unlock()
 
-				// Try decode as envelope first
-				if err := json.Unmarshal(buf, out); err != nil {
-					// Try decode as pure array
-					var arr []T
-					if err2 := json.Unmarshal(buf, &arr); err2 != nil {
-						lastErr = err
-						return
-					}
-					out.Success = true
-					out.Data = arr
-					out.Message = ""
-				} else {
-					if !out.Success && len(out.Data) == 0 && out.Message == "" {
-						out.Success = true
-					}
+				if err := decodeUpstreamPayload(buf, out); err != nil {
+					lastErr = err
+					return
 				}
 				lastErr = nil
 			case http.StatusNotModified:
@@ -205,19 +215,9 @@ func fetchJSON[T any](ctx context.Context, url string, out *upstreamEnvelope[T])
 					lastErr = errors.New("cache miss for 304 response")
 					return
 				}
-				if err := json.Unmarshal(buf, out); err != nil {
-					var arr []T
-					if err2 := json.Unmarshal(buf, &arr); err2 != nil {
-						lastErr = err
-						return
-					}
-					out.Success = true
-					out.Data = arr
-					out.Message = ""
-				} else {
-					if !out.Success && len(out.Data) == 0 && out.Message == "" {
-						out.Success = true
-					}
+				if err := decodeUpstreamPayload(buf, out); err != nil {
+					lastErr = err
+					return
 				}
 				lastErr = nil
 			default:

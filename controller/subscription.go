@@ -541,14 +541,15 @@ func AdminResetPlanSubscriptions(c *gin.Context) {
 	common.ApiSuccess(c, result)
 }
 
-// AdminInvalidateUserSubscription cancels a user subscription immediately.
-func AdminInvalidateUserSubscription(c *gin.Context) {
+// runAdminSubscriptionAction applies action to the subscription named by the
+// "id" path parameter and renders its optional message.
+func runAdminSubscriptionAction(c *gin.Context, action func(subId int) (string, error)) {
 	subId, _ := strconv.Atoi(c.Param("id"))
 	if subId <= 0 {
 		common.ApiErrorMsg(c, "无效的订阅ID")
 		return
 	}
-	msg, err := model.AdminInvalidateUserSubscription(subId)
+	msg, err := action(subId)
 	if err != nil {
 		common.ApiError(c, err)
 		return
@@ -560,21 +561,12 @@ func AdminInvalidateUserSubscription(c *gin.Context) {
 	common.ApiSuccess(c, nil)
 }
 
+// AdminInvalidateUserSubscription cancels a user subscription immediately.
+func AdminInvalidateUserSubscription(c *gin.Context) {
+	runAdminSubscriptionAction(c, model.AdminInvalidateUserSubscription)
+}
+
 // AdminDeleteUserSubscription hard-deletes a user subscription.
 func AdminDeleteUserSubscription(c *gin.Context) {
-	subId, _ := strconv.Atoi(c.Param("id"))
-	if subId <= 0 {
-		common.ApiErrorMsg(c, "无效的订阅ID")
-		return
-	}
-	msg, err := model.AdminDeleteUserSubscription(subId)
-	if err != nil {
-		common.ApiError(c, err)
-		return
-	}
-	if msg != "" {
-		common.ApiSuccess(c, gin.H{"message": msg})
-		return
-	}
-	common.ApiSuccess(c, nil)
+	runAdminSubscriptionAction(c, model.AdminDeleteUserSubscription)
 }
