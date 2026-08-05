@@ -568,8 +568,11 @@ func (user *User) finishInsert(inviterId int) {
 			currentSetting := createdUser.GetSetting()
 			currentSetting.SidebarModules = defaultSidebarConfig
 			createdUser.SetSetting(currentSetting)
-			createdUser.Update(false)
-			common.SysLog(fmt.Sprintf("为新用户 %s (角色: %d) 初始化边栏配置", createdUser.Username, createdUser.Role))
+			if err := createdUser.Update(false); err != nil {
+				common.SysError(fmt.Sprintf("为新用户 %s 初始化边栏配置失败: %s", createdUser.Username, err.Error()))
+			} else {
+				common.SysLog(fmt.Sprintf("为新用户 %s (角色: %d) 初始化边栏配置", createdUser.Username, createdUser.Role))
+			}
 		}
 	}
 
@@ -578,13 +581,18 @@ func (user *User) finishInsert(inviterId int) {
 	}
 	if inviterId != 0 && operation_setting.IsPaymentComplianceConfirmed() {
 		if common.QuotaForInvitee > 0 {
-			_ = IncreaseUserQuota(user.Id, common.QuotaForInvitee, true)
-			RecordLog(user.Id, LogTypeSystem, fmt.Sprintf("使用邀请码赠送 %s", logger.LogQuota(common.QuotaForInvitee)))
+			if err := IncreaseUserQuota(user.Id, common.QuotaForInvitee, true); err != nil {
+				common.SysError(fmt.Sprintf("为被邀请用户 %d 赠送邀请奖励额度失败: %s", user.Id, err.Error()))
+			} else {
+				RecordLog(user.Id, LogTypeSystem, fmt.Sprintf("使用邀请码赠送 %s", logger.LogQuota(common.QuotaForInvitee)))
+			}
 		}
 		if common.QuotaForInviter > 0 {
-			//_ = IncreaseUserQuota(inviterId, common.QuotaForInviter)
-			RecordLog(inviterId, LogTypeSystem, fmt.Sprintf("邀请用户赠送 %s", logger.LogQuota(common.QuotaForInviter)))
-			_ = inviteUser(inviterId)
+			if err := inviteUser(inviterId); err != nil {
+				common.SysError(fmt.Sprintf("为邀请人 %d 赠送邀请奖励额度失败: %s", inviterId, err.Error()))
+			} else {
+				RecordLog(inviterId, LogTypeSystem, fmt.Sprintf("邀请用户赠送 %s", logger.LogQuota(common.QuotaForInviter)))
+			}
 		}
 	}
 }
@@ -625,8 +633,11 @@ func (user *User) FinalizeOAuthUserCreation(inviterId int) {
 			currentSetting := createdUser.GetSetting()
 			currentSetting.SidebarModules = defaultSidebarConfig
 			createdUser.SetSetting(currentSetting)
-			createdUser.Update(false)
-			common.SysLog(fmt.Sprintf("为新用户 %s (角色: %d) 初始化边栏配置", createdUser.Username, createdUser.Role))
+			if err := createdUser.Update(false); err != nil {
+				common.SysError(fmt.Sprintf("为新用户 %s 初始化边栏配置失败: %s", createdUser.Username, err.Error()))
+			} else {
+				common.SysLog(fmt.Sprintf("为新用户 %s (角色: %d) 初始化边栏配置", createdUser.Username, createdUser.Role))
+			}
 		}
 	}
 

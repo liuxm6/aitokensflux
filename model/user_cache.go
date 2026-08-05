@@ -121,7 +121,9 @@ func GetUserCache(userId int) (userCache *UserBase, err error) {
 		}
 		// Older cache entries do not contain Role. Force a DB reload so
 		// session auth cannot keep using stale privileges.
-		_ = invalidateUserCache(userId)
+		if err := invalidateUserCache(userId); err != nil {
+			common.SysError(fmt.Sprintf("failed to invalidate stale user cache for user %d, stale privileges may persist: %s", userId, err.Error()))
+		}
 	}
 
 	// If Redis fails, get from DB

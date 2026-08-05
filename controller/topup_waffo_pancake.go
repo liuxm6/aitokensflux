@@ -403,7 +403,9 @@ func RequestWaffoPancakePay(c *gin.Context) {
 	if err != nil {
 		logger.LogError(c.Request.Context(), fmt.Sprintf("Waffo Pancake 创建结账会话失败 user_id=%d trade_no=%s error=%q", id, tradeNo, err.Error()))
 		topUp.Status = common.TopUpStatusFailed
-		_ = topUp.Update()
+		if updateErr := topUp.Update(); updateErr != nil {
+			logger.LogError(c.Request.Context(), fmt.Sprintf("Waffo Pancake 更新订单为失败状态失败 trade_no=%s error=%q", tradeNo, updateErr.Error()))
+		}
 		c.JSON(http.StatusOK, gin.H{"message": "error", "data": "拉起支付失败"})
 		return
 	}
