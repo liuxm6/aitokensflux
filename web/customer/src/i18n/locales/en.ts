@@ -8,6 +8,8 @@ export const enTranslations = {
   "Check authenticity": "Check authenticity",
   "Service monitor": "Service monitor",
   "Service status": "Service status",
+  "Server status": "Server status",
+  "Model status": "Model status",
   "30 days": "30 days",
   "7 days": "7 days",
   "90 days": "90 days",

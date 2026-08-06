@@ -17,6 +17,8 @@ const customerRuTranslations = {
   "Check authenticity": "Проверить подлинность",
   "Service monitor": "Мониторинг",
   "Service status": "Статус сервиса",
+  "Server status": "Статус сервера",
+  "Model status": "Статус моделей",
   "Unified Claude Code, Codex and Grok API gateway":
     "Единый API-шлюз для Claude Code, Codex и Grok",
   "Unified Claude Code, Codex, Grok and Gemini API gateway":

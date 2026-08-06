@@ -46,8 +46,11 @@ export function Footer() {
             <AppLink href="/dashboard/api-key">
               API <T id="keys" />
             </AppLink>
+            <a href="https://status.aitokensflux.com">
+              <T id="Server status" />
+            </a>
             <a href="https://check.aitokensflux.com/group/TokenFlux">
-              <T id="Service status" />
+              <T id="Model status" />
             </a>
             <AppLink href="/dashboard/invite-record">
               <T id="Referrals" />

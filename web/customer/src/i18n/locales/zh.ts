@@ -9,6 +9,8 @@ export const zhTranslations = {
   "Check authenticity": "检查真伪",
   "Service monitor": "服务监控",
   "Service status": "服务状态",
+  "Server status": "服务器状态",
+  "Model status": "模型状态",
   "30 days": "30 天",
   "7 days": "7 天",
   "90 days": "90 天",

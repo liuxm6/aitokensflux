@@ -9,6 +9,8 @@ export const zhTWTranslations = {
   "Check authenticity": "檢查真偽",
   "Service monitor": "服務監控",
   "Service status": "服務狀態",
+  "Server status": "伺服器狀態",
+  "Model status": "模型狀態",
   "30 days": "30 天",
   "7 days": "7 天",
   "90 days": "90 天",
