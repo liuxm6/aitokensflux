@@ -3,6 +3,24 @@
 @import "./styles/dialogs.css";
 @import "./styles/marketing.css";
 
+.customer-route-surface {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--paper);
+}
+
+.customer-route-surface.console-route-surface {
+  background: var(--customer-bg);
+}
+
+.console-summary-value,
+.table td[data-numeric="true"],
+.billing-balance b,
+.usage-token-count,
+.usage-cost-pill {
+  font-variant-numeric: tabular-nums;
+}
+
 .toast-viewport {
   position: fixed;
   z-index: 10000;
@@ -1125,7 +1143,7 @@
 .mp-table-wrap {
   height: min(430px, calc(100vh - 260px));
   min-height: 330px;
-  padding: 4px 12px 12px;
+  padding: 0 12px 12px;
   overflow: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -1134,8 +1152,15 @@
 .mp-table {
   width: 100%;
   min-width: 620px;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 14px;
+}
+
+.mp-table thead {
+  position: sticky;
+  z-index: 2;
+  top: 0;
 }
 
 .mp-table th,
@@ -1146,9 +1171,6 @@
 }
 
 .mp-table th {
-  position: sticky;
-  top: 0;
-  z-index: 1;
   height: 40px;
   background: var(--surface);
   color: var(--muted-2);
@@ -4887,6 +4909,7 @@
 }
 
 .billing-preset {
+  position: relative;
   display: grid;
   min-height: 50px;
   gap: 3px;
@@ -4906,6 +4929,11 @@
 .billing-preset.active {
   border-color: var(--customer-accent);
   background: var(--customer-accent-soft);
+}
+
+.billing-preset[aria-pressed="true"],
+.billing-method[aria-pressed="true"] {
+  padding-right: 30px;
 }
 
 .billing-preset span {
@@ -4959,6 +4987,7 @@
 }
 
 .billing-method {
+  position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
@@ -4983,6 +5012,20 @@
 
 .billing-method > svg {
   color: var(--customer-accent);
+}
+
+.billing-preset > .billing-choice-check,
+.billing-method > .billing-choice-check {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 16px;
+  height: 16px;
+  padding: 2px;
+  border-radius: 999px;
+  background: var(--customer-accent);
+  color: #fff;
+  pointer-events: none;
 }
 
 .billing-method.stripe {
@@ -6302,14 +6345,26 @@
   z-index: 1;
   display: grid;
   width: min(100%, 450px);
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
   gap: 12px;
   padding: 22px;
   border: 1px solid rgb(255 255 255 / 84%);
   border-radius: 16px;
   background: var(--customer-panel);
+  overflow: hidden;
   box-shadow:
     0 22px 64px rgb(10 12 14 / 18%),
     0 1px 0 rgb(255 255 255 / 70%) inset;
+}
+
+.purchase-dialog-body {
+  display: grid;
+  min-height: 0;
+  gap: 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .purchase-close {
@@ -6471,7 +6526,7 @@
   width: min(100%, 640px);
   max-height: min(760px, calc(100vh - 32px));
   max-height: min(760px, calc(100dvh - 32px));
-  overflow-y: auto;
+  overflow: hidden;
   gap: 10px;
   padding: 20px;
   border-radius: 16px;
@@ -6633,6 +6688,11 @@
   border-radius: var(--customer-radius-field);
 }
 
+.topup-dialog-panel .billing-preset[aria-pressed="true"],
+.topup-dialog-panel .billing-method[aria-pressed="true"] {
+  padding-right: 30px;
+}
+
 .topup-dialog-panel .billing-method.stripe {
   min-height: 48px;
 }
@@ -6680,7 +6740,7 @@
   width: min(100%, 520px);
   max-height: min(700px, calc(100vh - 32px));
   max-height: min(700px, calc(100dvh - 32px));
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .plan-purchase-panel .purchase-kicker {
@@ -7507,6 +7567,7 @@
   position: relative;
   display: grid;
   min-height: calc(100vh - 66px);
+  min-height: calc(100dvh - 66px);
   place-items: center;
   overflow: hidden;
   padding: 72px 24px;
@@ -7980,6 +8041,7 @@
   display: grid;
   isolation: isolate;
   min-height: 100vh;
+  min-height: 100dvh;
   place-items: center;
   overflow: hidden auto;
   padding: 78px 20px 28px;
@@ -9795,6 +9857,7 @@
 
   .auth-overlay .auth-modal {
     max-height: calc(100vh - 82px);
+    max-height: calc(100dvh - 82px);
   }
 
   .auth-top {
@@ -9821,6 +9884,7 @@
 
   .auth-modal {
     max-height: calc(100vh - 80px);
+    max-height: calc(100dvh - 80px);
     border-radius: 16px;
   }
 
@@ -11320,5 +11384,43 @@
   .usage-latency-row,
   .usage-detail-stack {
     justify-content: flex-end;
+  }
+}
+
+@media (pointer: coarse) {
+  .footer a {
+    min-height: 44px;
+    padding: 10px 0;
+  }
+
+  .btn,
+  .btn-sm,
+  .console-app .btn,
+  .console-app .btn-sm,
+  .console-app .side nav a,
+  .console-topbar .lang-btn,
+  .console-account-trigger,
+  .menu-btn,
+  .side-close,
+  .usage-page-button,
+  .usage-page-size select,
+  .invite-filter-actions button,
+  .settings-list .set-item .btn,
+  .key-action,
+  .inline-copy,
+  .billing-preset,
+  .billing-input-row input,
+  .topup-redemption-inline input,
+  .billing-link-button,
+  .payment-method-button,
+  .payment-method-select {
+    min-height: 44px;
+  }
+
+  .menu-btn,
+  .side-close,
+  .usage-page-button,
+  .inline-copy {
+    min-width: 44px;
   }
 }

@@ -22,6 +22,8 @@ beforeEach(() => {
 
 afterEach(() => {
   globalThis.fetch = originalFetch;
+  window.localStorage.removeItem("customer-user");
+  window.localStorage.removeItem("uid");
 });
 
 test("keeps the homepage visible while the sign-in overlay chunk loads", async () => {
@@ -48,4 +50,26 @@ test("keeps the homepage visible while the setup overlay chunk loads", async () 
   expect(Boolean(container.querySelector(".home-page"))).toBe(true);
   expect(routeLoadingVisible).toBe(false);
   expect(await screen.findByRole("dialog")).toBeTruthy();
+});
+
+test("keeps a console-colored route surface while protected content loads", async () => {
+  window.localStorage.setItem(
+    "customer-user",
+    JSON.stringify({
+      id: 1,
+      username: "operator",
+      email: "ops@example.com",
+      role: 1,
+    }),
+  );
+  window.history.replaceState(null, "", "/dashboard");
+
+  const { container } = render(<App />);
+  const routeSurface = container.querySelector(".customer-route-surface");
+
+  expect(routeSurface).toBeTruthy();
+  expect(routeSurface?.classList.contains("console-route-surface")).toBe(true);
+  expect(
+    await screen.findByRole("heading", { level: 1, name: "Dashboard" }),
+  ).toBeTruthy();
 });

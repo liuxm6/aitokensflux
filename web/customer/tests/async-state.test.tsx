@@ -79,3 +79,20 @@ test("data table exposes captioned headers and mobile labels", () => {
     "Billed cost",
   );
 });
+
+test("data table marks configured numeric columns for stable alignment", () => {
+  render(
+    <English>
+      <DataTable
+        caption="Usage records"
+        headers={["Model", "Cost"]}
+        mobileLabels={["Model", "Cost"]}
+        numericColumns={[1]}
+        rows={[["claude-opus", "$12.34"]]}
+      />
+    </English>,
+  );
+
+  const costCell = screen.getByRole("cell", { name: "$12.34" });
+  expect(costCell.getAttribute("data-numeric")).toBe("true");
+});

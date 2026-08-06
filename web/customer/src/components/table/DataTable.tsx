@@ -9,6 +9,7 @@ export function DataTable({
   captionId,
   headers,
   mobileLabels,
+  numericColumns,
   rows,
   rowKeys,
 }: {
@@ -17,6 +18,7 @@ export function DataTable({
   captionId?: string;
   headers: string[];
   mobileLabels?: string[];
+  numericColumns?: number[];
   rows: ReactNode[][];
   rowKeys?: Array<number | string>;
 }) {
@@ -57,6 +59,7 @@ export function DataTable({
                     language,
                     mobileLabels?.[index] ?? headers[index] ?? "",
                   )}
+                  data-numeric={numericColumns?.includes(index) || undefined}
                   key={`${headers[index] ?? "cell"}-${index}`}
                 >
                   {cell}

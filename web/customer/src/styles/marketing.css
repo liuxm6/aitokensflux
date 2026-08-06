@@ -146,6 +146,11 @@
   margin-top: 0;
 }
 
+.home-page .price .amt,
+.home-page .payg-service-amount {
+  font-variant-numeric: tabular-nums;
+}
+
 .home-page .home-features {
   padding-top: 96px;
   padding-bottom: 48px;
@@ -182,6 +187,21 @@
 
 .home-page .pricing-section-empty .payg-service-divider {
   margin-bottom: 16px;
+}
+
+.home-page .payg-service-features {
+  display: block;
+  column-count: 2;
+  column-gap: 28px;
+}
+
+.home-page .payg-service-feature {
+  margin-bottom: 12px;
+  break-inside: avoid;
+}
+
+.home-page .payg-service-feature:last-child {
+  margin-bottom: 0;
 }
 
 .home-page .cta-wrap {
@@ -228,6 +248,23 @@
 
 .home-page .faq details {
   padding: 0;
+  interpolate-size: allow-keywords;
+}
+
+.home-page .faq details::details-content {
+  height: 0;
+  overflow: clip;
+  opacity: 0;
+  transition:
+    height 0.24s ease,
+    opacity 0.18s ease,
+    content-visibility 0.24s;
+  transition-behavior: allow-discrete;
+}
+
+.home-page .faq details[open]::details-content {
+  height: auto;
+  opacity: 1;
 }
 
 .home-page .faq details[open] {
@@ -241,6 +278,16 @@
 
 .home-page .faq details[open] summary {
   color: var(--accent-ink);
+}
+
+.home-page .faq .faq-toggle-icon {
+  flex: 0 0 auto;
+  margin-left: 16px;
+  transition: transform 0.2s ease;
+}
+
+.home-page .faq details[open] .faq-toggle-icon {
+  transform: rotate(45deg);
 }
 
 .home-page .faq p {
@@ -394,6 +441,10 @@
     grid-column: auto;
   }
 
+  .home-page .payg-service-features {
+    column-count: 1;
+  }
+
   .home-page ~ [data-home-section="footer"] .footer .footer-inner {
     padding: 40px 22px 28px;
     text-align: left;
@@ -432,7 +483,9 @@
   .home-page .home-hero .hero-cta .btn,
   .home-page .cta-banner .btn,
   .home-page .support-reward-callout,
-  .home-page .support-card {
+  .home-page .support-card,
+  .home-page .faq details::details-content,
+  .home-page .faq .faq-toggle-icon {
     transition: none;
   }
 }

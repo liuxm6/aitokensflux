@@ -309,13 +309,18 @@ function App() {
     if (targetPage === "oauthCallback") return "home";
     return targetPage;
   })();
-  const content = renderPage(
-    authOverlayOpen
-      ? authBackgroundPage
-      : setupOverlayOpen
-        ? setupBackgroundPage
-        : page,
-  );
+  const renderedPage = authOverlayOpen
+    ? authBackgroundPage
+    : setupOverlayOpen
+      ? setupBackgroundPage
+      : page;
+  const content = renderPage(renderedPage);
+  const routeSurfaceClassName = [
+    "customer-route-surface",
+    user && protectedPages.has(renderedPage) ? "console-route-surface" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <LanguageContext.Provider value={languageContextValue}>
@@ -323,15 +328,17 @@ function App() {
       <ToastProvider>
         <ConfirmActionContext.Provider value={confirmContextValue}>
           <AuthContext.Provider value={authContextValue}>
-            <Suspense fallback={<RouteLoadingState />}>
-              <RouteFocus
-                focusRoute={!authOverlayOpen && !setupOverlayOpen}
-                language={language}
-                page={page}
-              >
-                {content}
-              </RouteFocus>
-            </Suspense>
+            <div className={routeSurfaceClassName}>
+              <Suspense fallback={<RouteLoadingState />}>
+                <RouteFocus
+                  focusRoute={!authOverlayOpen && !setupOverlayOpen}
+                  language={language}
+                  page={page}
+                >
+                  {content}
+                </RouteFocus>
+              </Suspense>
+            </div>
             <Suspense fallback={null}>
               {authOverlayOpen ? (
                 <LazyAuthPage

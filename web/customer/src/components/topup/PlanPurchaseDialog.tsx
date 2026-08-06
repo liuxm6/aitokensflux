@@ -115,163 +115,165 @@ export function PlanPurchaseDialog({
         </p>
       </div>
 
-      <div className="plan-purchase-summary">
-        <div className="plan-purchase-title-row">
-          <span>
-            <T id="Plan name" />
-          </span>
-          <strong>{plan.name}</strong>
-        </div>
-        <div className="plan-purchase-meta">
-          <span>
-            <Calendar size={14} />
-            {localizeText(language, plan.periodLabelZh, plan.periodLabelEn)}
-          </span>
-          {!resetIsNever ? (
+      <div className="purchase-dialog-body plan-purchase-body">
+        <div className="plan-purchase-summary">
+          <div className="plan-purchase-title-row">
             <span>
-              {localizeText(language, plan.resetLabelZh, plan.resetLabelEn)}
+              <T id="Plan name" />
             </span>
-          ) : null}
-          {plan.upgradeGroup ? <span>{plan.upgradeGroup}</span> : null}
-        </div>
-        <div className="plan-purchase-amount-grid">
-          <div className="plan-purchase-amount-card due">
-            <span>
-              <T id="Amount due" />
-            </span>
-            <b>{plan.price}</b>
+            <strong>{plan.name}</strong>
           </div>
-          <div className="plan-purchase-amount-card received">
+          <div className="plan-purchase-meta">
             <span>
-              <T id="Received amount" />
+              <Calendar size={14} />
+              {localizeText(language, plan.periodLabelZh, plan.periodLabelEn)}
             </span>
-            <b>
-              {localizeText(language, plan.quotaLabelZh, plan.quotaLabelEn)}
-            </b>
+            {!resetIsNever ? (
+              <span>
+                {localizeText(language, plan.resetLabelZh, plan.resetLabelEn)}
+              </span>
+            ) : null}
+            {plan.upgradeGroup ? <span>{plan.upgradeGroup}</span> : null}
+          </div>
+          <div className="plan-purchase-amount-grid">
+            <div className="plan-purchase-amount-card due">
+              <span>
+                <T id="Amount due" />
+              </span>
+              <b>{plan.price}</b>
+            </div>
+            <div className="plan-purchase-amount-card received">
+              <span>
+                <T id="Received amount" />
+              </span>
+              <b>
+                {localizeText(language, plan.quotaLabelZh, plan.quotaLabelEn)}
+              </b>
+            </div>
           </div>
         </div>
-      </div>
-      <div className="purchase-settlement-notice">
-        <T id="CNY and USD are settled 1:1." />
-      </div>
-
-      {purchaseLimitReached ? (
-        <div className="plan-purchase-alert warning">
-          <T
-            id="Purchase limit reached ({{current}}/{{limit}})"
-            values={{ current: purchaseCount, limit: purchaseLimit }}
-          />
+        <div className="purchase-settlement-notice">
+          <T id="CNY and USD are settled 1:1." />
         </div>
-      ) : null}
 
-      <div className="plan-purchase-methods">
-        {allowBalancePay ? (
-          <div className="plan-purchase-payment-section">
-            <div className="plan-purchase-method-title">
-              <T id="Balance payment" />
-            </div>
-            <div className="balance-payment-box">
-              <div>
-                <span>
-                  <T id="Amount due" />
-                </span>
-                <strong>{formatQuotaMoney(balanceCost, status)}</strong>
-              </div>
-              <div>
-                <span>
-                  <T id="Available" />
-                </span>
-                <strong>{formatQuotaMoney(availableQuota, status)}</strong>
-              </div>
-              {!balanceEnough ? (
-                <p>
-                  <T id="Insufficient balance." />
-                </p>
-              ) : null}
-              <button
-                className="btn btn-soft btn-block"
-                disabled={payButtonDisabled || !balanceEnough}
-                type="button"
-                onClick={() => void onPay("balance")}
-              >
-                <CircleDollarSign size={16} />
-                <T id="Pay with balance" />
-              </button>
-            </div>
+        {purchaseLimitReached ? (
+          <div className="plan-purchase-alert warning">
+            <T
+              id="Purchase limit reached ({{current}}/{{limit}})"
+              values={{ current: purchaseCount, limit: purchaseLimit }}
+            />
           </div>
         ) : null}
 
-        <div className="plan-purchase-payment-section">
-          <div className="plan-purchase-method-title">
-            <T id="Online payment" />
-          </div>
-          {hasOnlinePayment ? (
-            <div className="payment-method-grid">
-              {hasStripe ? (
-                <button
-                  aria-label="Stripe"
-                  className="payment-method-button stripe"
-                  disabled={payButtonDisabled}
-                  type="button"
-                  onClick={() => void onPay("stripe")}
-                >
-                  <StripeWordmark />
-                </button>
-              ) : null}
-              {hasCreem ? (
-                <button
-                  className="payment-method-button"
-                  disabled={payButtonDisabled}
-                  type="button"
-                  onClick={() => void onPay("creem")}
-                >
-                  <CircleDollarSign size={16} />
-                  Creem
-                </button>
-              ) : null}
-              {hasWaffoPancake ? (
-                <button
-                  className="payment-method-button"
-                  disabled={payButtonDisabled}
-                  type="button"
-                  onClick={() => void onPay("waffoPancake")}
-                >
-                  <CircleDollarSign size={16} />
-                  Waffo Pancake
-                </button>
-              ) : null}
-              {hasEpay ? (
-                <div className="epay-payment-row">
-                  <select
-                    className="payment-method-select"
-                    disabled={payButtonDisabled}
-                    value={selectedEpayMethod}
-                    onChange={(event) =>
-                      onSelectedEpayMethodChange(event.currentTarget.value)
-                    }
-                  >
-                    {epayMethods.map((method) => (
-                      <option key={method.type} value={method.type}>
-                        {method.name || method.type}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    className="btn btn-dark"
-                    disabled={payButtonDisabled || !selectedEpayMethod}
-                    type="button"
-                    onClick={() => void onPay("epay", selectedEpayMethod)}
-                  >
-                    <T id="Pay" />
-                  </button>
+        <div className="plan-purchase-methods">
+          {allowBalancePay ? (
+            <div className="plan-purchase-payment-section">
+              <div className="plan-purchase-method-title">
+                <T id="Balance payment" />
+              </div>
+              <div className="balance-payment-box">
+                <div>
+                  <span>
+                    <T id="Amount due" />
+                  </span>
+                  <strong>{formatQuotaMoney(balanceCost, status)}</strong>
                 </div>
-              ) : null}
+                <div>
+                  <span>
+                    <T id="Available" />
+                  </span>
+                  <strong>{formatQuotaMoney(availableQuota, status)}</strong>
+                </div>
+                {!balanceEnough ? (
+                  <p>
+                    <T id="Insufficient balance." />
+                  </p>
+                ) : null}
+                <button
+                  className="btn btn-soft btn-block"
+                  disabled={payButtonDisabled || !balanceEnough}
+                  type="button"
+                  onClick={() => void onPay("balance")}
+                >
+                  <CircleDollarSign size={16} />
+                  <T id="Pay with balance" />
+                </button>
+              </div>
             </div>
-          ) : (
-            <div className="plan-purchase-alert">
-              <T id="No online payment method is available." />
+          ) : null}
+
+          <div className="plan-purchase-payment-section">
+            <div className="plan-purchase-method-title">
+              <T id="Online payment" />
             </div>
-          )}
+            {hasOnlinePayment ? (
+              <div className="payment-method-grid">
+                {hasStripe ? (
+                  <button
+                    aria-label="Stripe"
+                    className="payment-method-button stripe"
+                    disabled={payButtonDisabled}
+                    type="button"
+                    onClick={() => void onPay("stripe")}
+                  >
+                    <StripeWordmark />
+                  </button>
+                ) : null}
+                {hasCreem ? (
+                  <button
+                    className="payment-method-button"
+                    disabled={payButtonDisabled}
+                    type="button"
+                    onClick={() => void onPay("creem")}
+                  >
+                    <CircleDollarSign size={16} />
+                    Creem
+                  </button>
+                ) : null}
+                {hasWaffoPancake ? (
+                  <button
+                    className="payment-method-button"
+                    disabled={payButtonDisabled}
+                    type="button"
+                    onClick={() => void onPay("waffoPancake")}
+                  >
+                    <CircleDollarSign size={16} />
+                    Waffo Pancake
+                  </button>
+                ) : null}
+                {hasEpay ? (
+                  <div className="epay-payment-row">
+                    <select
+                      className="payment-method-select"
+                      disabled={payButtonDisabled}
+                      value={selectedEpayMethod}
+                      onChange={(event) =>
+                        onSelectedEpayMethodChange(event.currentTarget.value)
+                      }
+                    >
+                      {epayMethods.map((method) => (
+                        <option key={method.type} value={method.type}>
+                          {method.name || method.type}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      className="btn btn-dark"
+                      disabled={payButtonDisabled || !selectedEpayMethod}
+                      type="button"
+                      onClick={() => void onPay("epay", selectedEpayMethod)}
+                    >
+                      <T id="Pay" />
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            ) : (
+              <div className="plan-purchase-alert">
+                <T id="No online payment method is available." />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </AccessibleDialog>

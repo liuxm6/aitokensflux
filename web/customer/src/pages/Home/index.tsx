@@ -292,7 +292,9 @@ function FaqSection() {
               <details key={item.question.en} open={index === 0}>
                 <summary>
                   {question}
-                  <span>+</span>
+                  <span className="faq-toggle-icon" aria-hidden="true">
+                    +
+                  </span>
                 </summary>
                 <p>{answer}</p>
               </details>

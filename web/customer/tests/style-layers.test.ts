@@ -127,6 +127,59 @@ test("console hierarchy and subscription polish stay scoped and responsive", asy
   );
 });
 
+test("route surfaces keep public and console backgrounds stable during lazy loading", async () => {
+  const styles = await Bun.file(new URL("src/styles.css", customerRoot)).text();
+  const routeSurface = getCssBlock(styles, ".customer-route-surface {");
+  const consoleRouteSurface = getCssBlock(
+    styles,
+    ".customer-route-surface.console-route-surface {",
+  );
+
+  expect(routeSurface).toContain("min-height: 100vh");
+  expect(routeSurface).toContain("min-height: 100dvh");
+  expect(routeSurface).toContain("background: var(--paper)");
+  expect(consoleRouteSurface).toContain("background: var(--customer-bg)");
+});
+
+test("customer financial and usage values use tabular numerals", async () => {
+  const styles = await Bun.file(new URL("src/styles.css", customerRoot)).text();
+  const numericValues = getCssBlock(
+    styles,
+    '.console-summary-value,\n.table td[data-numeric="true"],\n.billing-balance b,\n.usage-token-count,\n.usage-cost-pill {',
+  );
+
+  expect(numericValues).toContain("font-variant-numeric: tabular-nums");
+});
+
+test("purchase dialogs scroll only their content body", async () => {
+  const styles = await Bun.file(new URL("src/styles.css", customerRoot)).text();
+  const purchasePanel = getCssBlock(styles, ".purchase-panel {");
+  const purchaseBody = getCssBlock(styles, ".purchase-dialog-body {");
+
+  expect(purchasePanel).toContain("overflow: hidden");
+  expect(purchasePanel).toContain("max-height: calc(100dvh - 32px)");
+  expect(purchaseBody).toContain("min-height: 0");
+  expect(purchaseBody).toContain("overflow-y: auto");
+  expect(purchaseBody).toContain("overscroll-behavior: contain");
+});
+
+test("auth and setup surfaces preserve dynamic viewport sizing on mobile", async () => {
+  const styles = await Bun.file(new URL("src/styles.css", customerRoot)).text();
+  const authPage = getCssBlock(styles, ".auth-page {");
+  const setupPage = getCssBlock(styles, ".setup-wizard-page {");
+
+  expect(authPage).toContain("min-height: 100vh");
+  expect(authPage).toContain("min-height: 100dvh");
+  expect(setupPage).toContain("min-height: calc(100vh - 66px)");
+  expect(setupPage).toContain("min-height: calc(100dvh - 66px)");
+  expect(styles).toMatch(
+    /@media \(max-width: 560px\) \{[\s\S]*?\.auth-overlay \.auth-modal \{\s*max-height: calc\(100vh - 82px\);\s*max-height: calc\(100dvh - 82px\);/,
+  );
+  expect(styles).toMatch(
+    /@media \(max-width: 560px\) \{[\s\S]*?\.auth-modal \{\s*max-height: calc\(100vh - 80px\);\s*max-height: calc\(100dvh - 80px\);/,
+  );
+});
+
 test("console typography and dashboard spacing use a compact hierarchy", async () => {
   const styles = await Bun.file(new URL("src/styles.css", customerRoot)).text();
   const pageTitle = getCssBlock(
@@ -316,11 +369,16 @@ test("homepage source scopes polish and observes minimal navigation", () => {
   expect(headerSource).toContain('homePage ? " home-nav" : ""');
 });
 
-test("homepage and loading motion use only transform or opacity", () => {
+test("homepage and loading motion reserve layout transitions for FAQ disclosure", () => {
   const marketingStyles = readFileSync(
     new URL("../src/styles/marketing.css", import.meta.url),
     "utf8",
   );
+  const faqDetailsContent = getCssBlock(
+    marketingStyles,
+    ".home-page .faq details::details-content {",
+  );
+  const compositorMotionStyles = marketingStyles.replace(faqDetailsContent, "");
   const customerStyles = readCustomerStyleSurface();
   const modelTabStyles = getCssBlock(customerStyles, ".mp-tab {");
   const skeletonStyles = getCssBlock(customerStyles, ".state-skeleton-line {");
@@ -331,8 +389,20 @@ test("homepage and loading motion use only transform or opacity", () => {
     ? getCssBlock(customerStyles, `@keyframes ${skeletonAnimation}`)
     : "";
   const transitionDeclarations = Array.from(
-    `${marketingStyles}\n${modelTabStyles}`.matchAll(/transition:\s*([^;]+);/g),
+    `${compositorMotionStyles}\n${modelTabStyles}`.matchAll(
+      /transition:\s*([^;]+);/g,
+    ),
     ([, declaration]) => declaration.replace(/\s+/g, " ").trim(),
+  );
+  const faqTransitionViolations = Array.from(
+    faqDetailsContent.matchAll(/transition:\s*([^;]+);/g),
+    ([, declaration]) => declaration.replace(/\s+/g, " ").trim(),
+  ).flatMap((declaration) =>
+    declaration
+      .split(",")
+      .map((item) => item.trim())
+      .filter((item) => !/^(height|opacity|content-visibility)\b/.test(item))
+      .map((item) => `faq transition: ${item}`),
   );
   const transitionViolations = transitionDeclarations.flatMap((declaration) =>
     declaration
@@ -355,9 +425,12 @@ test("homepage and loading motion use only transform or opacity", () => {
   expect(modelTabStyles).toBeTruthy();
   expect(skeletonAnimation).toBeTruthy();
   expect(skeletonKeyframes).toBeTruthy();
-  expect([...transitionViolations, ...keyframeViolations]).toEqual([]);
-  expect(transitionDeclarations).toHaveLength(3);
-  expect(transitionDeclarations.at(-1)).toBe("none");
+  expect([
+    ...transitionViolations,
+    ...faqTransitionViolations,
+    ...keyframeViolations,
+  ]).toEqual([]);
+  expect(transitionDeclarations).toContain("none");
 });
 
 test("homepage green actions bind accessible ink to scoped selectors", () => {
@@ -480,6 +553,188 @@ test("model pricing header keeps metadata inside the panel", () => {
   );
   expect(styles).toMatch(
     /@media \(max-width: 680px\) \{[\s\S]*?\.mp-tabs \{[\s\S]*?max-width: 100%/,
+  );
+});
+
+test("model pricing sticky header stays flush above scrolling rows", () => {
+  const styles = readFileSync(
+    new URL("../src/styles.css", import.meta.url),
+    "utf8",
+  );
+  const tableWrap = getCssBlock(styles, ".mp-table-wrap {");
+  const table = getCssBlock(styles, ".mp-table {");
+  const tableHead = getCssBlock(styles, ".mp-table thead {");
+
+  expect(tableWrap).toContain("padding: 0 12px 12px");
+  expect(table).toContain("border-collapse: separate");
+  expect(table).toContain("border-spacing: 0");
+  expect(tableHead).toContain("position: sticky");
+  expect(tableHead).toContain("top: 0");
+  expect(tableHead).toContain("z-index: 2");
+});
+
+test("homepage polish preserves the locked hero shadow", () => {
+  const marketingStyles = readFileSync(
+    new URL("../src/styles/marketing.css", import.meta.url),
+    "utf8",
+  );
+  const ghostButton = getCssBlock(
+    marketingStyles,
+    ".home-page .home-hero .hero-cta .btn-ghost {",
+  );
+
+  expect(ghostButton).toContain(
+    "box-shadow: 0 12px 28px rgb(75 116 132 / 10%)",
+  );
+});
+
+test("homepage polish preserves existing anchor landing positions", () => {
+  const styles = readFileSync(
+    new URL("../src/styles.css", import.meta.url),
+    "utf8",
+  );
+
+  expect(styles).not.toContain("scroll-margin-top: 82px");
+});
+
+test("homepage payg features use balanced columns without changing shared layout", () => {
+  const styles = readFileSync(
+    new URL("../src/styles.css", import.meta.url),
+    "utf8",
+  );
+  const marketingStyles = readFileSync(
+    new URL("../src/styles/marketing.css", import.meta.url),
+    "utf8",
+  );
+  const homeFeatures = getCssBlock(
+    marketingStyles,
+    ".home-page .payg-service-features {",
+  );
+  const homeFeature = getCssBlock(
+    marketingStyles,
+    ".home-page .payg-service-feature {",
+  );
+
+  expect(homeFeatures).toContain("column-count: 2");
+  expect(homeFeatures).toContain("column-gap: 28px");
+  expect(homeFeature).toContain("break-inside: avoid");
+  expect(styles).not.toContain(
+    ".payg-service-feature:last-child:nth-child(odd)",
+  );
+  expect(marketingStyles).toMatch(
+    /@media \(max-width: 680px\) \{[\s\S]*?\.home-page \.payg-service-features \{[\s\S]*?column-count: 1/,
+  );
+});
+
+test("homepage numeric polish stays scoped away from subscription pricing", () => {
+  const styles = readFileSync(
+    new URL("../src/styles.css", import.meta.url),
+    "utf8",
+  );
+  const marketingStyles = readFileSync(
+    new URL("../src/styles/marketing.css", import.meta.url),
+    "utf8",
+  );
+  const sharedPlanAmount = getCssBlock(styles, ".price .amt {");
+  const sharedPaygAmount = getCssBlock(styles, ".payg-service-amount {");
+  const homeAmounts = getCssBlock(
+    marketingStyles,
+    ".home-page .price .amt,\n.home-page .payg-service-amount {",
+  );
+
+  expect(sharedPlanAmount).not.toContain("font-variant-numeric: tabular-nums");
+  expect(sharedPaygAmount).not.toContain("font-variant-numeric: tabular-nums");
+  expect(homeAmounts).toContain("font-variant-numeric: tabular-nums");
+});
+
+test("homepage faq animates height and respects reduced motion", () => {
+  const marketingStyles = readFileSync(
+    new URL("../src/styles/marketing.css", import.meta.url),
+    "utf8",
+  );
+  const details = getCssBlock(marketingStyles, ".home-page .faq details {");
+  const detailsContent = getCssBlock(
+    marketingStyles,
+    ".home-page .faq details::details-content {",
+  );
+  const openDetailsContent = getCssBlock(
+    marketingStyles,
+    ".home-page .faq details[open]::details-content {",
+  );
+  const reducedMotion = getCssBlock(
+    marketingStyles,
+    "@media (prefers-reduced-motion: reduce) {",
+  );
+
+  const usesIntrinsicSizeTransition =
+    details.includes("interpolate-size: allow-keywords") &&
+    detailsContent.includes("height: 0") &&
+    openDetailsContent.includes("height: auto");
+  const usesGridTrackTransition =
+    detailsContent.includes("grid-template-rows: 0fr") &&
+    openDetailsContent.includes("grid-template-rows: 1fr");
+
+  expect(usesIntrinsicSizeTransition || usesGridTrackTransition).toBe(true);
+  expect(detailsContent).toContain("transition:");
+  expect(reducedMotion).toContain(".home-page .faq details::details-content");
+  expect(reducedMotion).toContain("transition: none");
+});
+
+test("homepage faq uses a scoped decorative toggle", () => {
+  const styles = readFileSync(
+    new URL("../src/styles.css", import.meta.url),
+    "utf8",
+  );
+  const marketingStyles = readFileSync(
+    new URL("../src/styles/marketing.css", import.meta.url),
+    "utf8",
+  );
+  const homeSource = readFileSync(
+    new URL("../src/pages/Home/index.tsx", import.meta.url),
+    "utf8",
+  );
+  const toggleIcon = getCssBlock(
+    marketingStyles,
+    ".home-page .faq .faq-toggle-icon {",
+  );
+  const summary = getCssBlock(styles, ".faq summary {");
+
+  expect(toggleIcon).toContain("transition: transform 0.2s ease");
+  expect(summary).not.toContain("user-select: none");
+  expect(homeSource).toContain('className="faq-toggle-icon"');
+  expect(homeSource).toContain('aria-hidden="true"');
+});
+
+test("coarse pointer footer links meet the minimum touch target", () => {
+  const styles = readFileSync(
+    new URL("../src/styles.css", import.meta.url),
+    "utf8",
+  );
+  const coarsePointer = getCssBlock(styles, "@media (pointer: coarse) {");
+
+  expect(coarsePointer).toContain(".footer a {");
+  expect(coarsePointer).toContain("min-height: 44px");
+});
+
+test("coarse pointer console controls meet the minimum touch target", () => {
+  const styles = readFileSync(
+    new URL("../src/styles.css", import.meta.url),
+    "utf8",
+  );
+  const coarsePointer = getCssBlock(styles, "@media (pointer: coarse) {");
+
+  expect(coarsePointer).toContain(".console-app .btn");
+  expect(coarsePointer).toContain(".console-app .side nav a");
+  expect(coarsePointer).toContain(".usage-page-button");
+  expect(coarsePointer).toContain(".inline-copy");
+  expect(coarsePointer).toContain(".billing-preset");
+  expect(coarsePointer).toContain(".payment-method-button");
+  expect(coarsePointer).toContain(".payment-method-select");
+  expect(coarsePointer).toContain(".topup-redemption-inline input");
+  expect(coarsePointer).toContain("min-height: 44px");
+  expect(coarsePointer).toContain("min-width: 44px");
+  expect(styles.lastIndexOf("@media (pointer: coarse)")).toBeGreaterThan(
+    styles.lastIndexOf("@media (max-width: 760px)"),
   );
 });
 

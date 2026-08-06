@@ -390,6 +390,7 @@ export function InvitePage() {
             caption="Invite records"
             headers={["Time", "Type", "Record", "Quota"]}
             mobileLabels={["Time", "Type", "Record", "Quota"]}
+            numericColumns={[3]}
             rows={inviteRows.map((log) => [
               formatDateTime(log.created_at),
               getInviteLogTypeLabel(getInviteLogKind(log), language),

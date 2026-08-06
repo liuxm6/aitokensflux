@@ -3,6 +3,8 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ComponentProps, ReactNode } from "react";
 import { createSetupPage } from "../src/components/setup/SetupPage";
+import { PlanPurchaseDialog } from "../src/components/topup/PlanPurchaseDialog";
+import { PurchaseProgressDialog } from "../src/components/topup/PurchaseProgressDialog";
 import { LanguageContext } from "../src/context/Language";
 import { ToastProvider } from "../src/context/Toast";
 import { AuthPage } from "../src/pages/Auth";
@@ -129,4 +131,102 @@ test("auth validation renders beside the first invalid field and moves focus", a
   );
   expect(accountInput.getAttribute("aria-invalid")).toBe("true");
   expect(document.activeElement).toBe(accountInput);
+});
+
+test("purchase dialogs keep their heading outside the scrollable body", () => {
+  const root = createRoot();
+
+  render(
+    <LanguageContext.Provider
+      value={{
+        language: "en",
+        setLanguage: () => undefined,
+        translationVersion: 0,
+      }}
+    >
+      <PlanPurchaseDialog
+        onClose={() => undefined}
+        onPay={() => undefined}
+        onSelectedEpayMethodChange={() => undefined}
+        plan={{
+          name: "Pro",
+          price: "$20",
+          suffixZh: "",
+          suffixEn: "",
+          saveZh: "",
+          saveEn: "",
+          rate: "",
+          ctaZh: "",
+          ctaEn: "",
+          tint: "mint",
+          featuresZh: [],
+          featuresEn: [],
+          priceAmount: 20,
+          requiredQuota: 10_000_000,
+          quotaLabelZh: "$20",
+          quotaLabelEn: "$20",
+          periodLabelZh: "每月",
+          periodLabelEn: "Monthly",
+          resetLabelZh: "每月重置",
+          resetLabelEn: "Monthly reset",
+          paymentLabelZh: "在线支付",
+          paymentLabelEn: "Online payment",
+        }}
+        purchaseCount={0}
+        selectedEpayMethod=""
+        status={{ quota_per_unit: 500_000 }}
+        topupInfo={null}
+        userQuota={20_000_000}
+      />
+    </LanguageContext.Provider>,
+    { container: root },
+  );
+
+  const dialog = screen.getByRole("dialog", {
+    name: "Purchase subscription",
+  });
+  const heading = dialog.querySelector(".purchase-head");
+  const body = dialog.querySelector(".purchase-dialog-body");
+
+  expect(heading).toBeTruthy();
+  expect(body).toBeTruthy();
+  expect(heading?.nextElementSibling).toBe(body);
+});
+
+test("purchase progress keeps steps and actions in the scrollable body", () => {
+  const root = createRoot();
+
+  render(
+    <LanguageContext.Provider
+      value={{
+        language: "en",
+        setLanguage: () => undefined,
+        translationVersion: 0,
+      }}
+    >
+      <PurchaseProgressDialog
+        onClose={() => undefined}
+        onLaunch={() => undefined}
+        progress={{
+          planName: "Pro",
+          steps: {
+            order: "done",
+            paymentInfo: "done",
+            launch: "done",
+          },
+          message: "Payment page ready",
+          canClose: true,
+          launch: { type: "url", url: "https://example.com" },
+        }}
+      />
+    </LanguageContext.Provider>,
+    { container: root },
+  );
+
+  const dialog = screen.getByRole("dialog", { name: "Payment page ready" });
+  const body = dialog.querySelector(".purchase-dialog-body");
+
+  expect(body).toBeTruthy();
+  expect(body?.querySelector(".purchase-steps")).toBeTruthy();
+  expect(body?.querySelector(".purchase-actions")).toBeTruthy();
 });

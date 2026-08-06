@@ -327,6 +327,7 @@ export function TopupPage() {
               "Paid",
               "Status",
             ]}
+            numericColumns={[4, 5]}
             rowKeys={billingRows.map((record) => record.id)}
             rows={billingRows.map((record) => record.cells)}
           />
