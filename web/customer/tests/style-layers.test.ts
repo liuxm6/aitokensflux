@@ -127,6 +127,19 @@ test("console hierarchy and subscription polish stay scoped and responsive", asy
   );
 });
 
+test("subscription heading keeps a compact responsive type scale", async () => {
+  const styles = await Bun.file(new URL("src/styles.css", customerRoot)).text();
+  const heading = getCssBlock(
+    styles,
+    ".subscription-page .pricing-title .h-sec {",
+  );
+
+  expect(heading).toContain("font-size: clamp(32px, 4vw, 48px)");
+  expect(styles).toMatch(
+    /@media \(max-width: 680px\) \{[\s\S]*?\.subscription-page \.pricing-title \.h-sec \{[\s\S]*?font-size: clamp\(28px, 8vw, 34px\)/,
+  );
+});
+
 test("route surfaces keep public and console backgrounds stable during lazy loading", async () => {
   const styles = await Bun.file(new URL("src/styles.css", customerRoot)).text();
   const routeSurface = getCssBlock(styles, ".customer-route-surface {");

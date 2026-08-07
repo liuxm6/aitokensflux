@@ -7440,7 +7440,7 @@
 .subscription-page .pricing-title .h-sec {
   margin-top: 18px;
   color: var(--customer-ink-strong);
-  font-size: clamp(36px, 4.6vw, 56px);
+  font-size: clamp(32px, 4vw, 48px);
   font-weight: 850;
   line-height: 1.04;
   letter-spacing: -0.035em;
@@ -10384,7 +10384,7 @@
 
   .subscription-page .pricing-title .h-sec {
     margin-top: 14px;
-    font-size: clamp(32px, 10vw, 40px);
+    font-size: clamp(28px, 8vw, 34px);
     line-height: 1.08;
     text-wrap: wrap;
   }
