@@ -815,6 +815,9 @@ test("mobile model pricing keeps model names visible in the value column", async
   const styles = await Bun.file(new URL("src/styles.css", customerRoot)).text();
 
   expect(styles).toMatch(
+    /@media \(max-width: 760px\) \{[\s\S]*?\.mp-table td\.mp-col-model,\s*\.mp-table td\.mp-percall\s*\{[^}]*width:\s*100%/,
+  );
+  expect(styles).toMatch(
     /@media \(max-width: 760px\) \{[\s\S]*?\.mp-model-cell\s*\{[\s\S]*?display:\s*grid[\s\S]*?width:\s*100%[\s\S]*?min-width:\s*0[\s\S]*?grid-template-columns:\s*26px minmax\(0, 1fr\)/,
   );
   expect(styles).toMatch(
