@@ -810,3 +810,14 @@ test("adaptive pricing table releases its max height at 760px and below", () => 
     /\.home-page \.mp-table-wrap-adaptive\s*\{\s*max-height:\s*none;\s*\}/,
   );
 });
+
+test("mobile model pricing keeps model names visible in the value column", async () => {
+  const styles = await Bun.file(new URL("src/styles.css", customerRoot)).text();
+
+  expect(styles).toMatch(
+    /@media \(max-width: 760px\) \{[\s\S]*?\.mp-model-cell\s*\{[\s\S]*?width:\s*100%[\s\S]*?min-width:\s*0/,
+  );
+  expect(styles).toMatch(
+    /@media \(max-width: 760px\) \{[\s\S]*?\.mp-model-name\s*\{[\s\S]*?overflow-wrap:\s*anywhere[\s\S]*?white-space:\s*normal/,
+  );
+});

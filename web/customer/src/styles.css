@@ -11385,6 +11385,21 @@
   .usage-detail-stack {
     justify-content: flex-end;
   }
+
+  .mp-model-cell {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .mp-model-name {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    text-align: right;
+    text-overflow: clip;
+    white-space: normal;
+  }
 }
 
 @media (pointer: coarse) {
