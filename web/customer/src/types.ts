@@ -79,6 +79,8 @@ export type ApiResponse<T = unknown> = {
   message?: string;
   data?: T;
   status?: number;
+  /** Whether the gateway's auth chain accepted the request and ran the handler. */
+  authenticated?: boolean;
 };
 
 export type LoginData = CustomerUser & {

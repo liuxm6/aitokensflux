@@ -6,9 +6,8 @@ import {
   Pencil,
   KeyRound,
   LoaderCircle,
-  X,
 } from "lucide-react";
-import { type FormEvent, useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { AppLink } from "../../components/common/AppLink";
 import {
   EmptyState,
@@ -19,6 +18,16 @@ import { SectionLabel } from "../../components/common/SectionLabel";
 import { Panel } from "../../components/common/ui/Panel";
 import { CustomerShell } from "../../components/layout/CustomerShell";
 import { ConsolePageHeader } from "../../components/layout/ConsolePageHeader";
+import { ApiKeyFormDialog } from "../../components/token/ApiKeyFormDialog";
+import { CCSwitchImportDialog } from "../../components/token/CCSwitchImportDialog";
+import {
+  CC_SWITCH_APP_CONFIGS,
+  buildCcSwitchUrl,
+  buildDefaultCcSwitchModels,
+} from "../../components/token/cc-switch";
+import type { CCSwitchApp } from "../../components/token/cc-switch";
+import { normalizeUserGroupOptions } from "../../components/token/user-groups";
+import type { UserGroupSelectOption } from "../../components/token/user-groups";
 import { pageMeta } from "../../constants/page-meta";
 import { ConfirmActionContext } from "../../context/ConfirmAction";
 import { LanguageContext, T } from "../../context/Language";
@@ -27,7 +36,6 @@ import {
   formatQuotaTokens,
   formatTimestamp,
   getApiKeyExpiryTimestamp,
-  getApiKeyQuotaLimitUnit,
   getDefaultApiKeyCreateForm,
   getQuotaPerUnit,
   normalizePageData,
@@ -48,79 +56,11 @@ import {
 } from "../../services/customer-api";
 import type {
   ApiKeyCreateForm,
-  ApiKeyExpiryMode,
   CustomerStatus,
   CustomerToken,
   Language,
   PageData,
 } from "../../types";
-
-const CLAUDE_DEFAULT_MODELS = {
-  model: "claude-sonnet-4.6",
-  haikuModel: "claude-haiku-4-5-20251001",
-  sonnetModel: "claude-sonnet-4.6",
-  opusModel: "claude-opus-4-8",
-};
-
-const CC_SWITCH_APP_CONFIGS = {
-  claude: {
-    label: "Claude",
-    defaultName: "My Claude",
-    defaultModels: CLAUDE_DEFAULT_MODELS,
-    modelFields: [
-      { key: "model", labelId: "Primary Model", required: true },
-      { key: "haikuModel", labelId: "Haiku Model", required: false },
-      { key: "sonnetModel", labelId: "Sonnet Model", required: false },
-      { key: "opusModel", labelId: "Opus Model", required: false },
-    ],
-  },
-  codex: {
-    label: "Codex",
-    defaultName: "My Codex",
-    defaultModels: { model: "gpt-5.5" },
-    modelFields: [{ key: "model", labelId: "Primary Model", required: true }],
-  },
-  gemini: {
-    label: "Gemini",
-    defaultName: "My Gemini",
-    defaultModels: { model: "gemini-2.5-pro" },
-    modelFields: [{ key: "model", labelId: "Primary Model", required: true }],
-  },
-} as const;
-
-type CCSwitchApp = keyof typeof CC_SWITCH_APP_CONFIGS;
-type UserGroupSelectOption = {
-  name: string;
-  desc: string;
-  ratio: string;
-};
-
-function buildDefaultCcSwitchModels(app: CCSwitchApp) {
-  return { ...CC_SWITCH_APP_CONFIGS[app].defaultModels };
-}
-
-function normalizeUserGroupOptions(
-  groups: Record<string, { ratio?: string | number; desc?: string }>,
-): UserGroupSelectOption[] {
-  return Object.entries(groups)
-    .map(([name, info]) => ({
-      name,
-      desc: String(info.desc || ""),
-      ratio: String(info.ratio ?? ""),
-    }))
-    .sort((first, second) => {
-      if (first.name === "auto") return -1;
-      if (second.name === "auto") return 1;
-      return first.name.localeCompare(second.name);
-    });
-}
-
-function formatUserGroupOptionLabel(option: UserGroupSelectOption) {
-  const parts = [option.name];
-  if (option.desc) parts.push(option.desc);
-  if (option.ratio) parts.push(option.ratio);
-  return parts.join(" · ");
-}
 
 type CCSwitchDialogState = {
   token: CustomerToken;
@@ -838,673 +778,61 @@ export function ApiKeysPage() {
           </div>
         ) : null}
       </Panel>
-      <ApiKeyCreateDialog
-        open={createDialogOpen}
-        form={createForm}
-        groupOptions={groupOptions}
-        groupsLoading={groupsLoading}
-        status={status}
-        submitting={createSubmitting}
-        onChange={setCreateForm}
-        onClose={closeCreateDialog}
-        onSubmit={createToken}
-      />
-      <ApiKeyEditDialog
-        form={editDialog?.form || getDefaultApiKeyCreateForm()}
-        groupOptions={groupOptions}
-        groupsLoading={groupsLoading}
-        open={Boolean(editDialog)}
-        status={status}
-        submitting={editSubmitting}
-        tokenName={editDialog?.token.name || ""}
-        onChange={(form) =>
-          setEditDialog((current) =>
-            current
-              ? {
-                  ...current,
-                  form,
-                  crossGroupRetry:
-                    form.group === "auto" ? current.crossGroupRetry : false,
-                }
-              : current,
-          )
-        }
-        onClose={closeEditDialog}
-        onSubmit={updateToken}
-      />
-      <CCSwitchImportDialog
-        app={ccSwitchApp}
-        modelOptions={ccSwitchModelOptions}
-        models={ccSwitchModels}
-        modelsLoading={ccSwitchModelsLoading}
-        name={ccSwitchName}
-        open={Boolean(ccSwitchDialog)}
-        tokenName={ccSwitchDialog?.token.name || ""}
-        onAppChange={handleCcSwitchAppChange}
-        onChangeModels={setCcSwitchModels}
-        onChangeName={setCcSwitchName}
-        onClose={() => setCcSwitchDialog(null)}
-        onSubmit={openCcSwitch}
-      />
+      {createDialogOpen ? (
+        <ApiKeyFormDialog
+          form={createForm}
+          groupOptions={groupOptions}
+          groupsLoading={groupsLoading}
+          mode="create"
+          status={status}
+          submitting={createSubmitting}
+          onChange={setCreateForm}
+          onClose={closeCreateDialog}
+          onSubmit={createToken}
+        />
+      ) : null}
+      {editDialog ? (
+        <ApiKeyFormDialog
+          form={editDialog.form}
+          groupOptions={groupOptions}
+          groupsLoading={groupsLoading}
+          mode="edit"
+          status={status}
+          submitting={editSubmitting}
+          tokenName={editDialog.token.name || ""}
+          onChange={(form) =>
+            setEditDialog((current) =>
+              current
+                ? {
+                    ...current,
+                    form,
+                    crossGroupRetry:
+                      form.group === "auto" ? current.crossGroupRetry : false,
+                  }
+                : current,
+            )
+          }
+          onClose={closeEditDialog}
+          onSubmit={updateToken}
+        />
+      ) : null}
+      {ccSwitchDialog ? (
+        <CCSwitchImportDialog
+          app={ccSwitchApp}
+          modelOptions={ccSwitchModelOptions}
+          models={ccSwitchModels}
+          modelsLoading={ccSwitchModelsLoading}
+          name={ccSwitchName}
+          tokenName={ccSwitchDialog.token.name || ""}
+          onAppChange={handleCcSwitchAppChange}
+          onChangeModels={setCcSwitchModels}
+          onChangeName={setCcSwitchName}
+          onClose={() => setCcSwitchDialog(null)}
+          onSubmit={openCcSwitch}
+        />
+      ) : null}
     </CustomerShell>
   );
-}
-
-function ApiKeyCreateDialog({
-  open,
-  form,
-  groupOptions,
-  groupsLoading,
-  status,
-  submitting,
-  onChange,
-  onClose,
-  onSubmit,
-}: {
-  open: boolean;
-  form: ApiKeyCreateForm;
-  groupOptions: UserGroupSelectOption[];
-  groupsLoading: boolean;
-  status: CustomerStatus | null;
-  submitting: boolean;
-  onChange: (form: ApiKeyCreateForm) => void;
-  onClose: () => void;
-  onSubmit: () => void | Promise<void>;
-}) {
-  const { language } = useContext(LanguageContext);
-  if (!open) return null;
-
-  const quotaUnit = getApiKeyQuotaLimitUnit(status);
-  const quotaLimit = parseApiKeyQuotaLimit(form.quotaLimit, status);
-  const quotaPreview =
-    !form.unlimitedQuota &&
-    form.quotaLimit.trim() &&
-    Number.isFinite(quotaLimit)
-      ? formatQuotaTokens(quotaLimit)
-      : "";
-
-  const setField = <K extends keyof ApiKeyCreateForm>(
-    key: K,
-    value: ApiKeyCreateForm[K],
-  ) => onChange({ ...form, [key]: value });
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    void onSubmit();
-  };
-
-  return (
-    <div className="purchase-dialog key-create-dialog" role="dialog" aria-modal>
-      <button
-        className="purchase-backdrop as-button"
-        type="button"
-        aria-label={localizeKey(language, "Close")}
-        disabled={submitting}
-        onClick={onClose}
-      />
-      <form className="purchase-panel key-create-panel" onSubmit={handleSubmit}>
-        <button
-          className="purchase-close"
-          type="button"
-          aria-label={localizeKey(language, "Close")}
-          disabled={submitting}
-          onClick={onClose}
-        >
-          <X size={20} />
-        </button>
-        <div className="purchase-head key-create-head">
-          <span className="purchase-kicker">
-            <T id="API key" />
-          </span>
-          <h2>
-            <T id="Create key" />
-          </h2>
-        </div>
-        <div className="key-create-form">
-          <label className="key-create-field">
-            <span>
-              <T id="Name" />
-            </span>
-            <input
-              className="console-input"
-              maxLength={50}
-              placeholder={localizeKey(language, "e.g. Production")}
-              value={form.name}
-              onChange={(event) => setField("name", event.target.value)}
-            />
-          </label>
-
-          <label className="key-create-field">
-            <span>
-              <T id="Group" />
-              <b className="required-dot">*</b>
-            </span>
-            <select
-              className="console-select"
-              disabled={submitting || groupsLoading}
-              required
-              value={form.group}
-              onChange={(event) => setField("group", event.target.value)}
-            >
-              <option value="">
-                {groupsLoading
-                  ? localizeKey(language, "Loading groups...")
-                  : localizeKey(language, "Select group")}
-              </option>
-              {groupOptions.map((option) => (
-                <option key={option.name} value={option.name}>
-                  {formatUserGroupOptionLabel(option)}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <div className="key-create-grid">
-            <label className="key-create-field">
-              <span>
-                <T id="Valid until" />
-              </span>
-              <select
-                className="console-select"
-                value={form.expiryMode}
-                onChange={(event) =>
-                  setField("expiryMode", event.target.value as ApiKeyExpiryMode)
-                }
-              >
-                <option value="never">
-                  {localizeKey(language, "Never expires")}
-                </option>
-                <option value="7d">{localizeKey(language, "7 days")}</option>
-                <option value="30d">{localizeKey(language, "30 days")}</option>
-                <option value="90d">{localizeKey(language, "90 days")}</option>
-                <option value="custom">
-                  {localizeKey(language, "Custom date")}
-                </option>
-              </select>
-            </label>
-            <label className="key-create-field">
-              <span>
-                <T id="Expiry date" />
-              </span>
-              <input
-                className="console-input"
-                disabled={form.expiryMode !== "custom"}
-                min={toDateInputValue(new Date())}
-                type="date"
-                value={form.expiryDate}
-                onChange={(event) => setField("expiryDate", event.target.value)}
-              />
-            </label>
-          </div>
-
-          <div className="key-create-grid key-create-quota-grid">
-            <label className="key-create-field">
-              <span>
-                <T id="Quota ({{unit}})" values={{ unit: quotaUnit }} />
-              </span>
-              <input
-                className="console-input"
-                disabled={form.unlimitedQuota}
-                inputMode="decimal"
-                min="0"
-                placeholder="10"
-                step={quotaUnit === "tokens" ? "1" : "0.01"}
-                type="number"
-                value={form.quotaLimit}
-                onChange={(event) => setField("quotaLimit", event.target.value)}
-              />
-            </label>
-            <label className="key-create-check">
-              <input
-                checked={form.unlimitedQuota}
-                type="checkbox"
-                onChange={(event) =>
-                  setField("unlimitedQuota", event.target.checked)
-                }
-              />
-              <span>
-                <T id="Unlimited quota" />
-              </span>
-            </label>
-          </div>
-
-          <div className="key-create-hint">
-            {form.unlimitedQuota ? (
-              <T id="With unlimited quota enabled, this key is not capped at the key level." />
-            ) : quotaPreview ? (
-              <T
-                id="Submitted quota: {{quota}}"
-                values={{ quota: quotaPreview }}
-              />
-            ) : (
-              <T id="Enter a quota limit for this key." />
-            )}
-          </div>
-
-          <div className="key-create-actions">
-            <button
-              className="btn btn-ghost"
-              type="button"
-              disabled={submitting}
-              onClick={onClose}
-            >
-              <T id="Cancel" />
-            </button>
-            <button
-              className="btn btn-flux"
-              type="submit"
-              disabled={submitting || groupsLoading}
-            >
-              {submitting ? <LoaderCircle size={16} /> : <KeyRound size={16} />}
-              <T id="Create key" />
-            </button>
-          </div>
-        </div>
-      </form>
-    </div>
-  );
-}
-
-function ApiKeyEditDialog({
-  open,
-  form,
-  groupOptions,
-  groupsLoading,
-  status,
-  submitting,
-  tokenName,
-  onChange,
-  onClose,
-  onSubmit,
-}: {
-  open: boolean;
-  form: ApiKeyCreateForm;
-  groupOptions: UserGroupSelectOption[];
-  groupsLoading: boolean;
-  status: CustomerStatus | null;
-  submitting: boolean;
-  tokenName: string;
-  onChange: (form: ApiKeyCreateForm) => void;
-  onClose: () => void;
-  onSubmit: () => void | Promise<void>;
-}) {
-  const { language } = useContext(LanguageContext);
-  if (!open) return null;
-
-  const quotaUnit = getApiKeyQuotaLimitUnit(status);
-  const quotaLimit = parseApiKeyQuotaLimit(form.quotaLimit, status);
-  const quotaPreview =
-    !form.unlimitedQuota &&
-    form.quotaLimit.trim() &&
-    Number.isFinite(quotaLimit)
-      ? formatQuotaTokens(quotaLimit)
-      : "";
-
-  const setField = <K extends keyof ApiKeyCreateForm>(
-    key: K,
-    value: ApiKeyCreateForm[K],
-  ) => onChange({ ...form, [key]: value });
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    void onSubmit();
-  };
-
-  return (
-    <div className="purchase-dialog key-create-dialog" role="dialog" aria-modal>
-      <button
-        className="purchase-backdrop as-button"
-        type="button"
-        aria-label={localizeKey(language, "Close")}
-        disabled={submitting}
-        onClick={onClose}
-      />
-      <form className="purchase-panel key-create-panel" onSubmit={handleSubmit}>
-        <button
-          className="purchase-close"
-          type="button"
-          aria-label={localizeKey(language, "Close")}
-          disabled={submitting}
-          onClick={onClose}
-        >
-          <X size={20} />
-        </button>
-        <div className="purchase-head key-create-head">
-          <span className="purchase-kicker">
-            <T id="API key" />
-          </span>
-          <h2>
-            <T id="Edit key" />
-          </h2>
-          {tokenName ? <p>{tokenName}</p> : null}
-        </div>
-        <div className="key-create-form">
-          <label className="key-create-field">
-            <span>
-              <T id="Name" />
-            </span>
-            <input
-              className="console-input"
-              maxLength={50}
-              placeholder={localizeKey(language, "e.g. Production")}
-              value={form.name}
-              onChange={(event) => setField("name", event.target.value)}
-            />
-          </label>
-
-          <label className="key-create-field">
-            <span>
-              <T id="Group" />
-              <b className="required-dot">*</b>
-            </span>
-            <select
-              className="console-select"
-              disabled={submitting || groupsLoading}
-              required
-              value={form.group}
-              onChange={(event) => setField("group", event.target.value)}
-            >
-              <option value="">
-                {groupsLoading
-                  ? localizeKey(language, "Loading groups...")
-                  : localizeKey(language, "Select group")}
-              </option>
-              {groupOptions.map((option) => (
-                <option key={option.name} value={option.name}>
-                  {formatUserGroupOptionLabel(option)}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <div className="key-create-grid">
-            <label className="key-create-field">
-              <span>
-                <T id="Valid until" />
-              </span>
-              <select
-                className="console-select"
-                value={form.expiryMode}
-                onChange={(event) =>
-                  setField("expiryMode", event.target.value as ApiKeyExpiryMode)
-                }
-              >
-                <option value="never">
-                  {localizeKey(language, "Never expires")}
-                </option>
-                <option value="7d">{localizeKey(language, "7 days")}</option>
-                <option value="30d">{localizeKey(language, "30 days")}</option>
-                <option value="90d">{localizeKey(language, "90 days")}</option>
-                <option value="custom">
-                  {localizeKey(language, "Custom date")}
-                </option>
-              </select>
-            </label>
-            <label className="key-create-field">
-              <span>
-                <T id="Expiry date" />
-              </span>
-              <input
-                className="console-input"
-                disabled={form.expiryMode !== "custom"}
-                min={toDateInputValue(new Date())}
-                type="date"
-                value={form.expiryDate}
-                onChange={(event) => setField("expiryDate", event.target.value)}
-              />
-            </label>
-          </div>
-
-          <div className="key-create-grid key-create-quota-grid">
-            <label className="key-create-field">
-              <span>
-                <T id="Quota ({{unit}})" values={{ unit: quotaUnit }} />
-              </span>
-              <input
-                className="console-input"
-                disabled={form.unlimitedQuota}
-                inputMode="decimal"
-                min="0"
-                placeholder="10"
-                step={quotaUnit === "tokens" ? "1" : "0.01"}
-                type="number"
-                value={form.quotaLimit}
-                onChange={(event) => setField("quotaLimit", event.target.value)}
-              />
-            </label>
-            <label className="key-create-check">
-              <input
-                checked={form.unlimitedQuota}
-                type="checkbox"
-                onChange={(event) =>
-                  setField("unlimitedQuota", event.target.checked)
-                }
-              />
-              <span>
-                <T id="Unlimited quota" />
-              </span>
-            </label>
-          </div>
-
-          <div className="key-create-hint">
-            {form.unlimitedQuota ? (
-              <T id="With unlimited quota enabled, this key is not capped at the key level." />
-            ) : quotaPreview ? (
-              <T
-                id="Submitted quota: {{quota}}"
-                values={{ quota: quotaPreview }}
-              />
-            ) : (
-              <T id="Enter a quota limit for this key." />
-            )}
-          </div>
-
-          <div className="key-create-actions">
-            <button
-              className="btn btn-ghost"
-              type="button"
-              disabled={submitting}
-              onClick={onClose}
-            >
-              <T id="Cancel" />
-            </button>
-            <button
-              className="btn btn-flux"
-              type="submit"
-              disabled={submitting || groupsLoading}
-            >
-              {submitting ? <LoaderCircle size={16} /> : <Pencil size={16} />}
-              <T id="Save changes" />
-            </button>
-          </div>
-        </div>
-      </form>
-    </div>
-  );
-}
-
-function CCSwitchImportDialog({
-  app,
-  name,
-  models,
-  modelOptions,
-  modelsLoading,
-  open,
-  tokenName,
-  onAppChange,
-  onChangeName,
-  onChangeModels,
-  onClose,
-  onSubmit,
-}: {
-  app: CCSwitchApp;
-  name: string;
-  models: Record<string, string>;
-  modelOptions: string[];
-  modelsLoading: boolean;
-  open: boolean;
-  tokenName: string;
-  onAppChange: (app: CCSwitchApp) => void;
-  onChangeName: (name: string) => void;
-  onChangeModels: (models: Record<string, string>) => void;
-  onClose: () => void;
-  onSubmit: () => void;
-}) {
-  const { language } = useContext(LanguageContext);
-  if (!open) return null;
-
-  const currentConfig = CC_SWITCH_APP_CONFIGS[app];
-  const modelListId = `cc-switch-models-${app}`;
-
-  const updateModel = (key: string, value: string) => {
-    onChangeModels({ ...models, [key]: value });
-  };
-
-  return (
-    <div className="purchase-dialog cc-switch-dialog" role="dialog" aria-modal>
-      <button
-        className="purchase-backdrop as-button"
-        type="button"
-        aria-label={localizeKey(language, "Close")}
-        onClick={onClose}
-      />
-      <div className="purchase-panel cc-switch-panel">
-        <button
-          className="purchase-close"
-          type="button"
-          aria-label={localizeKey(language, "Close")}
-          onClick={onClose}
-        >
-          <X size={20} />
-        </button>
-        <div className="purchase-head key-create-head">
-          <span className="purchase-kicker">CC Switch</span>
-          <h2>
-            <T id="Import to CC Switch" />
-          </h2>
-          {tokenName ? <p>{tokenName}</p> : null}
-        </div>
-
-        <div className="key-create-form">
-          <label className="key-create-field">
-            <span>
-              <T id="Application" />
-            </span>
-            <select
-              className="console-select"
-              value={app}
-              onChange={(event) =>
-                onAppChange(event.target.value as CCSwitchApp)
-              }
-            >
-              {(
-                Object.entries(CC_SWITCH_APP_CONFIGS) as [
-                  CCSwitchApp,
-                  (typeof CC_SWITCH_APP_CONFIGS)[CCSwitchApp],
-                ][]
-              ).map(([value, config]) => (
-                <option key={value} value={value}>
-                  {config.label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="key-create-field">
-            <span>
-              <T id="Name" />
-            </span>
-            <input
-              className="console-input"
-              value={name}
-              placeholder={currentConfig.defaultName}
-              onChange={(event) => onChangeName(event.target.value)}
-            />
-          </label>
-
-          <datalist id={modelListId}>
-            {modelOptions.map((model) => (
-              <option key={model} value={model} />
-            ))}
-          </datalist>
-
-          {currentConfig.modelFields.map((field) => (
-            <label className="key-create-field" key={field.key}>
-              <span>
-                {localizeKey(language, field.labelId)}
-                {field.required ? <b className="required-dot">*</b> : null}
-              </span>
-              <input
-                className="console-input"
-                list={modelListId}
-                value={models[field.key] || ""}
-                placeholder={localizeKey(
-                  language,
-                  "Select or enter model name",
-                )}
-                onChange={(event) => updateModel(field.key, event.target.value)}
-              />
-            </label>
-          ))}
-
-          {modelsLoading ? (
-            <p className="cc-switch-hint">
-              <T id="Loading models..." />
-            </p>
-          ) : null}
-
-          <div className="key-create-actions">
-            <button className="btn btn-ghost" type="button" onClick={onClose}>
-              <T id="Cancel" />
-            </button>
-            <button className="btn btn-flux" type="button" onClick={onSubmit}>
-              <ArrowRightLeft size={16} />
-              <T id="Open CC Switch" />
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function buildCcSwitchUrl({
-  app,
-  name,
-  models,
-  apiKey,
-  serverAddress,
-  openaiBaseUrl,
-}: {
-  app: CCSwitchApp;
-  name: string;
-  models: Record<string, string>;
-  apiKey: string;
-  serverAddress: string;
-  openaiBaseUrl: string;
-}) {
-  const endpoint = app === "codex" ? openaiBaseUrl : serverAddress;
-  const primaryModel = models.model?.trim() || "";
-  const params = new URLSearchParams();
-  params.set("resource", "provider");
-  params.set("app", app);
-  params.set("name", name);
-  params.set("endpoint", endpoint);
-  params.set("apiKey", apiKey);
-  for (const [key, value] of Object.entries(models)) {
-    const trimmed = value.trim();
-    if (trimmed) params.set(key, trimmed);
-  }
-  params.set("homepage", serverAddress);
-  params.set("notes", primaryModel ? `${name} · ${primaryModel}` : name);
-  params.set("icon", "atf");
-  params.set("enabled", "true");
-  params.set("usageEnabled", "true");
-  params.set("usageApiKey", apiKey);
-  params.set("usageBaseUrl", serverAddress);
-  params.set("usageAutoInterval", "5");
-  params.set("usageScript", encodeBase64(buildCcSwitchUsageScript()));
-  return `ccswitch://v1/import?${params.toString()}`;
 }
 
 function buildTokenUpdatePayload(
@@ -1573,72 +901,6 @@ function formatTokenGroupLabel(
   const parts = [group];
   if (option.ratio) parts.push(option.ratio);
   return parts.join(" · ");
-}
-
-function buildCcSwitchUsageScript() {
-  return `({
-  request: {
-    url: "{{baseUrl}}/api/usage/token/",
-    method: "GET",
-    headers: {
-      "Authorization": "Bearer {{apiKey}}",
-      "User-Agent": "cc-switch/1.0"
-    }
-  },
-  extractor: function(response) {
-    if (!response || (response.code !== true && response.success !== true) || !response.data) {
-      return {
-        isValid: false,
-        invalidMessage: response && response.message ? response.message : "Failed to load usage",
-        remaining: 0,
-        unit: "USD"
-      };
-    }
-
-    var data = response.data;
-    var quotaPerUnit = 500000;
-    var toNumber = function(value) {
-      var number = Number(value);
-      return Number.isFinite(number) ? number : 0;
-    };
-    var toUSD = function(quota) {
-      return toNumber(quota) / quotaPerUnit;
-    };
-    var walletQuota = toNumber(data.wallet_quota !== undefined ? data.wallet_quota : data.user_quota);
-    var walletUsedQuota = toNumber(data.wallet_used_quota !== undefined ? data.wallet_used_quota : data.user_used_quota);
-    var keyAvailable = data.unlimited_quota ? walletQuota : toNumber(data.total_available);
-    var keyUsed = toNumber(data.total_used);
-    var keyTotal = data.unlimited_quota ? keyAvailable + keyUsed : toNumber(data.total_granted);
-
-    return [
-      {
-        planName: data.name || "API key quota",
-        remaining: toUSD(keyAvailable),
-        used: toUSD(keyUsed),
-        total: toUSD(keyTotal),
-        unit: "USD",
-        isValid: true
-      },
-      {
-        planName: "Wallet balance",
-        remaining: toUSD(walletQuota),
-        used: toUSD(walletUsedQuota),
-        total: toUSD(walletQuota + walletUsedQuota),
-        unit: "USD",
-        isValid: true
-      }
-    ];
-  }
-})`;
-}
-
-function encodeBase64(value: string) {
-  const bytes = new TextEncoder().encode(value);
-  let binary = "";
-  bytes.forEach((byte) => {
-    binary += String.fromCharCode(byte);
-  });
-  return window.btoa(binary);
 }
 
 function formatApiKey(key: string) {

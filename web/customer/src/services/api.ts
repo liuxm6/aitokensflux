@@ -4,6 +4,7 @@ import type { ApiResponse } from "../types";
 
 const API_REQUEST_TIMEOUT_MS = 8000;
 const TURNSTILE_HEADER_NAME = "X-Turnstile-Token";
+const AUTH_VERSION_HEADER_NAME = "Auth-Version";
 
 function mergeRequestHeaders(headers?: HeadersInit) {
   const merged = new Headers();
@@ -61,6 +62,7 @@ export async function apiRequest<T>(
       signal: controller.signal,
     });
     const data = (await response.json().catch(() => ({}))) as ApiResponse<T>;
+    const authenticated = response.headers.has(AUTH_VERSION_HEADER_NAME);
     if (!response.ok) {
       return {
         success: false,
@@ -69,11 +71,13 @@ export async function apiRequest<T>(
           response.statusText ||
           translateLocale(detectCustomerLanguage(), "Request failed"),
         status: response.status,
+        authenticated,
       };
     }
     return {
       ...data,
       status: response.status,
+      authenticated,
     };
   } catch (error) {
     return {
@@ -86,7 +90,13 @@ export async function apiRequest<T>(
 }
 
 export function shouldClearStoredUser(response: ApiResponse<unknown>) {
-  return response.status === 401 || response.status === 200;
+  if (response.status === 401) return true;
+  // The gateway rejects an invalid session with HTTP 200 and success:false, so the
+  // status alone cannot tell a dead session from a handler that merely failed. The
+  // auth chain stamps Auth-Version only once it has accepted the request, so a
+  // stamped failure is a handler error (database hiccup, upstream outage) and must
+  // not sign the user out.
+  return response.status === 200 && response.authenticated === false;
 }
 
 export function buildQuery(params: Record<string, string | undefined>) {
