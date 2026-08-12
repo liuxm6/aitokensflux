@@ -144,10 +144,6 @@ h3 {
   color: var(--muted);
 }
 
-.positive {
-  color: #0a9a63;
-}
-
 .async-state {
   display: grid;
   min-height: 150px;
