@@ -6811,14 +6811,20 @@
     scroll-behavior: auto;
   }
 
-  .skip-link {
-    transition: none;
-  }
-
+  .skip-link,
+  .btn,
   .dashboard-plan-disclosure > svg {
     transition: none;
   }
 
+  .btn:active {
+    transform: none;
+  }
+
+  .toast,
+  .spin,
+  .key-create-actions .btn-flux:disabled svg,
+  .purchase-step.processing .purchase-step-icon svg,
   .account-dialog-backdrop,
   .account-dialog-panel,
   .auth-dialog-backdrop,
@@ -6840,6 +6846,7 @@
     animation: none;
   }
 
+  .toast,
   .account-dialog-panel,
   .auth-dialog-panel,
   .auth-modal .auth-form,

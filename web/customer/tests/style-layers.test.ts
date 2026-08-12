@@ -123,6 +123,15 @@ test("console hierarchy and subscription polish stay scoped and responsive", asy
     /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.dashboard-plan-disclosure > svg/,
   );
   expect(styles).toMatch(
+    /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.toast/,
+  );
+  expect(styles).toMatch(
+    /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.spin/,
+  );
+  expect(styles).toMatch(
+    /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.btn:active/,
+  );
+  expect(styles).toMatch(
     /@media \(max-width: 980px\) \{[\s\S]*?\.mobile-topbar[\s\S]*?display: flex/,
   );
 });
