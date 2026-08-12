@@ -166,7 +166,7 @@ export function DropdownMenu({
               ref: (element: HTMLElement | null) => {
                 itemRefs.current[index] = element;
               },
-              role: "menuitem",
+              role: child.props.role ?? "menuitem",
               tabIndex: -1,
             } as MenuItemProps & {
               ref: (element: HTMLElement | null) => void;

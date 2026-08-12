@@ -133,11 +133,23 @@ describe("route focus and metadata", () => {
     const languageTrigger = screen.getByRole("button", { name: "Language" });
 
     await user.click(languageTrigger);
-    await user.click(screen.getByRole("menuitem", { name: "简体中文" }));
+    await user.click(screen.getByRole("menuitemradio", { name: "简体中文" }));
 
     expect(document.title).toBe("用量明细 · AI Tokens Flux");
     expect(document.activeElement?.tagName).toBe("BUTTON");
     expect(document.activeElement?.getAttribute("class")).toBe("lang-btn");
+
+    await user.click(languageTrigger);
+    expect(
+      screen
+        .getByRole("menuitemradio", { name: "简体中文" })
+        .getAttribute("aria-checked"),
+    ).toBe("true");
+    expect(
+      screen
+        .getByRole("menuitemradio", { name: "繁體中文" })
+        .getAttribute("aria-checked"),
+    ).toBe("false");
   });
 });
 

@@ -91,10 +91,12 @@ export function CustomerShell({
         <nav aria-label={localizeKey(language, "Customer navigation")}>
           {sidebarItems.map((item) => {
             const Icon = item.icon;
+            const current = page === item.page;
             return (
               <AppLink
                 key={item.page}
-                className={page === item.page ? "active" : ""}
+                aria-current={current ? "page" : undefined}
+                className={current ? "active" : ""}
                 href={item.path}
                 onNavigate={() => closeSidebar(false)}
               >

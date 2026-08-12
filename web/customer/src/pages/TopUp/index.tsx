@@ -8,6 +8,7 @@ import {
 import { CustomerShell } from "../../components/layout/CustomerShell";
 import { ConsolePageHeader } from "../../components/layout/ConsolePageHeader";
 import { Panel } from "../../components/common/ui/Panel";
+import { TabList, TabPanel } from "../../components/common/ui/TabList";
 import { DataTable } from "../../components/table/DataTable";
 import { TopupDialog } from "../../components/topup/TopupDialog";
 import { pageMeta } from "../../constants/page-meta";
@@ -39,34 +40,13 @@ import type {
   TopupRecord,
 } from "../../types";
 
-function SegmentedTabs({
-  tabs,
-  value,
-  onChange,
-}: {
-  tabs: { value: BillingRecordType; labelId: string }[];
-  value: BillingRecordType;
-  onChange: (value: BillingRecordType) => void;
-}) {
-  const { language } = useContext(LanguageContext);
+const BILLING_RECORD_TABS_ID = "billing-records";
 
-  return (
-    <div className="segmented-tabs" role="tablist">
-      {tabs.map((tab) => (
-        <button
-          aria-selected={value === tab.value}
-          className={value === tab.value ? "active" : ""}
-          key={tab.value}
-          role="tab"
-          type="button"
-          onClick={() => onChange(tab.value)}
-        >
-          {localizeKey(language, tab.labelId)}
-        </button>
-      ))}
-    </div>
-  );
-}
+const BILLING_RECORD_TABS: { value: BillingRecordType; labelId: string }[] = [
+  { value: "all", labelId: "All" },
+  { value: "subscription", labelId: "Plan subscriptions" },
+  { value: "topup", labelId: "PAYG top-ups" },
+];
 
 function BillingTypeChip({
   label,
@@ -284,12 +264,14 @@ export function TopupPage() {
       <Panel className="record-panel">
         <div className="record-toolbar">
           <div className="record-left">
-            <SegmentedTabs
-              tabs={[
-                { value: "all", labelId: "All" },
-                { value: "subscription", labelId: "Plan subscriptions" },
-                { value: "topup", labelId: "PAYG top-ups" },
-              ]}
+            <TabList
+              className="segmented-tabs"
+              idPrefix={BILLING_RECORD_TABS_ID}
+              label={localizeKey(language, "Billing record filter")}
+              tabs={BILLING_RECORD_TABS.map((tab) => ({
+                value: tab.value,
+                label: localizeKey(language, tab.labelId),
+              }))}
               value={recordType}
               onChange={setRecordType}
             />
@@ -298,42 +280,44 @@ export function TopupPage() {
             </span>
           </div>
         </div>
-        {loading ? (
-          <LoadingState id="Loading billing records" />
-        ) : loadError ? (
-          <ErrorState
-            id="Failed to load billing records"
-            onRetry={() => void loadBilling()}
-          />
-        ) : billingRows.length > 0 ? (
-          <DataTable
-            caption="Billing records"
-            className="billing-record-table"
-            headers={[
-              "Time",
-              "Type",
-              "Name / Trade No.",
-              "Method",
-              "Quota",
-              "Paid",
-              "Status",
-            ]}
-            mobileLabels={[
-              "Time",
-              "Type",
-              "Name / Trade No.",
-              "Method",
-              "Quota",
-              "Paid",
-              "Status",
-            ]}
-            numericColumns={[4, 5]}
-            rowKeys={billingRows.map((record) => record.id)}
-            rows={billingRows.map((record) => record.cells)}
-          />
-        ) : (
-          <EmptyState id={emptyCopy} />
-        )}
+        <TabPanel idPrefix={BILLING_RECORD_TABS_ID} value={recordType}>
+          {loading ? (
+            <LoadingState id="Loading billing records" />
+          ) : loadError ? (
+            <ErrorState
+              id="Failed to load billing records"
+              onRetry={() => void loadBilling()}
+            />
+          ) : billingRows.length > 0 ? (
+            <DataTable
+              caption="Billing records"
+              className="billing-record-table"
+              headers={[
+                "Time",
+                "Type",
+                "Name / Trade No.",
+                "Method",
+                "Quota",
+                "Paid",
+                "Status",
+              ]}
+              mobileLabels={[
+                "Time",
+                "Type",
+                "Name / Trade No.",
+                "Method",
+                "Quota",
+                "Paid",
+                "Status",
+              ]}
+              numericColumns={[4, 5]}
+              rowKeys={billingRows.map((record) => record.id)}
+              rows={billingRows.map((record) => record.cells)}
+            />
+          ) : (
+            <EmptyState id={emptyCopy} />
+          )}
+        </TabPanel>
         {!loading && billingTotal > billingPageSize ? (
           <div className="usage-pagination record-pagination">
             <span>

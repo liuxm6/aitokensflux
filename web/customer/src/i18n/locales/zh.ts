@@ -783,5 +783,11 @@ export const zhTranslations = {
   Price: "价格",
   "User Agreement": "用户协议",
   "WeChat QR code": "微信二维码",
+  "Page {{page}}": "第 {{page}} 页",
+  "Usage pagination": "用量分页",
+  "Model provider": "模型厂商",
+  "Model pricing by provider": "按厂商查看模型价格",
+  "Referral record filter": "邀请记录筛选",
+  "Billing record filter": "账单记录筛选",
   X: "X",
 } as const;

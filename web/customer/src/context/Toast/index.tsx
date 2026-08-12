@@ -154,7 +154,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         <div className="toast-viewport" aria-live="polite" aria-atomic="false">
           {toasts.map((toast) => (
             <div className={`toast toast-${toast.type}`} key={toast.id}>
-              <span className="toast-icon">
+              <span aria-hidden="true" className="toast-icon">
                 <ToastIcon type={toast.type} />
               </span>
               <span className="toast-text">{toast.message}</span>

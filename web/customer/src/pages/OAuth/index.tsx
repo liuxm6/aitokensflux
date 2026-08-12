@@ -90,9 +90,11 @@ export function OAuthCallbackPage() {
         <h1>Claude Code / OpenAI Codex</h1>
       </div>
       <div className="auth-scrim" />
-      <section className="auth-modal">
+      <section aria-labelledby="oauth-callback-title" className="auth-modal">
         <div className="auth-form">
-          <h1>{localizeKey(language, "Sign-in callback")}</h1>
+          <h1 id="oauth-callback-title">
+            {localizeKey(language, "Sign-in callback")}
+          </h1>
           <div className={`auth-message ${failed ? "error" : "info"}`}>
             {failed ? null : <LoaderCircle className="spin" size={16} />}
             {message}

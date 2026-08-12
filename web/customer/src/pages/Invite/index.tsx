@@ -41,6 +41,12 @@ import type {
   UsageLog,
 } from "../../types";
 
+const INVITE_RECORD_TABS: { value: InviteRecordTab; labelId: string }[] = [
+  { value: "all", labelId: "All records" },
+  { value: "inviter", labelId: "Referral rewards" },
+  { value: "invitee", labelId: "Invitee bonuses" },
+];
+
 function buildInviteLink(code: string) {
   return `${window.location.origin}/register?aff=${encodeURIComponent(code)}`;
 }
@@ -356,19 +362,20 @@ export function InvitePage() {
 
       <SectionLabel id="Invite records" />
       <Panel className="invite-record-panel">
-        <div className="invite-tabs">
-          {[
-            ["all", "All records"],
-            ["inviter", "Referral rewards"],
-            ["invitee", "Invitee bonuses"],
-          ].map(([tab, labelId]) => (
+        <div
+          aria-label={localizeKey(language, "Referral record filter")}
+          className="invite-tabs"
+          role="group"
+        >
+          {INVITE_RECORD_TABS.map((tab) => (
             <button
-              className={recordTab === tab ? "active" : ""}
-              key={labelId}
+              key={tab.value}
+              aria-pressed={recordTab === tab.value}
+              className={recordTab === tab.value ? "active" : ""}
               type="button"
-              onClick={() => setRecordTab(tab as InviteRecordTab)}
+              onClick={() => setRecordTab(tab.value)}
             >
-              <T id={labelId} />
+              <T id={tab.labelId} />
             </button>
           ))}
           <div className="invite-filter-actions">

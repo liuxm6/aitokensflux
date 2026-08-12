@@ -803,6 +803,12 @@ const customerRuTranslations = {
   "All records": "Все записи",
   "Invitee bonuses": "Бонусы приглашённых",
   "WeChat QR code": "QR-код WeChat",
+  "Page {{page}}": "Страница {{page}}",
+  "Usage pagination": "Постраничная навигация по расходам",
+  "Model provider": "Поставщик моделей",
+  "Model pricing by provider": "Тарифы моделей по поставщику",
+  "Referral record filter": "Фильтр истории приглашений",
+  "Billing record filter": "Фильтр записей оплаты",
   X: "X",
 } satisfies Record<string, string>;
 

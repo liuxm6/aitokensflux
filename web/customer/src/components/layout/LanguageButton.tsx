@@ -33,8 +33,10 @@ export function LanguageButton() {
     >
       {languageOptions.map((item) => (
         <button
+          aria-checked={item.value === language}
           className={`lang-option${item.value === language ? " active" : ""}`}
           key={item.value}
+          role="menuitemradio"
           type="button"
           onClick={() => {
             const target = getLanguageSwitchHref(

@@ -534,6 +534,7 @@ export function UsagePage() {
               />
             </div>
             <input
+              aria-label={localizeKey(language, "Model name")}
               className="usage-filter-control"
               value={modelName}
               placeholder={localizeKey(language, "Model name")}
@@ -778,7 +779,10 @@ export function UsagePage() {
                 total: usageTotal,
               })}
             </span>
-            <div className="usage-page-nav">
+            <nav
+              aria-label={localizeKey(language, "Usage pagination")}
+              className="usage-page-nav"
+            >
               <button
                 className="usage-page-button"
                 disabled={usagePage <= 1}
@@ -807,6 +811,10 @@ export function UsagePage() {
                 typeof item === "number" ? (
                   <button
                     key={item}
+                    aria-current={item === usagePage ? "page" : undefined}
+                    aria-label={localizeKey(language, "Page {{page}}", {
+                      page: item,
+                    })}
                     className={`usage-page-button${
                       item === usagePage ? " active" : ""
                     }`}
@@ -816,7 +824,11 @@ export function UsagePage() {
                     {item}
                   </button>
                 ) : (
-                  <span key={item} className="usage-page-ellipsis">
+                  <span
+                    key={item}
+                    aria-hidden="true"
+                    className="usage-page-ellipsis"
+                  >
                     ...
                   </span>
                 ),
@@ -839,7 +851,7 @@ export function UsagePage() {
               >
                 <ChevronsRight size={15} />
               </button>
-            </div>
+            </nav>
           </div>
         ) : null}
       </Panel>

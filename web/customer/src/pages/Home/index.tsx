@@ -28,6 +28,7 @@ import {
   FathersDayGiftEntry,
 } from "../../components/common/FathersDayGifts";
 import { Pill } from "../../components/common/Pill";
+import { TabList, TabPanel } from "../../components/common/ui/TabList";
 import { Footer } from "../../components/layout/Footer";
 import { SupportChannelGrid } from "../../components/support/SupportChannels";
 import { PaygTopupSection } from "../../components/topup/PaygTopupSection";
@@ -245,6 +246,8 @@ export const HOME_PRICING_LAYOUT = {
   tableClassName: "mp-table-wrap mp-table-wrap-adaptive",
   emptyPlansClassName: "pricing-section-empty",
 } as const;
+
+const MODEL_PRICING_TABS_ID = "model-pricing";
 
 function FeatureColumn({
   icon: Icon,
@@ -639,28 +642,29 @@ function ModelPricingSection() {
 
         <div className="mp-panel">
           <div className="mp-panel-top">
-            <div className="mp-tabs" role="tablist">
-              {providers.map((provider) => {
+            <TabList
+              className="mp-tabs"
+              idPrefix={MODEL_PRICING_TABS_ID}
+              label={localizeKey(language, "Model provider")}
+              tabClassName="mp-tab"
+              tabs={providers.map((provider) => {
                 const { label, Logo } = GROUP_META[provider];
-                const multiplier = formatGroupMultiplier(
-                  grouped[provider].ratio,
-                );
-                return (
-                  <button
-                    key={provider}
-                    type="button"
-                    role="tab"
-                    aria-selected={tab === provider}
-                    className={`mp-tab${tab === provider ? " active" : ""}`}
-                    onClick={() => setTab(provider)}
-                  >
-                    <Logo className={`mp-tab-logo ${provider}`} />
-                    <span>{label}</span>
-                    <span className="mp-tab-rate">{multiplier}</span>
-                  </button>
-                );
+                return {
+                  value: provider,
+                  label: (
+                    <>
+                      <Logo className={`mp-tab-logo ${provider}`} />
+                      <span>{label}</span>
+                      <span className="mp-tab-rate">
+                        {formatGroupMultiplier(grouped[provider].ratio)}
+                      </span>
+                    </>
+                  ),
+                };
               })}
-            </div>
+              value={tab}
+              onChange={setTab}
+            />
             <div className="mp-panel-meta">
               <div className="mp-panel-unit">
                 <span aria-hidden="true" />
@@ -689,92 +693,94 @@ function ModelPricingSection() {
             </div>
           </div>
 
-          {groupNote ? (
-            <div className="mp-group-note">
-              <span className="mp-group-note-label">
-                <T id="Group note" />
-              </span>
-              <span>{groupNote}</span>
-            </div>
-          ) : null}
+          <TabPanel idPrefix={MODEL_PRICING_TABS_ID} value={tab}>
+            {groupNote ? (
+              <div className="mp-group-note">
+                <span className="mp-group-note-label">
+                  <T id="Group note" />
+                </span>
+                <span>{groupNote}</span>
+              </div>
+            ) : null}
 
-          <div
-            aria-labelledby="model-pricing-caption"
-            className={HOME_PRICING_LAYOUT.tableClassName}
-            role="region"
-            tabIndex={0}
-          >
-            <table className="mp-table">
-              <caption className="sr-only" id="model-pricing-caption">
-                <T id="Model pricing" />
-              </caption>
-              <thead>
-                <tr>
-                  <th className="mp-col-model" scope="col">
-                    <T id="Model" />
-                  </th>
-                  <th scope="col">
-                    <T id="Input" />
-                  </th>
-                  <th scope="col">
-                    <T id="Output" />
-                  </th>
-                  <th scope="col">
-                    <T id="Cache read" />
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row) => (
-                  <tr key={row.name}>
-                    <td
-                      className="mp-col-model"
-                      data-label={localizeKey(language, "Model")}
-                    >
-                      <span className="mp-model-cell">
-                        <span
-                          className={`mp-model-mark ${tab}`}
-                          aria-hidden="true"
-                        >
-                          <TabLogo className="mp-model-logo" />
-                        </span>
-                        <span className="mp-model-name">{row.name}</span>
-                      </span>
-                    </td>
-                    {row.perCall != null ? (
+            <div
+              aria-labelledby="model-pricing-caption"
+              className={HOME_PRICING_LAYOUT.tableClassName}
+              role="region"
+              tabIndex={0}
+            >
+              <table className="mp-table">
+                <caption className="sr-only" id="model-pricing-caption">
+                  <T id="Model pricing" />
+                </caption>
+                <thead>
+                  <tr>
+                    <th className="mp-col-model" scope="col">
+                      <T id="Model" />
+                    </th>
+                    <th scope="col">
+                      <T id="Input" />
+                    </th>
+                    <th scope="col">
+                      <T id="Output" />
+                    </th>
+                    <th scope="col">
+                      <T id="Cache read" />
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row) => (
+                    <tr key={row.name}>
                       <td
-                        className="mp-percall"
-                        colSpan={3}
-                        data-label={localizeKey(language, "Price")}
+                        className="mp-col-model"
+                        data-label={localizeKey(language, "Model")}
                       >
-                        <span className="mp-price">
-                          <span>{formatUsd(row.perCall)}</span>
-                          <span className="mp-unit">
-                            <T id="per request" />
+                        <span className="mp-model-cell">
+                          <span
+                            className={`mp-model-mark ${tab}`}
+                            aria-hidden="true"
+                          >
+                            <TabLogo className="mp-model-logo" />
                           </span>
+                          <span className="mp-model-name">{row.name}</span>
                         </span>
                       </td>
-                    ) : (
-                      <>
-                        <td data-label={localizeKey(language, "Input")}>
-                          <TokenPrice value={row.input} />
-                        </td>
-                        <td data-label={localizeKey(language, "Output")}>
-                          <TokenPrice value={row.output} />
-                        </td>
+                      {row.perCall != null ? (
                         <td
-                          className="mp-muted"
-                          data-label={localizeKey(language, "Cache read")}
+                          className="mp-percall"
+                          colSpan={3}
+                          data-label={localizeKey(language, "Price")}
                         >
-                          <TokenPrice value={row.cacheRead} />
+                          <span className="mp-price">
+                            <span>{formatUsd(row.perCall)}</span>
+                            <span className="mp-unit">
+                              <T id="per request" />
+                            </span>
+                          </span>
                         </td>
-                      </>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      ) : (
+                        <>
+                          <td data-label={localizeKey(language, "Input")}>
+                            <TokenPrice value={row.input} />
+                          </td>
+                          <td data-label={localizeKey(language, "Output")}>
+                            <TokenPrice value={row.output} />
+                          </td>
+                          <td
+                            className="mp-muted"
+                            data-label={localizeKey(language, "Cache read")}
+                          >
+                            <TokenPrice value={row.cacheRead} />
+                          </td>
+                        </>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </TabPanel>
         </div>
       </div>
     </section>

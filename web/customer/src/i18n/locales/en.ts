@@ -819,5 +819,11 @@ export const enTranslations = {
   "User Agreement": "User Agreement",
   "Father's Day gift": "Father's Day gift",
   "WeChat QR code": "WeChat QR code",
+  "Page {{page}}": "Page {{page}}",
+  "Usage pagination": "Usage pagination",
+  "Model provider": "Model provider",
+  "Model pricing by provider": "Model pricing by provider",
+  "Referral record filter": "Referral record filter",
+  "Billing record filter": "Billing record filter",
   X: "X",
 } as const;
