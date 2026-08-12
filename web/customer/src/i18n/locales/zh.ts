@@ -326,7 +326,7 @@ export const zhTranslations = {
   Switch: "切换",
   "Temporary for current PowerShell": "当前 PowerShell 临时生效",
   "Terminal / VS Code text tutorial": "终端 / VS Code 图文教程",
-  Terms: "使用者協議與服務條款",
+  Terms: "用户协议与服务条款",
   "The Codex IDE extension shares the same user-level config as the CLI. Other OpenAI-compatible apps can use these values directly.":
     "Codex IDE 扩展与 CLI 共用用户级配置。其他支持 OpenAI-compatible Provider 的应用可直接填以下参数。",
   "The unified AI model gateway that makes every call count.":
@@ -451,7 +451,7 @@ export const zhTranslations = {
   "Start date cannot be after end date": "开始日期不能晚于结束日期",
   Support: "支持",
   "Top-up flow failed. Please try again.": "充值流程异常，请稍后重试。",
-  "User Agreement and Terms of Service": "使用者協議與服務條款",
+  "User Agreement and Terms of Service": "用户协议与服务条款",
   "Usage details": "用量明细",
   "Verification code sent. Check your inbox.": "验证码已发送，请检查邮箱。",
   "Account password sign in": "账号密码登录",
@@ -778,5 +778,10 @@ export const zhTranslations = {
   "Common actions": "常用操作",
   "Request count": "请求次数",
   "Show more plans ({{count}} remaining)": "查看更多方案（剩余 {{count}} 个）",
+  Home: "首页",
+  Plans: "套餐",
+  Price: "价格",
+  "User Agreement": "用户协议",
+  "WeChat QR code": "微信二维码",
   X: "X",
 } as const;

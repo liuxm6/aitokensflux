@@ -796,6 +796,13 @@ const customerRuTranslations = {
   "Request count": "Количество запросов",
   "Show more plans ({{count}} remaining)":
     "Показать ещё тарифы (осталось: {{count}})",
+  Home: "Главная",
+  Plans: "Тарифы",
+  Price: "Цена",
+  "Father's Day gift": "Подарок ко Дню отца",
+  "All records": "Все записи",
+  "Invitee bonuses": "Бонусы приглашённых",
+  "WeChat QR code": "QR-код WeChat",
   X: "X",
 } satisfies Record<string, string>;
 

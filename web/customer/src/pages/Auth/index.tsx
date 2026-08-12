@@ -1439,7 +1439,11 @@ export function AuthPage({
         </button>
         <h2 id={wechatTitleId}>{copy.wechatTitle}</h2>
         {wechatQrCode ? (
-          <img className="wechat-qr" src={wechatQrCode} alt="WeChat QR" />
+          <img
+            className="wechat-qr"
+            src={wechatQrCode}
+            alt={localizeKey(language, "WeChat QR code")}
+          />
         ) : (
           <div className="wechat-empty">{copy.noWechatQr}</div>
         )}

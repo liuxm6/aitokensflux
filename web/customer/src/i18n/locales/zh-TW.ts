@@ -778,5 +778,10 @@ export const zhTWTranslations = {
   "Common actions": "常用操作",
   "Request count": "請求次數",
   "Show more plans ({{count}} remaining)": "查看更多方案（剩餘 {{count}} 個）",
+  Home: "首頁",
+  Plans: "套餐",
+  Price: "價格",
+  "User Agreement": "使用者協議",
+  "WeChat QR code": "微信 QR 碼",
   X: "X",
 } as const;

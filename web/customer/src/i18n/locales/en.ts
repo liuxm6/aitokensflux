@@ -813,5 +813,11 @@ export const enTranslations = {
   "Request count": "Request count",
   "Show more plans ({{count}} remaining)":
     "Show more plans ({{count}} remaining)",
+  Home: "Home",
+  Plans: "Plans",
+  Price: "Price",
+  "User Agreement": "User Agreement",
+  "Father's Day gift": "Father's Day gift",
+  "WeChat QR code": "WeChat QR code",
   X: "X",
 } as const;

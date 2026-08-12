@@ -4,6 +4,7 @@ import {
   type ComponentProps,
   type ComponentType,
   type ReactNode,
+  useContext,
   useRef,
   useState,
 } from "react";
@@ -15,8 +16,9 @@ import { ErrorState, LoadingState } from "../components/common/ui/AsyncState";
 import { AccessibleDialog } from "../components/common/ui/Dialog";
 import { MarketingHeader } from "../components/layout/MarketingHeader";
 import { TopupDialog } from "../components/topup/TopupDialog";
-import { T } from "../context/Language";
+import { LanguageContext, T } from "../context/Language";
 import { navigateTo } from "../helpers/navigation";
+import { localizeKey } from "../i18n/localization";
 import { getConfiguredServerAddress } from "../helpers/server-address";
 import { fetchCustomerStatus } from "../services/customer-api";
 import type { PageKey } from "../types";
@@ -24,6 +26,7 @@ import type { PageKey } from "../types";
 class LazyPageErrorBoundary extends Component<
   {
     children: ReactNode;
+    closeLabel: string;
     onRetry: (error: unknown) => void;
     presentation: "page" | "overlay";
   },
@@ -46,7 +49,7 @@ class LazyPageErrorBoundary extends Component<
             backdropClassName="auth-overlay-backdrop"
             className="auth-overlay"
             closeDisabled
-            closeLabel="Close"
+            closeLabel={this.props.closeLabel}
             closeOnBackdrop={false}
             panelClassName="auth-overlay-panel"
             onClose={() => undefined}
@@ -81,6 +84,7 @@ export function createLazyPage<PageComponent extends ComponentType<any>>(
   const InitialLazyPage = lazy(loader);
 
   return function RecoverableLazyPage(props: ComponentProps<PageComponent>) {
+    const { language } = useContext(LanguageContext);
     const [attempt, setAttempt] = useState(0);
     const lazyPageRef = useRef(InitialLazyPage);
     const LazyPage = lazyPageRef.current;
@@ -97,6 +101,7 @@ export function createLazyPage<PageComponent extends ComponentType<any>>(
     return (
       <LazyPageErrorBoundary
         key={attempt}
+        closeLabel={localizeKey(language, "Close")}
         onRetry={retry}
         presentation={options.presentation ?? "page"}
       >
