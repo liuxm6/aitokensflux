@@ -142,9 +142,3 @@ function ConsoleLogo() {
     </AppLink>
   );
 }
-
-export function ConsolePageTitle({ id }: { id: string }) {
-  const { language } = useContext(LanguageContext);
-
-  return <h1 className="console-page-title">{localizeKey(language, id)}</h1>;
-}

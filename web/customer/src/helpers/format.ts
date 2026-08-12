@@ -138,16 +138,6 @@ export function getTodayUnixRange() {
   return getUnixRangeFromDates(today, today);
 }
 
-export function getDefaultUsageDates() {
-  const end = new Date();
-  const start = new Date();
-  start.setDate(end.getDate() - 6);
-  return {
-    startDate: toDateInputValue(start),
-    endDate: toDateInputValue(end),
-  };
-}
-
 export function normalizePageItems<T>(data: PageData<T> | T[] | undefined) {
   if (Array.isArray(data)) return data;
   return data?.items ?? [];

@@ -27,10 +27,6 @@ export function isRussian(language: Language) {
   return language === "ru";
 }
 
-export function usesEnglishSource(language: Language) {
-  return isEnglish(language) || isRussian(language);
-}
-
 export function isTraditionalChinese(language: Language) {
   return language === "zh-TW";
 }
