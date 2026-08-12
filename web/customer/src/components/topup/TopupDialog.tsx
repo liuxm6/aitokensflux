@@ -22,6 +22,7 @@ import {
   launchSubscriptionPayment,
   parseCreemProducts,
 } from "../../helpers/payments";
+import { useLatestRequest } from "../../hooks/useLatestRequest";
 import { localizeKey } from "../../i18n/localization";
 import { PurchaseProgressDialog } from "./PurchaseProgressDialog";
 import {
@@ -83,17 +84,21 @@ export function TopupDialog({ onClose }: { onClose: () => void }) {
     paymentOptions.find((item) => item.id === selectedPaymentMethodId) ??
     paymentOptions[0];
 
+  const beginTopupRequest = useLatestRequest();
+
   const loadTopupDialog = async () => {
     if (!user?.id) {
       setLoading(false);
       return;
     }
     setLoading(true);
+    const isCurrent = beginTopupRequest();
     const [statusRes, selfRes, infoRes] = await Promise.all([
       fetchCustomerStatus(),
       fetchCustomerSelf(),
       fetchTopupInfo(),
     ]);
+    if (!isCurrent()) return;
     if (statusRes.success && statusRes.data) setStatus(statusRes.data);
     if (selfRes.success && selfRes.data) setUser(selfRes.data);
     if (infoRes.success && infoRes.data) setTopupInfo(infoRes.data);

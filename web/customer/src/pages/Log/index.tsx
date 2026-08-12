@@ -22,6 +22,7 @@ import { pageMeta } from "../../constants/page-meta";
 import { LanguageContext, T } from "../../context/Language";
 import { useToastMessage } from "../../context/Toast";
 import { getQuotaPerUnit, normalizePageItems } from "../../helpers/format";
+import { useLatestRequest } from "../../hooks/useLatestRequest";
 import { localizeKey } from "../../i18n/localization";
 import {
   fetchCustomerStatus,
@@ -397,6 +398,7 @@ export function UsagePage() {
   const [loadError, setLoadError] = useState(false);
   const [message, setMessage] = useState("");
   useToastMessage(message);
+  const beginUsageRequest = useLatestRequest();
 
   const getQuery = (override?: UsageQueryOverride) => ({
     startDateTime: override?.startDateTime ?? startDateTime,
@@ -421,6 +423,7 @@ export function UsagePage() {
     }
     setLoading(true);
     setLoadError(false);
+    const isCurrent = beginUsageRequest();
     const trimmedFilters = {
       modelName: query.modelName.trim() || undefined,
       type: 2,
@@ -437,6 +440,7 @@ export function UsagePage() {
         modelName: trimmedFilters.modelName,
       }),
     ]);
+    if (!isCurrent()) return;
     if (statusRes.success && statusRes.data) setStatus(statusRes.data);
     if (statsRes.success && statsRes.data) setStats(statsRes.data);
     if (logsRes.success) {

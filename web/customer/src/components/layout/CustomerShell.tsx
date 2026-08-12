@@ -6,6 +6,7 @@ import { ConsoleAccountMenu } from "./ConsoleAccountMenu";
 import { LanguageButton } from "./LanguageButton";
 import { sidebarItems } from "../../constants/navigation";
 import { LanguageContext } from "../../context/Language";
+import { keepTabFocusWithin } from "../../helpers/focus";
 import { localizeKey } from "../../i18n/localization";
 import type { PageKey } from "../../types";
 
@@ -28,6 +29,7 @@ export function CustomerShell({
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const mainRef = useRef<HTMLDivElement>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
   const restoreFocusRef = useRef(false);
 
   const closeSidebar = useCallback((restoreFocus = true) => {
@@ -49,9 +51,13 @@ export function CustomerShell({
     closeButtonRef.current?.focus();
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      event.preventDefault();
-      closeSidebar();
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeSidebar();
+        return;
+      }
+      if (event.key !== "Tab" || !sidebarRef.current) return;
+      keepTabFocusWithin(event, sidebarRef.current);
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => {
@@ -72,6 +78,7 @@ export function CustomerShell({
         onClick={() => closeSidebar()}
       />
       <aside
+        ref={sidebarRef}
         aria-label={localizeKey(language, "Customer navigation")}
         className={`side${sidebarOpen ? " open" : ""}`}
         id="customer-sidebar"

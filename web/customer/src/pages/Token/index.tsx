@@ -47,6 +47,7 @@ import {
   getOpenAICompatibleBaseUrl,
 } from "../../helpers/server-address";
 import { useCopyFeedback } from "../../hooks/useCopyFeedback";
+import { useLatestRequest } from "../../hooks/useLatestRequest";
 import { localizeKey } from "../../i18n/localization";
 import { apiRequest, buildQueryFromValues } from "../../services/api";
 import {
@@ -116,6 +117,7 @@ export function ApiKeysPage() {
   >({});
   useToastMessage(tokenMessage);
   useToastMessage(createMessage);
+  const beginTokenRequest = useLatestRequest();
   const gatewayOrigin = getConfiguredServerAddress(status);
   const openaiGatewayUrl = getOpenAICompatibleBaseUrl(status);
 
@@ -123,6 +125,7 @@ export function ApiKeysPage() {
     const normalizedPage = Math.max(1, nextPage);
     setLoadingTokens(true);
     setTokenLoadError(false);
+    const isCurrent = beginTokenRequest();
     const response = await apiRequest<PageData<CustomerToken>>(
       `/api/token/${buildQueryFromValues({
         p: normalizedPage,
@@ -130,6 +133,7 @@ export function ApiKeysPage() {
       })}`,
       { method: "GET" },
     );
+    if (!isCurrent()) return;
     if (response.success) {
       const pageData = normalizePageData(
         response.data,

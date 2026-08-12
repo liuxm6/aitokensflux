@@ -26,6 +26,7 @@ import {
   getSubscriptionStatusLabel,
   getTopupStatusLabel,
 } from "../../helpers/payments";
+import { useLatestRequest } from "../../hooks/useLatestRequest";
 import { localizeKey } from "../../i18n/localization";
 import {
   fetchCustomerSelf,
@@ -84,16 +85,19 @@ export function TopupPage() {
   const [message, setMessage] = useState("");
   const [topupDialogOpen, setTopupDialogOpen] = useState(false);
   useToastMessage(message);
+  const beginBillingRequest = useLatestRequest();
 
   const loadBilling = async () => {
     setLoading(true);
     setLoadError(false);
+    const isCurrent = beginBillingRequest();
     const [statusRes, selfRes, recordsRes, subRes] = await Promise.all([
       fetchCustomerStatus(),
       fetchCustomerSelf(),
       fetchUserTopups(1, billingFetchLimit),
       fetchSelfSubscription(),
     ]);
+    if (!isCurrent()) return;
     if (statusRes.success && statusRes.data) setStatus(statusRes.data);
     if (selfRes.success && selfRes.data) setUser(selfRes.data);
     if (recordsRes.success) {

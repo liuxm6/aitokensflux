@@ -35,3 +35,38 @@ test("mobile navigation moves focus, makes content inert, and closes on Escape",
   expect(trigger.getAttribute("aria-expanded")).toBe("false");
   expect(document.activeElement).toBe(trigger);
 });
+
+test("mobile navigation keeps Tab inside the open drawer", async () => {
+  const user = userEvent.setup({ document });
+  render(
+    <LanguageContext.Provider
+      value={{
+        language: "en",
+        setLanguage: () => undefined,
+        translationVersion: 0,
+      }}
+    >
+      <CustomerShell crumbId="Dashboard" page="dashboard">
+        <h1>Dashboard content</h1>
+      </CustomerShell>
+    </LanguageContext.Provider>,
+  );
+
+  await user.click(screen.getByRole("button", { name: "Open navigation" }));
+
+  const drawer = screen.getByRole("complementary", {
+    name: "Customer navigation",
+  });
+  const focusable = Array.from(
+    drawer.querySelectorAll<HTMLElement>("a[href], button:not([disabled])"),
+  );
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+
+  last.focus();
+  await user.tab();
+  expect(document.activeElement).toBe(first);
+
+  await user.tab({ shift: true });
+  expect(document.activeElement).toBe(last);
+});

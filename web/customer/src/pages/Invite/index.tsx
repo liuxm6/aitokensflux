@@ -27,6 +27,7 @@ import {
   getInviteLogKind,
   isInviteLog,
 } from "../../helpers/invite-records";
+import { useLatestRequest } from "../../hooks/useLatestRequest";
 import { localizeKey } from "../../i18n/localization";
 import { apiRequest } from "../../services/api";
 import {
@@ -90,10 +91,12 @@ export function InvitePage() {
   const [transferring, setTransferring] = useState(false);
   const [message, setMessage] = useState("");
   useToastMessage(message);
+  const beginInviteRequest = useLatestRequest();
 
   const loadInvite = async (clearMessage = true) => {
     setLoading(true);
     setLoadError(false);
+    const isCurrent = beginInviteRequest();
     const month = getCurrentMonthUnixRange();
     const [statusRes, selfRes, affRes, logsRes, monthLogsRes] =
       await Promise.all([
@@ -109,6 +112,7 @@ export function InvitePage() {
           endTimestamp: month.end,
         }),
       ]);
+    if (!isCurrent()) return;
     if (statusRes.success && statusRes.data) setStatus(statusRes.data);
     if (selfRes.success && selfRes.data) {
       setUser(selfRes.data);

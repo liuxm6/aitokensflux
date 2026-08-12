@@ -1,14 +1,9 @@
 import { type ReactNode, type RefObject, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-
-const focusableSelector = [
-  "a[href]",
-  "button:not([disabled])",
-  "input:not([disabled])",
-  "select:not([disabled])",
-  "textarea:not([disabled])",
-  '[tabindex]:not([tabindex="-1"])',
-].join(",");
+import {
+  getFocusableElements,
+  keepTabFocusWithin,
+} from "../../../helpers/focus";
 
 let openDialogCount = 0;
 let rootAriaHidden: string | null = null;
@@ -97,12 +92,6 @@ function unlockPageScroll() {
   scrollLockSnapshot = null;
 }
 
-function getFocusableElements(panel: HTMLElement) {
-  return Array.from(
-    panel.querySelectorAll<HTMLElement>(focusableSelector),
-  ).filter((element) => element.getAttribute("aria-hidden") !== "true");
-}
-
 export function AccessibleDialog({
   ariaDescribedBy,
   ariaLabel,
@@ -186,26 +175,7 @@ export function AccessibleDialog({
         return;
       }
       if (event.key !== "Tab" || !panelRef.current) return;
-
-      const focusable = getFocusableElements(panelRef.current);
-      if (focusable.length === 0) {
-        event.preventDefault();
-        panelRef.current.focus();
-        return;
-      }
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      } else if (!panelRef.current.contains(document.activeElement)) {
-        event.preventDefault();
-        (event.shiftKey ? last : first).focus();
-      }
+      keepTabFocusWithin(event, panelRef.current);
     };
 
     document.addEventListener("keydown", handleKeyDown);
