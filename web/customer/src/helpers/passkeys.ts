@@ -1,5 +1,21 @@
 import type { NodeBufferCtor } from "../types";
 
+type PasskeyRequestOptionFields = {
+  challenge?: string | null;
+  allowCredentials?: Array<{
+    id?: string | null;
+    type?: PublicKeyCredentialType;
+    transports?: AuthenticatorTransport[];
+  }>;
+};
+
+type PasskeyRequestPayload = {
+  publicKey?: PasskeyRequestOptionFields;
+  PublicKey?: PasskeyRequestOptionFields;
+  response?: PasskeyRequestOptionFields;
+  Response?: PasskeyRequestOptionFields;
+};
+
 function base64UrlToArrayBuffer(value?: string | null): ArrayBuffer {
   if (!value) return new ArrayBuffer(0);
   const padding = "=".repeat((4 - (value.length % 4)) % 4);
@@ -53,23 +69,30 @@ function arrayBufferToBase64Url(buffer?: ArrayBuffer | ArrayBufferLike | null) {
 export function prepareCredentialRequestOptions(
   payload: unknown,
 ): PublicKeyCredentialRequestOptions {
-  const source = payload as Record<string, any>;
+  const source = (payload ?? {}) as PasskeyRequestPayload;
   const options =
-    source?.publicKey ??
-    source?.PublicKey ??
-    source?.response ??
-    source?.Response;
+    source.publicKey ?? source.PublicKey ?? source.response ?? source.Response;
   if (!options) throw new Error("Unable to parse Passkey login options");
-  const publicKey: PublicKeyCredentialRequestOptions & Record<string, any> = {
-    ...options,
-    challenge: base64UrlToArrayBuffer(options.challenge),
+
+  const {
+    challenge: encodedChallenge,
+    allowCredentials: encodedAllowCredentials,
+    ...rest
+  } = options;
+
+  const publicKey: PublicKeyCredentialRequestOptions = {
+    ...rest,
+    challenge: base64UrlToArrayBuffer(encodedChallenge),
   };
-  if (Array.isArray(options.allowCredentials)) {
-    publicKey.allowCredentials = options.allowCredentials.map((item: any) => ({
-      ...item,
+
+  if (Array.isArray(encodedAllowCredentials)) {
+    publicKey.allowCredentials = encodedAllowCredentials.map((item) => ({
       id: base64UrlToArrayBuffer(item.id),
+      type: item.type ?? "public-key",
+      transports: item.transports,
     }));
   }
+
   return publicKey;
 }
 

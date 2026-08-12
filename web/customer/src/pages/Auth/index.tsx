@@ -16,11 +16,15 @@ import {
   useContext,
   useEffect,
   useId,
-  useMemo,
   useRef,
   useState,
 } from "react";
 import { AuthInput } from "../../components/auth/AuthInput";
+import {
+  GitHubMark,
+  LinuxDOMark,
+} from "../../components/auth/AuthProviderMarks";
+import { TelegramLoginWidget } from "../../components/auth/TelegramLoginWidget";
 import { AppLink } from "../../components/common/AppLink";
 import { Brand } from "../../components/common/Brand";
 import { AccessibleDialog } from "../../components/common/ui/Dialog";
@@ -29,15 +33,34 @@ import { AuthContext } from "../../context/Auth";
 import { LanguageContext, T } from "../../context/Language";
 import { useToastMessage } from "../../context/Toast";
 import {
+  generateUsernameFromEmail,
+  isValidEmail,
+} from "../../helpers/auth-form";
+import {
   getAuthRedirectFromSearch,
   storeAuthRedirect,
 } from "../../helpers/auth-redirect";
+import {
+  getAuthModeEnterDelay,
+  getAuthModeExitDelay,
+  getDialogExitDelay,
+} from "../../helpers/motion";
 import {
   buildAssertionResult,
   isPasskeySupported,
   prepareCredentialRequestOptions,
 } from "../../helpers/passkeys";
 import { navigateTo } from "../../helpers/navigation";
+import {
+  buildCustomOAuthUrl,
+  buildDiscordOAuthUrl,
+  buildGitHubOAuthUrl,
+  buildLinuxDOOAuthUrl,
+  buildOIDCOAuthUrl,
+  getOAuthState,
+  getStoredAffCode,
+  redirectToOAuth,
+} from "../../helpers/oauth";
 import { localizeKey, localizeCopy } from "../../i18n/localization";
 import {
   apiRequest,
@@ -48,119 +71,11 @@ import type {
   AuthFormValues,
   AuthLoginMethod,
   AuthMode,
-  CustomOAuthProvider,
   CustomerStatus,
   CustomerUser,
   LoginData,
   TelegramAuthPayload,
 } from "../../types";
-
-function getSearchParam(name: string) {
-  return new URLSearchParams(window.location.search).get(name) ?? "";
-}
-
-function getStoredAffCode() {
-  return (
-    getSearchParam("aff") ||
-    getSearchParam("aff_code") ||
-    getSearchParam("invite_code") ||
-    window.localStorage.getItem("aff") ||
-    ""
-  ).trim();
-}
-
-async function getOAuthState(turnstileToken?: string) {
-  const aff = getStoredAffCode();
-  const response = await apiRequest<string>(
-    `/api/oauth/state${buildQuery({ aff })}`,
-    { method: "GET", headers: withTurnstileHeader(turnstileToken) },
-  );
-  return response.success && response.data ? response.data : "";
-}
-
-function redirectToOAuth(url: string) {
-  window.location.assign(url);
-}
-
-function buildGitHubOAuthUrl(clientId: string, state: string) {
-  return `https://github.com/login/oauth/authorize?client_id=${encodeURIComponent(clientId)}&state=${encodeURIComponent(state)}&scope=user:email`;
-}
-
-function buildDiscordOAuthUrl(clientId: string, state: string) {
-  const url = new URL("https://discord.com/oauth2/authorize");
-  url.searchParams.set("client_id", clientId);
-  url.searchParams.set(
-    "redirect_uri",
-    `${window.location.origin}/oauth/discord`,
-  );
-  url.searchParams.set("response_type", "code");
-  url.searchParams.set("scope", "identify+openid");
-  url.searchParams.set("state", state);
-  return url.toString();
-}
-
-function buildOIDCOAuthUrl(authUrl: string, clientId: string, state: string) {
-  const url = new URL(authUrl);
-  url.searchParams.set("client_id", clientId);
-  url.searchParams.set("redirect_uri", `${window.location.origin}/oauth/oidc`);
-  url.searchParams.set("response_type", "code");
-  url.searchParams.set("scope", "openid profile email");
-  url.searchParams.set("state", state);
-  return url.toString();
-}
-
-function buildLinuxDOOAuthUrl(clientId: string, state: string) {
-  return `https://connect.linux.do/oauth2/authorize?response_type=code&client_id=${encodeURIComponent(clientId)}&state=${encodeURIComponent(state)}`;
-}
-
-function buildCustomOAuthUrl(provider: CustomOAuthProvider, state: string) {
-  const url = new URL(provider.authorization_endpoint);
-  url.searchParams.set("client_id", provider.client_id);
-  url.searchParams.set(
-    "redirect_uri",
-    `${window.location.origin}/oauth/${provider.slug}`,
-  );
-  url.searchParams.set("response_type", "code");
-  url.searchParams.set("scope", provider.scopes || "openid profile email");
-  url.searchParams.set("state", state);
-  return url.toString();
-}
-
-function isValidEmail(value: string) {
-  const email = value.trim();
-  return (
-    email.length > 0 &&
-    email.length <= 50 &&
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-  );
-}
-
-function generateUsernameFromEmail(email: string) {
-  const localPart = email.split("@")[0] ?? "";
-  const stem = localPart
-    .normalize("NFKD")
-    .replace(/[^\p{L}\p{N}_-]+/gu, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 13);
-  const suffix = Math.random().toString(36).slice(2, 8);
-  return `${stem || "user"}-${suffix}`.slice(0, 20);
-}
-
-function getDialogExitDelay() {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ? 0
-    : 150;
-}
-
-function getAuthModeExitDelay() {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 90;
-}
-
-function getAuthModeEnterDelay() {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ? 0
-    : 170;
-}
 
 type AuthPageProps = {
   modal?: boolean;
@@ -170,41 +85,6 @@ type AuthPageProps = {
 
 type AuthFieldName =
   "email" | "password" | "verificationCode" | "twoFaCode" | "wechatCode";
-
-function GitHubMark() {
-  return (
-    <svg className="github-mark" viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.92.58.11.79-.25.79-.56v-1.98c-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.23-1.28-5.23-5.67 0-1.25.45-2.27 1.18-3.07-.12-.29-.51-1.46.11-3.03 0 0 .96-.31 3.15 1.17A10.9 10.9 0 0 1 12 5.58c.97 0 1.95.13 2.86.39 2.19-1.48 3.15-1.17 3.15-1.17.62 1.57.23 2.74.11 3.03.74.8 1.18 1.82 1.18 3.07 0 4.4-2.68 5.37-5.24 5.66.42.36.78 1.07.78 2.16v3.2c0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-function LinuxDOMark() {
-  return (
-    <svg
-      className="linuxdo-mark"
-      viewBox="0 0 16 16"
-      aria-hidden="true"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M7.44 0h.13c.09 0 .19 0 .28 0h.43c.09 0 .18 0 .27 0h.25c.09 0 .17.03.26.08.15.03.29.06.44.08 1.97.38 3.78 1.47 4.95 3.11.04.06.09.12.13.18.67.96 1.15 2.11 1.3 3.28v.26c0 .15 0 .29 0 .44v.13c0 .09 0 .19 0 .28v.43c0 .09 0 .18 0 .27v.25c0 .09-.03.17-.08.26-.03.15-.06.29-.08.44-.38 1.97-1.47 3.78-3.11 4.95-.06.04-.12.09-.18.13-.96.67-2.11 1.15-3.28 1.3h-.26c-.15 0-.29 0-.44 0h-.13c-.09 0-.19 0-.28 0h-.43c-.09 0-.18 0-.27 0h-.25c-.09 0-.17-.03-.26-.08-.15-.03-.29-.06-.44-.08-1.97-.38-3.78-1.47-4.95-3.11L.59 12.6c-.67-.96-1.15-2.11-1.3-3.28v-.26c0-.15 0-.29 0-.44v-.13c0-.09 0-.19 0-.28v-.43c0-.09 0-.18 0-.27v-.25c0-.09.03-.17.08-.26.03-.15.06-.29.08-.44.38-1.97 1.47-3.78 3.11-4.95.06-.04.12-.09.18-.13C4.42.73 5.57.26 6.74.1c.26-.03.41-.1.7-.1Z"
-        fill="#efefef"
-      />
-      <path
-        d="M1.27 11.33h13.45c-.94 1.89-2.51 3.21-4.51 3.88-1.99.59-3.96.37-5.8-.57-1.25-.7-2.67-1.9-3.14-3.3Z"
-        fill="#feb005"
-      />
-      <path
-        d="M12.54 1.99c.87.7 1.82 1.59 2.18 2.68H1.27c.87-1.74 2.33-3.13 4.2-3.78 2.44-.79 5-.47 7.07 1.1Z"
-        fill="#1d1d1f"
-      />
-    </svg>
-  );
-}
 
 export function AuthPage({
   modal = false,
@@ -1479,46 +1359,4 @@ export function AuthPage({
     ) : null,
     true,
   );
-}
-
-function TelegramLoginWidget({
-  botName,
-  onAuth,
-}: {
-  botName: string;
-  onAuth: (payload: TelegramAuthPayload) => void;
-}) {
-  const containerId = useMemo(
-    () => `telegram-login-${Math.random().toString(36).slice(2)}`,
-    [],
-  );
-  const callbackName = useMemo(
-    () => `onTelegramAuth${Math.random().toString(36).slice(2)}`,
-    [],
-  );
-
-  useEffect(() => {
-    const windowRef = window as typeof window & {
-      [key: string]: (payload: TelegramAuthPayload) => void;
-    };
-    windowRef[callbackName] = onAuth;
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    container.innerHTML = "";
-    const script = document.createElement("script");
-    script.src = "https://telegram.org/js/telegram-widget.js?22";
-    script.async = true;
-    script.setAttribute("data-telegram-login", botName);
-    script.setAttribute("data-size", "large");
-    script.setAttribute("data-radius", "12");
-    script.setAttribute("data-request-access", "write");
-    script.setAttribute("data-onauth", `${callbackName}(user)`);
-    container.appendChild(script);
-    return () => {
-      delete windowRef[callbackName];
-      container.innerHTML = "";
-    };
-  }, [botName, callbackName, containerId, onAuth]);
-
-  return <div className="telegram-widget" id={containerId} />;
 }

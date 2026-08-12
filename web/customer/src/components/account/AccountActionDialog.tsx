@@ -14,6 +14,8 @@ import { AuthInput } from "../auth/AuthInput";
 import { LanguageContext } from "../../context/Language";
 import { useToastMessage } from "../../context/Toast";
 import { getBoundEmail } from "../../helpers/account";
+import { isValidEmail } from "../../helpers/auth-form";
+import { getDialogExitDelay } from "../../helpers/motion";
 import { localizeCopy, localizeKey } from "../../i18n/localization";
 import {
   apiRequest,
@@ -25,21 +27,6 @@ import type {
   CustomerStatus,
   CustomerUser,
 } from "../../types";
-
-function isValidEmail(value: string) {
-  const email = value.trim();
-  return (
-    email.length > 0 &&
-    email.length <= 50 &&
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-  );
-}
-
-function getDialogExitDelay() {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ? 0
-    : 150;
-}
 
 export function AccountActionDialog({
   mode,

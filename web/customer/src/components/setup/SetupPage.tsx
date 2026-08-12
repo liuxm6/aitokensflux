@@ -11,6 +11,7 @@ import {
 } from "react";
 import { AccessibleDialog } from "../common/ui/Dialog";
 import { LanguageContext } from "../../context/Language";
+import { getDialogExitDelay } from "../../helpers/motion";
 import { getOpenAICompatibleServerAddress } from "../../helpers/server-address";
 import { localizeKey } from "../../i18n/localization";
 import type {
@@ -44,12 +45,6 @@ type SetupPageProps = {
   modal?: boolean;
   onClose?: () => void;
 };
-
-function getDialogExitDelay() {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ? 0
-    : 150;
-}
 
 export function createSetupPage(deps: SetupPageDeps) {
   const {

@@ -299,10 +299,12 @@ function subscriptionPlanToPricePlan(
     maxPurchase > 0 ? `每个用户最多购买 ${maxPurchase} 次` : "",
     upgradeGroup ? `购买后升级到 ${upgradeGroup} 分组` : "",
   ].filter(Boolean);
-  const extraFeaturesEn = [
+  const purchaseLabelEn =
     maxPurchase > 0
-      ? `Max ${maxPurchase} purchase${maxPurchase > 1 ? "s" : ""} per user`
-      : "",
+      ? `Max ${maxPurchase} purchase${maxPurchase === 1 ? "" : "s"} per user`
+      : "";
+  const extraFeaturesEn = [
+    purchaseLabelEn,
     upgradeGroup ? `Upgrades group to ${upgradeGroup}` : "",
   ].filter(Boolean);
   return {
