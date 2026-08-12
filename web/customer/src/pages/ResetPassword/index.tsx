@@ -6,6 +6,7 @@ import { FormField } from "../../components/common/ui/FormField";
 import { LanguageButton } from "../../components/layout/LanguageButton";
 import { LanguageContext } from "../../context/Language";
 import { useToast } from "../../context/Toast";
+import { useCopyFeedback } from "../../hooks/useCopyFeedback";
 import { localizeCopy } from "../../i18n/localization";
 import { apiRequest } from "../../services/api";
 
@@ -19,7 +20,7 @@ export function ResetPasswordPage() {
   const { language } = useContext(LanguageContext);
   const notify = useToast();
   const [loading, setLoading] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [copied, markCopied] = useCopyFeedback(false, 2000);
   const [newPassword, setNewPassword] = useState("");
 
   const email = getSearchParam("email");
@@ -48,9 +49,8 @@ export function ResetPasswordPage() {
   const handleCopy = async () => {
     if (!newPassword) return;
     await navigator.clipboard?.writeText(newPassword);
-    setCopied(true);
+    markCopied(true);
     notify({ type: "success", message: copy.passwordCopied });
-    window.setTimeout(() => setCopied(false), 2000);
   };
 
   const handleSubmit = async () => {
@@ -79,9 +79,8 @@ export function ResetPasswordPage() {
 
     setNewPassword(response.data);
     await navigator.clipboard?.writeText(response.data);
-    setCopied(true);
+    markCopied(true);
     notify({ type: "success", message: copy.success });
-    window.setTimeout(() => setCopied(false), 2000);
   };
 
   return (

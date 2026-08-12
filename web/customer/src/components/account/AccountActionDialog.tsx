@@ -56,6 +56,7 @@ export function AccountActionDialog({
   const isEmailMode = mode === "email";
   const currentEmail = getBoundEmail(user);
   const closeTimerRef = useRef<number | null>(null);
+  const successCloseTimerRef = useRef<number | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const currentPasswordInputRef = useRef<HTMLInputElement>(null);
   const newPasswordInputRef = useRef<HTMLInputElement>(null);
@@ -104,6 +105,9 @@ export function AccountActionDialog({
     return () => {
       if (closeTimerRef.current !== null) {
         window.clearTimeout(closeTimerRef.current);
+      }
+      if (successCloseTimerRef.current !== null) {
+        window.clearTimeout(successCloseTimerRef.current);
       }
     };
   }, []);
@@ -201,7 +205,7 @@ export function AccountActionDialog({
   };
 
   const closeAfterSuccess = () => {
-    window.setTimeout(requestClose, 650);
+    successCloseTimerRef.current = window.setTimeout(requestClose, 650);
   };
 
   const handlePasswordSubmit = async (event: FormEvent<HTMLFormElement>) => {

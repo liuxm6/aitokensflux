@@ -158,7 +158,7 @@ test("customer financial and usage values use tabular numerals", async () => {
   const styles = await Bun.file(new URL("src/styles.css", customerRoot)).text();
   const numericValues = getCssBlock(
     styles,
-    '.console-summary-value,\n.table td[data-numeric="true"],\n.billing-balance b,\n.usage-token-count,\n.usage-cost-pill {',
+    '.console-summary-value,\n.table td[data-numeric="true"],\n.billing-balance b,\n.usage-pagination,\n.usage-token-count,\n.usage-cost-pill,\n.plan-purchase-amount-card b {',
   );
 
   expect(numericValues).toContain("font-variant-numeric: tabular-nums");

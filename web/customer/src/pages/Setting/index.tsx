@@ -24,6 +24,7 @@ import {
   getAccountIdentifier,
   getBoundEmail,
 } from "../../helpers/account";
+import { useCopyFeedback } from "../../hooks/useCopyFeedback";
 import { useToast } from "../../context/Toast";
 import { localizeKey } from "../../i18n/localization";
 import { languageOptions } from "../../i18n/languages";
@@ -49,7 +50,7 @@ export function createSettingsPage({
     const [dialogMode, setDialogMode] = useState<AccountDialogMode | null>(
       null,
     );
-    const [copiedUserId, setCopiedUserId] = useState(false);
+    const [copiedUserId, markUserIdCopied] = useCopyFeedback(false, 1400);
     const boundEmail = getBoundEmail(user);
     const accountIdentifier = getAccountIdentifier(user);
     const userId = user?.id ? String(user.id) : "-";
@@ -83,12 +84,11 @@ export function createSettingsPage({
       if (!user?.id) return;
       try {
         await writeClipboard(String(user.id));
-        setCopiedUserId(true);
+        markUserIdCopied(true);
         notify({
           type: "success",
           message: localizeKey(language, "User ID copied"),
         });
-        window.setTimeout(() => setCopiedUserId(false), 1400);
       } catch {
         notify({
           type: "error",

@@ -38,6 +38,7 @@ import {
   getConfiguredServerAddress,
   getOpenAICompatibleBaseUrl,
 } from "../../helpers/server-address";
+import { useCopyFeedback } from "../../hooks/useCopyFeedback";
 import { localizeKey } from "../../i18n/localization";
 import { apiRequest, buildQueryFromValues } from "../../services/api";
 import {
@@ -144,7 +145,7 @@ export function ApiKeysPage() {
   const [loadingTokens, setLoadingTokens] = useState(true);
   const [tokenLoadError, setTokenLoadError] = useState(false);
   const [tokenMessage, setTokenMessage] = useState("");
-  const [copiedBaseUrl, setCopiedBaseUrl] = useState("");
+  const [copiedBaseUrl, markBaseUrlCopied] = useCopyFeedback("", 1200);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [createForm, setCreateForm] = useState<ApiKeyCreateForm>(() =>
     getDefaultApiKeyCreateForm(),
@@ -603,9 +604,8 @@ export function ApiKeysPage() {
     }
     try {
       await navigator.clipboard.writeText(url);
-      setCopiedBaseUrl(url);
+      markBaseUrlCopied(url);
       setTokenMessage(localizeKey(language, "URL copied"));
-      window.setTimeout(() => setCopiedBaseUrl(""), 1200);
     } catch {
       setTokenMessage(localizeKey(language, "Copy failed"));
     }

@@ -16,8 +16,10 @@
 .console-summary-value,
 .table td[data-numeric="true"],
 .billing-balance b,
+.usage-pagination,
 .usage-token-count,
-.usage-cost-pill {
+.usage-cost-pill,
+.plan-purchase-amount-card b {
   font-variant-numeric: tabular-nums;
 }
 

@@ -1,7 +1,8 @@
 import { Check, Copy } from "lucide-react";
 import type { ReactNode } from "react";
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { LanguageContext } from "../../context/Language";
+import { useCopyFeedback } from "../../hooks/useCopyFeedback";
 import { localizeKey } from "../../i18n/localization";
 
 export function CodeBlock({
@@ -12,12 +13,11 @@ export function CodeBlock({
   children?: ReactNode;
 }) {
   const { language } = useContext(LanguageContext);
-  const [copied, setCopied] = useState(false);
+  const [copied, markCopied] = useCopyFeedback(false, 1200);
 
   const copyValue = () => {
     void navigator.clipboard?.writeText(value);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1200);
+    markCopied(true);
   };
 
   return (

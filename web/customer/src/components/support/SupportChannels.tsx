@@ -1,8 +1,9 @@
 import { ExternalLink } from "lucide-react";
-import { useContext, useState, type MouseEvent } from "react";
+import { useContext, type MouseEvent } from "react";
 import { LanguageContext, T } from "../../context/Language";
 import { useToast } from "../../context/Toast";
 import { SUPPORT_EMAIL } from "../../helpers/account";
+import { useCopyFeedback } from "../../hooks/useCopyFeedback";
 import { localizeKey } from "../../i18n/localization";
 
 type SupportChannel = {
@@ -134,18 +135,17 @@ function LinuxDoLogo() {
 export function SupportChannelGrid({ className = "" }: { className?: string }) {
   const { language } = useContext(LanguageContext);
   const notify = useToast();
-  const [copiedValue, setCopiedValue] = useState<string | null>(null);
+  const [copiedValue, markCopied] = useCopyFeedback<string | null>(null, 1500);
 
   const copyValue = async (link: SupportChannel) => {
     if (!link.copyValue) return;
     try {
       await writeClipboard(link.copyValue);
-      setCopiedValue(link.copyValue);
+      markCopied(link.copyValue);
       notify({
         type: "success",
         message: localizeKey(language, link.copiedMessage ?? "Copied"),
       });
-      window.setTimeout(() => setCopiedValue(null), 1500);
     } catch {
       notify({
         type: "error",
