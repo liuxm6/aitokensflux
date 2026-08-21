@@ -8,18 +8,20 @@ export const enTranslations = {
   "Check authenticity": "Check authenticity",
   "Service monitor": "Service monitor",
   "Service status": "Service status",
-  "Server status": "Server status",
   "Model status": "Model status",
+  FAQ: "FAQ",
+  "Claude Code, OpenAI Codex, Grok Code, Google Gemini":
+    "Claude Code, OpenAI Codex, Grok Code, Google Gemini",
+  "macOS Windows Linux": "macOS Windows Linux",
+  macOS: "macOS",
+  Windows: "Windows",
+  Linux: "Linux",
   "30 days": "30 days",
   "7 days": "7 days",
   "90 days": "90 days",
   "A stable AI coding solution": "A stable AI coding solution",
-  "Unified Claude Code, Codex and Grok API gateway":
-    "Unified Claude Code, Codex and Grok API gateway",
   "Unified Claude Code, Codex, Grok and Gemini API gateway":
     "Unified Claude Code, Codex, Grok and Gemini API gateway",
-  "Transparent Claude Code, Codex and Grok API pricing":
-    "Transparent Claude Code, Codex and Grok API pricing",
   "Transparent Claude Code, Codex, Grok and Gemini API pricing":
     "Transparent Claude Code, Codex, Grok and Gemini API pricing",
   "Claude Code and Codex API setup guide":
@@ -42,7 +44,6 @@ export const enTranslations = {
     "ATF Switch authorization synced. You can return to the desktop app.",
   "Could not reach ATF Switch. Keep the desktop app open and click Sync to ATF Switch again.":
     "Could not reach ATF Switch. Keep the desktop app open and click Sync to ATF Switch again.",
-  "Confirm sign in": "Confirm sign in",
   "Confirming sign in...": "Confirming sign in...",
   "Default model": "Default model",
   "Failed to open ATF Switch": "Failed to open ATF Switch",
@@ -50,14 +51,9 @@ export const enTranslations = {
   "Manage API keys": "Manage API keys",
   "Open ATF Switch again": "Open ATF Switch again",
   "Opening ATF Switch...": "Opening ATF Switch...",
-  "Please sign in first": "Please sign in first",
   "Preparing authorization...": "Preparing authorization...",
   "Sign in to Ai Tokens Flux. Existing ATF Switch provider settings will not be changed.":
     "Sign in to Ai Tokens Flux. Existing ATF Switch provider settings will not be changed.",
-  "Signed in. Existing provider authorization was updated without importing a new provider.":
-    "Signed in. Existing provider authorization was updated without importing a new provider.",
-  "Signed in. You can return to ATF Switch.":
-    "Signed in. You can return to ATF Switch.",
   "Sync to ATF Switch": "Sync to ATF Switch",
   "Synced to ATF Switch": "Synced to ATF Switch",
   "Target app": "Target app",
@@ -122,7 +118,6 @@ export const enTranslations = {
   "Common top-up amounts": "Common top-up amounts",
   Contact: "Contact",
   "Contact us": "Contact us",
-  "Copy Base URL": "Copy Base URL",
   "Copy email address": "Copy email address",
   "Copy failed": "Copy failed",
   "Copy link": "Copy link",
@@ -150,7 +145,6 @@ export const enTranslations = {
   Disable: "Disable",
   Disabled: "Disabled",
   "Disabling key...": "Disabling key...",
-  "Do credits expire?": "Do credits expire?",
   Docs: "Docs",
   Done: "Done",
   Edit: "Edit",
@@ -158,15 +152,11 @@ export const enTranslations = {
   Enable: "Enable",
   Enabled: "Enabled",
   "Enabling key...": "Enabling key...",
-  "End date": "End date",
   "Enter a redemption code.": "Enter a redemption code.",
-  "Equivalent APIs for frontier models including Claude Sonnet 4.6, Claude Opus 4.7 and GPT-5.5.":
-    "Equivalent APIs for frontier models including Claude Sonnet 4.6, Claude Opus 4.7 and GPT-5.5.",
   "Estimated payment": "Estimated payment",
   Examples: "Examples",
   Expired: "Expired",
   "Expiry date": "Expiry date",
-  Export: "Export",
   Failed: "Failed",
   "Failed to create key": "Failed to create key",
   "Failed to delete key": "Failed to delete key",
@@ -179,11 +169,11 @@ export const enTranslations = {
   "Failed to update key": "Failed to update key",
   "Haiku Model": "Haiku Model",
   "Import to CC Switch": "Import to CC Switch",
+  "CC Switch": "CC Switch",
   Features: "Features",
   "From {{amount}}": "From {{amount}}",
   "Gateway variables for Claude Code": "Gateway variables for Claude Code",
   "Get payment details": "Get payment details",
-  "Get started, effortlessly": "Get started, effortlessly",
   "Heatmaps and per-request cost make spending transparent.":
     "Heatmaps and per-request cost make spending transparent.",
   Important: "Important",
@@ -197,7 +187,6 @@ export const enTranslations = {
   "Invite link copied": "Invite link copied",
   "Invite reward": "Invite reward",
   "Invitee bonus": "Invitee bonus",
-  "Is my code and data safe?": "Is my code and data safe?",
   "Keep your workflow. Bill it smarter.":
     "Keep your workflow. Bill it smarter.",
   "Key copied": "Key copied",
@@ -207,9 +196,6 @@ export const enTranslations = {
   "Key enabled": "Key enabled",
   "Key updated": "Key updated",
   "Edit key": "Edit key",
-  keys: "keys",
-  "Keys are self-managed and revocable anytime; the gateway retains no request content.":
-    "Keys are self-managed and revocable anytime; the gateway retains no request content.",
   Language: "Language",
   "Launch payment": "Launch payment",
   "Loading plans": "Loading plans",
@@ -226,8 +212,6 @@ export const enTranslations = {
   "No available plans": "No available plans",
   "No reset": "No reset",
   "No withdrawable rewards": "No withdrawable rewards",
-  "No. It only reroutes at the request layer. Your Claude Code, Codex and VS Code workflows stay intact.":
-    "No. It only reroutes at the request layer. Your Claude Code, Codex and VS Code workflows stay intact.",
   "npm alternative": "npm alternative",
   "OAuth sign in failed": "OAuth sign in failed",
   "On Windows, use the official installer script for Codex CLI. npm install -g @openai/codex is also available.":
@@ -236,7 +220,6 @@ export const enTranslations = {
     "One command reroutes your CLI traffic. Scripts untouched.",
   "One-key switch": "One-key switch",
   "Online payment": "Online payment",
-  "Only the latest 7 days": "Only the latest 7 days",
   "Open dashboard": "Open dashboard",
   "Open Codex CLI docs": "Open Codex CLI docs",
   "Open external top-up link": "Open external top-up link",
@@ -248,10 +231,7 @@ export const enTranslations = {
   Password: "Password",
   "Password set": "Password set",
   Pay: "Pay",
-  "Pay for how you use AI": "Pay for how you use AI",
   "Pay with balance": "Pay with balance",
-  "Pay-as-you-go credits never expire. Subscription plans reset each billing cycle.":
-    "Pay-as-you-go credits never expire. Subscription plans reset each billing cycle.",
   "Pay-as-you-go credits never expire. Subscriptions fit steady builders and teams.":
     "Pay-as-you-go credits never expire. Subscriptions fit steady builders and teams.",
   "Pay-as-you-go service": "Pay-as-you-go service",
@@ -267,7 +247,6 @@ export const enTranslations = {
   Pending: "Pending",
   "Persist to user environment": "Persist to user environment",
   "Plan name": "Plan name",
-  "Plan quota": "Plan quota",
   "Plan remaining": "Plan remaining",
   "Plan subscription": "Plan subscription",
   "Plan used": "Plan used",
@@ -291,25 +270,18 @@ export const enTranslations = {
   "Put the gateway in user-level config.toml. Do not put provider/base URL settings in project .codex/config.toml because Codex ignores them there.":
     "Put the gateway in user-level config.toml. Do not put provider/base URL settings in project .codex/config.toml because Codex ignores them there.",
   Quota: "Quota",
-  Rate: "Rate",
   "Read docs": "Read docs",
-  "Reading key...": "Reading key...",
   Redeem: "Redeem",
   "Redemption code": "Redemption code",
   Referral: "Referral",
   "Referral reward": "Referral reward",
   Referrals: "Referrals",
   Refresh: "Refresh",
-  "Replace YOUR_API_KEY with the key you created on the API Keys page.":
-    "Replace YOUR_API_KEY with the key you created on the API Keys page.",
   "Requests/min": "Requests/min",
-  Required: "Required",
-  "Reset period": "Reset period",
   Resources: "Resources",
   "Rewards follow the gateway settings after a friend signs up with your code.":
     "Rewards follow the gateway settings after a friend signs up with your code.",
   "Rewards moved to balance": "Rewards moved to balance",
-  Rows: "Rows",
   Search: "Search",
   Secure: "Secure",
   "See all plans": "See all plans",
@@ -327,7 +299,6 @@ export const enTranslations = {
     "Sign up for free trial credits, follow the guide once, and your Claude Code runs on aitokensflux.",
   "Sign-in callback": "Sign-in callback",
   "Start Claude Code": "Start Claude Code",
-  "Start date": "Start date",
   "Start now": "Start now",
   "Start using it after saving. Requests will appear in Usage details.":
     "Start using it after saving. Requests will appear in Usage details.",
@@ -362,8 +333,8 @@ export const enTranslations = {
     "Transparent pricing that scales down",
   "Unified AI gateway": "Unified AI gateway",
   Unlimited: "Unlimited",
+  "Unnamed key": "Unnamed key",
   "Unlimited quota": "Unlimited quota",
-  "Upgrade group": "Upgrade group",
   Unavailable: "Unavailable",
   Usage: "Usage",
   "Usage-based": "Usage-based",
@@ -375,7 +346,6 @@ export const enTranslations = {
     "Use the following Base URL instead of official endpoints with your API key",
   "URL copied": "URL copied",
   "Valid until": "Valid until",
-  "Validity period": "Validity period",
   "Verify Codex": "Verify Codex",
   "View usage": "View usage",
   "Visual usage": "Visual usage",
@@ -387,9 +357,6 @@ export const enTranslations = {
     "Which operating system are you using?",
   "Which tool do you want to configure?":
     "Which tool do you want to configure?",
-  "Why aitokensflux": "Why aitokensflux",
-  "Will aitokensflux change my existing tools?":
-    "Will aitokensflux change my existing tools?",
   "With unlimited quota enabled, this key is not capped at the key level.":
     "With unlimited quota enabled, this key is not capped at the key level.",
   "Withdraw moves referral quota into account balance":
@@ -398,7 +365,6 @@ export const enTranslations = {
   "Withdrawable amount": "Withdrawable amount",
   "Withdrawal failed": "Withdrawal failed",
   "All records": "All records",
-  "Conversion: {{rate}}": "Conversion: {{rate}}",
   "Follow these steps to install and configure {{tool}} on {{os}}.":
     "Follow these steps to install and configure {{tool}} on {{os}}.",
   "Invitee bonuses": "Invitee bonuses",
@@ -526,6 +492,7 @@ export const enTranslations = {
   "Failed to initialize OAuth": "Failed to initialize OAuth",
   "Forgot password?": "Forgot password?",
   "Get code": "Get code",
+  "{{seconds}}s": "{{seconds}}s",
   "I have read and agree to": "I have read and agree to",
   "Invite code (optional)": "Invite code (optional)",
   "Invalid reset link. Please request a new password reset email.":
@@ -560,7 +527,6 @@ export const enTranslations = {
   "Scan the QR code, follow the account, and enter the verification code.":
     "Scan the QR code, follow the account, and enter the verification code.",
   "Sign in with email code": "Sign in with email code",
-  "Sign in with Google": "Sign in with Google",
   "Sign in with Passkey": "Sign in with Passkey",
   "Sign in with password": "Sign in with password",
   "Signed in": "Signed in",
@@ -582,7 +548,6 @@ export const enTranslations = {
   "Add to config.toml": "Add to config.toml",
   "Add to user-level config.toml": "Add to user-level config.toml",
   All: "All",
-  "All types": "All types",
   "Anthropic CLI": "Anthropic CLI",
   "Actual model: {{model}}": "Actual model: {{model}}",
   "Async task refund": "Async task refund",
@@ -610,14 +575,12 @@ export const enTranslations = {
   Fee: "Fee",
   "First page": "First page",
   Group: "Group",
-  "Group ratio": "Group ratio",
   "If you used Claude CLI before, remove old settings first, then persist the gateway and key in your shell profile.":
     "If you used Claude CLI before, remove old settings first, then persist the gateway and key in your shell profile.",
   "If you used Claude CLI before, remove old settings first, then set the aitokensflux gateway and API key.":
     "If you used Claude CLI before, remove old settings first, then set the aitokensflux gateway and API key.",
   Input: "Input",
   "Install the Claude Code CLI": "Install the Claude Code CLI",
-  Key: "Key",
   "Last page": "Last page",
   Latency: "Latency",
   Method: "Method",
@@ -661,7 +624,6 @@ export const enTranslations = {
     "Replace {{key}} with the key you created on the API Keys page.",
   "Replace {{key}} with the key you created on the API Keys page. Reopen PowerShell after persisting it.":
     "Replace {{key}} with the key you created on the API Keys page. Reopen PowerShell after persisting it.",
-  "Request ID": "Request ID",
   Reset: "Reset",
   "Select or enter model name": "Select or enter model name",
   "Select group": "Select group",
@@ -679,17 +641,12 @@ export const enTranslations = {
   "System prompt override": "System prompt override",
   "Temporary for current terminal": "Temporary for current terminal",
   "Terminal / zsh": "Terminal / zsh",
-  Tiered: "Tiered",
   Time: "Time",
   Token: "Token",
-  "Token name": "Token name",
   Tokens: "Tokens",
   "Top-up": "Top-up",
   Type: "Type",
-  "Upstream request ID": "Upstream request ID",
-  View: "View",
   "Violation fee": "Violation fee",
-  Wallet: "Wallet",
   "Works with Claude Code / Codex": "Works with Claude Code / Codex",
   "{{start}}-{{end}} of {{total}}": "{{start}}-{{end}} of {{total}}",
   "{{title}} is not configured": "{{title}} is not configured",
@@ -711,20 +668,14 @@ export const enTranslations = {
   "Reset password": "Reset password",
   "Resetting password...": "Resetting password...",
   "Received amount": "Received amount",
-  "Chinese support for top-ups, setup, and account issues":
-    "Chinese support for top-ups, setup, and account issues",
-  "Email support for accounts, orders, and security":
-    "Email support for accounts, orders, and security",
   "Email address copied": "Email address copied",
   "User ID copied": "User ID copied",
   "ai token flux QQ group": "ai token flux QQ group",
-  "ai token flux QQ group: 826073513": "ai token flux QQ group: 826073513",
   Gmail: "Gmail",
   "mr.liuxm6@gmail.com": "mr.liuxm6@gmail.com",
   "Product updates and public announcements":
     "Product updates and public announcements",
   "QQ group number copied": "QQ group number copied",
-  "QQ group: 826073513": "QQ group: 826073513",
   "QQ support group": "QQ support group",
   "Real-time notices and international support":
     "Real-time notices and international support",
@@ -791,23 +742,8 @@ export const enTranslations = {
   "Failed to load dashboard data": "Failed to load dashboard data",
   "Usage records": "Usage records",
   "Loading page": "Loading page",
-  "One gateway for every coding model.": "One gateway for every coding model.",
-  "Use one balance, see every request, and keep your existing workflow.":
-    "Use one balance, see every request, and keep your existing workflow.",
-  "View setup guide": "View setup guide",
-  "Create account": "Create account",
-  "Usage billing": "Usage billing",
-  "Model rates": "Model rates",
-  "Compare per-model input, output, cache, and request rates before you send traffic.":
-    "Compare per-model input, output, cache, and request rates before you send traffic.",
-  "Purchase options": "Purchase options",
-  "Plans and balance": "Plans and balance",
   "Plans add recurring quota; pay-as-you-go balance stays available for flexible usage.":
     "Plans add recurring quota; pay-as-you-go balance stays available for flexible usage.",
-  "Choose the model. Keep the workflow.":
-    "Choose the model. Keep the workflow.",
-  "Create one account, follow the setup guide once, and manage every request from the same dashboard.":
-    "Create one account, follow the setup guide once, and manage every request from the same dashboard.",
   "Account overview": "Account overview",
   "Common actions": "Common actions",
   "Request count": "Request count",
@@ -821,9 +757,17 @@ export const enTranslations = {
   "WeChat QR code": "WeChat QR code",
   "Page {{page}}": "Page {{page}}",
   "Usage pagination": "Usage pagination",
+  "Invite pagination": "Invite pagination",
+  "API key pagination": "API key pagination",
+  "Billing pagination": "Billing pagination",
+  Stripe: "Stripe",
+  Creem: "Creem",
+  "Waffo Pancake": "Waffo Pancake",
   "Model provider": "Model provider",
-  "Model pricing by provider": "Model pricing by provider",
   "Referral record filter": "Referral record filter",
   "Billing record filter": "Billing record filter",
+  "No plan subscription records": "No plan subscription records",
+  "No PAYG top-up records": "No PAYG top-up records",
+  "No billing records": "No billing records",
   X: "X",
 } as const;

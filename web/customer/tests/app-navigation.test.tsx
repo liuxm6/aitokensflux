@@ -7,6 +7,7 @@ import { LanguageButton } from "../src/components/layout/LanguageButton";
 import { LanguageContext } from "../src/context/Language";
 import {
   getPageKey,
+  getMarketingNavCurrent,
   isInternalPath,
   shouldPreserveScroll,
 } from "../src/helpers/navigation";
@@ -77,6 +78,19 @@ describe("customer route contract", () => {
     expect(isInternalPath("/dashboard")).toBe(true);
     expect(isInternalPath(`${window.location.origin}/setup`)).toBe(true);
     expect(isInternalPath("https://example.com/dashboard")).toBe(false);
+  });
+
+  test("marks the matching marketing nav item as current", () => {
+    expect(getMarketingNavCurrent("/", "")).toBeNull();
+    expect(getMarketingNavCurrent("/", "#features")).toBe("features");
+    expect(getMarketingNavCurrent("/en", "#features")).toBe("features");
+    expect(getMarketingNavCurrent("/pricing", "")).toBe("pricing");
+    expect(getMarketingNavCurrent("/en/pricing", "")).toBe("pricing");
+    expect(getMarketingNavCurrent("/subscribe", "")).toBe("pricing");
+    expect(getMarketingNavCurrent("/docs", "")).toBe("docs");
+    expect(getMarketingNavCurrent("/en/docs", "")).toBe("docs");
+    expect(getMarketingNavCurrent("/setup", "")).toBe("docs");
+    expect(getMarketingNavCurrent("/user-agreement", "")).toBeNull();
   });
 });
 

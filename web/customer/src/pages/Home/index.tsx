@@ -1,4 +1,3 @@
-import { Gemini, XAI } from "@lobehub/icons";
 import {
   Activity,
   BookOpen,
@@ -13,11 +12,24 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
 import { AppLink } from "../../components/common/AppLink";
+import {
+  AppleLogo,
+  ClaudeLogo,
+  GeminiLogo,
+  GrokLogo,
+  HERO_MODEL_PAIRS,
+  LinuxLogo,
+  OpenAILogo,
+  SupportRewardMascot,
+  WindowsLogo,
+} from "../../components/home/HomeLogos";
+export { HERO_MODEL_PAIRS, HERO_MODELS } from "../../components/home/HomeLogos";
 import {
   EmptyState,
   ErrorState,
@@ -36,6 +48,8 @@ import { PriceCard } from "../../components/topup/PriceCard";
 import { AuthContext } from "../../context/Auth";
 import { LanguageContext, T } from "../../context/Language";
 import { navigateTo } from "../../helpers/navigation";
+import { prefetchLikelyNextPages } from "../../helpers/prefetch";
+import { scrollToHash } from "../../helpers/motion";
 import {
   PRICING_GROUP_ORDER,
   formatGroupMultiplier,
@@ -65,163 +79,6 @@ export {
   classifyFallbackGroup,
   groupPricing,
 } from "../../helpers/model-pricing";
-function AppleLogo({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 384 512"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path
-        d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8c-18.8-26.9-47.2-41.7-84.7-44.6c-35.5-2.8-74.3 20.7-88.5 20.7c-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2c25.2-.6 43-17.9 75.8-17.9c31.8 0 48.3 17.9 76.4 17.9c48.6-.7 90.4-82.5 102.6-119.3c-65.2-30.7-61.7-90-61.7-91.9m-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5c-24.1 1.4-52 16.4-67.9 34.9c-17.5 19.8-27.8 44.3-25.6 71.9c26.1 2 49.9-11.4 69.5-34.3"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-function WindowsLogo({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 448 512"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path
-        d="m0 93.7l183.6-25.3v177.4H0zm0 324.6l183.6 25.3V268.4H0zm203.8 28L448 480V268.4H203.8zm0-380.6v180.1H448V32z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-function LinuxLogo({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 448 512"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path
-        d="M220.8 123.3c1 .5 1.8 1.7 3 1.7c1.1 0 2.8-.4 2.9-1.5c.2-1.4-1.9-2.3-3.2-2.9c-1.7-.7-3.9-1-5.5-.1c-.4.2-.8.7-.6 1.1c.3 1.3 2.3 1.1 3.4 1.7m-21.9 1.7c1.2 0 2-1.2 3-1.7c1.1-.6 3.1-.4 3.5-1.6c.2-.4-.2-.9-.6-1.1c-1.6-.9-3.8-.6-5.5.1c-1.3.6-3.4 1.5-3.2 2.9c.1 1 1.8 1.5 2.8 1.4M420 403.8c-3.6-4-5.3-11.6-7.2-19.7c-1.8-8.1-3.9-16.8-10.5-22.4c-1.3-1.1-2.6-2.1-4-2.9c-1.3-.8-2.7-1.5-4.1-2c9.2-27.3 5.6-54.5-3.7-79.1c-11.4-30.1-31.3-56.4-46.5-74.4c-17.1-21.5-33.7-41.9-33.4-72C311.1 85.4 315.7.1 234.8 0C132.4-.2 158 103.4 156.9 135.2c-1.7 23.4-6.4 41.8-22.5 64.7c-18.9 22.5-45.5 58.8-58.1 96.7c-6 17.9-8.8 36.1-6.2 53.3c-6.5 5.8-11.4 14.7-16.6 20.2c-4.2 4.3-10.3 5.9-17 8.3s-14 6-18.5 14.5c-2.1 3.9-2.8 8.1-2.8 12.4c0 3.9.6 7.9 1.2 11.8c1.2 8.1 2.5 15.7.8 20.8c-5.2 14.4-5.9 24.4-2.2 31.7c3.8 7.3 11.4 10.5 20.1 12.3c17.3 3.6 40.8 2.7 59.3 12.5c19.8 10.4 39.9 14.1 55.9 10.4c11.6-2.6 21.1-9.6 25.9-20.2c12.5-.1 26.3-5.4 48.3-6.6c14.9-1.2 33.6 5.3 55.1 4.1c.6 2.3 1.4 4.6 2.5 6.7v.1c8.3 16.7 23.8 24.3 40.3 23c16.6-1.3 34.1-11 48.3-27.9c13.6-16.4 36-23.2 50.9-32.2c7.4-4.5 13.4-10.1 13.9-18.3c.4-8.2-4.4-17.3-15.5-29.7M223.7 87.3c9.8-22.2 34.2-21.8 44-.4c6.5 14.2 3.6 30.9-4.3 40.4c-1.6-.8-5.9-2.6-12.6-4.9c1.1-1.2 3.1-2.7 3.9-4.6c4.8-11.8-.2-27-9.1-27.3c-7.3-.5-13.9 10.8-11.8 23c-4.1-2-9.4-3.5-13-4.4c-1-6.9-.3-14.6 2.9-21.8M183 75.8c10.1 0 20.8 14.2 19.1 33.5c-3.5 1-7.1 2.5-10.2 4.6c1.2-8.9-3.3-20.1-9.6-19.6c-8.4.7-9.8 21.2-1.8 28.1c1 .8 1.9-.2-5.9 5.5c-15.6-14.6-10.5-52.1 8.4-52.1m-13.6 60.7c6.2-4.6 13.6-10 14.1-10.5c4.7-4.4 13.5-14.2 27.9-14.2c7.1 0 15.6 2.3 25.9 8.9c6.3 4.1 11.3 4.4 22.6 9.3c8.4 3.5 13.7 9.7 10.5 18.2c-2.6 7.1-11 14.4-22.7 18.1c-11.1 3.6-19.8 16-38.2 14.9c-3.9-.2-7-1-9.6-2.1c-8-3.5-12.2-10.4-20-15c-8.6-4.8-13.2-10.4-14.7-15.3q-2.1-7.35 4.2-12.3m3.3 334c-2.7 35.1-43.9 34.4-75.3 18c-29.9-15.8-68.6-6.5-76.5-21.9c-2.4-4.7-2.4-12.7 2.6-26.4v-.2c2.4-7.6.6-16-.6-23.9c-1.2-7.8-1.8-15 .9-20c3.5-6.7 8.5-9.1 14.8-11.3c10.3-3.7 11.8-3.4 19.6-9.9c5.5-5.7 9.5-12.9 14.3-18c5.1-5.5 10-8.1 17.7-6.9c8.1 1.2 15.1 6.8 21.9 16l19.6 35.6c9.5 19.9 43.1 48.4 41 68.9m-1.4-25.9c-4.1-6.6-9.6-13.6-14.4-19.6c7.1 0 14.2-2.2 16.7-8.9c2.3-6.2 0-14.9-7.4-24.9c-13.5-18.2-38.3-32.5-38.3-32.5c-13.5-8.4-21.1-18.7-24.6-29.9s-3-23.3-.3-35.2c5.2-22.9 18.6-45.2 27.2-59.2c2.3-1.7.8 3.2-8.7 20.8c-8.5 16.1-24.4 53.3-2.6 82.4c.6-20.7 5.5-41.8 13.8-61.5c12-27.4 37.3-74.9 39.3-112.7c1.1.8 4.6 3.2 6.2 4.1c4.6 2.7 8.1 6.7 12.6 10.3c12.4 10 28.5 9.2 42.4 1.2c6.2-3.5 11.2-7.5 15.9-9c9.9-3.1 17.8-8.6 22.3-15c7.7 30.4 25.7 74.3 37.2 95.7c6.1 11.4 18.3 35.5 23.6 64.6c3.3-.1 7 .4 10.9 1.4c13.8-35.7-11.7-74.2-23.3-84.9c-4.7-4.6-4.9-6.6-2.6-6.5c12.6 11.2 29.2 33.7 35.2 59c2.8 11.6 3.3 23.7.4 35.7c16.4 6.8 35.9 17.9 30.7 34.8c-2.2-.1-3.2 0-4.2 0c3.2-10.1-3.9-17.6-22.8-26.1c-19.6-8.6-36-8.6-38.3 12.5c-12.1 4.2-18.3 14.7-21.4 27.3c-2.8 11.2-3.6 24.7-4.4 39.9c-.5 7.7-3.6 18-6.8 29c-32.1 22.9-76.7 32.9-114.3 7.2m257.4-11.5c-.9 16.8-41.2 19.9-63.2 46.5c-13.2 15.7-29.4 24.4-43.6 25.5s-26.5-4.8-33.7-19.3c-4.7-11.1-2.4-23.1 1.1-36.3c3.7-14.2 9.2-28.8 9.9-40.6c.8-15.2 1.7-28.5 4.2-38.7c2.6-10.3 6.6-17.2 13.7-21.1c.3-.2.7-.3 1-.5c.8 13.2 7.3 26.6 18.8 29.5c12.6 3.3 30.7-7.5 38.4-16.3c9-.3 15.7-.9 22.6 5.1c9.9 8.5 7.1 30.3 17.1 41.6c10.6 11.6 14 19.5 13.7 24.6M173.3 148.7c2 1.9 4.7 4.5 8 7.1c6.6 5.2 15.8 10.6 27.3 10.6c11.6 0 22.5-5.9 31.8-10.8c4.9-2.6 10.9-7 14.8-10.4s5.9-6.3 3.1-6.6s-2.6 2.6-6 5.1c-4.4 3.2-9.7 7.4-13.9 9.8c-7.4 4.2-19.5 10.2-29.9 10.2s-18.7-4.8-24.9-9.7c-3.1-2.5-5.7-5-7.7-6.9c-1.5-1.4-1.9-4.6-4.3-4.9c-1.4-.1-1.8 3.7 1.7 6.5"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-function SupportRewardMascot({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 96 96"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path d="M25 39 16 21c-.9-1.9 1.1-3.8 3-2.9l18 9" fill="#f7b267" />
-      <path d="m71 39 9-18c.9-1.9-1.1-3.8-3-2.9l-18 9" fill="#f7b267" />
-      <path
-        d="M48 17c20.6 0 35 13.8 35 34.1C83 72 69.6 84 48 84S13 72 13 51.1C13 30.8 27.4 17 48 17Z"
-        fill="#ffcf8a"
-      />
-      <path
-        d="M20.7 47.8c0-14.8 9-25.4 23.3-28.8C25.8 20.8 13 33.8 13 51.1 13 72 26.4 84 48 84c5.3 0 10.1-.7 14.3-2.1-25.4.6-41.6-12.1-41.6-34.1Z"
-        fill="#f4a85f"
-        opacity=".55"
-      />
-      <path
-        d="M32 54.5c-3.2 0-5.7-2.5-5.7-5.8S28.8 43 32 43s5.7 2.5 5.7 5.7-2.5 5.8-5.7 5.8ZM64 54.5c-3.2 0-5.7-2.5-5.7-5.8S60.8 43 64 43s5.7 2.5 5.7 5.7-2.5 5.8-5.7 5.8Z"
-        fill="#172033"
-      />
-      <path
-        d="M45.5 58.2c1.5-1.4 3.5-1.4 5 0 .9.8.5 2.4-.7 2.8l-1.8.6-1.8-.6c-1.2-.4-1.6-2-.7-2.8Z"
-        fill="#172033"
-      />
-      <path
-        d="M40.5 65.4c2.2 3 5 4.5 7.5 4.5s5.3-1.5 7.5-4.5"
-        fill="none"
-        stroke="#172033"
-        strokeLinecap="round"
-        strokeWidth="4"
-      />
-      <path
-        d="M22.8 59.2c-4.7-.5-8.6-1.6-12.2-3.3M24.1 66.1c-4.4.8-8.3 2.2-11.8 4.5M73.2 59.2c4.7-.5 8.6-1.6 12.2-3.3M71.9 66.1c4.4.8 8.3 2.2 11.8 4.5"
-        fill="none"
-        stroke="#d9853f"
-        strokeLinecap="round"
-        strokeWidth="3.4"
-      />
-      <circle cx="69" cy="25" r="13" fill="#20c987" />
-      <path
-        d="M69 17.5v15M63.4 21.2c1.2-1.5 3.2-2.4 5.6-2.4 3.4 0 5.6 1.8 5.6 4.2 0 2.7-2 3.8-5.5 4.3-3.4.5-5.1 1.5-5.1 3.9 0 2.2 2 3.7 5.2 3.7 2.5 0 4.6-.8 6-2.5"
-        fill="none"
-        stroke="#fff"
-        strokeLinecap="round"
-        strokeWidth="2.6"
-      />
-    </svg>
-  );
-}
-
-function ClaudeLogo({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path
-        d="m4.7144 15.9555 4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0789-.7589.3764-.9107.7468-.4918.5828.2793.4797.686-.0668.4433-.2853 1.8517-.5586 2.9021-.3643 1.9429h.2125l.2429-.2429.9835-1.3053 1.6514-2.0643.7286-.8196.85-.9046.5464-.4311h1.0321l.759 1.1293-.34 1.1657-1.0625 1.3478-.8804 1.1414-1.2628 1.7-.7893 1.36.0729.1093.1882-.0183 2.8535-.607 1.5421-.2794 1.8396-.3157.8318.3886.091.3946-.3278.8075-1.967.4857-2.3072.4614-3.4364.8136-.0425.0304.0486.0607 1.5482.1457.6618.0364h1.621l3.0175.2247.7892.522.4736.6376-.079.4857-1.2142.6193-1.6393-.3886-3.825-.9107-1.3113-.3279h-.1822v.1093l1.0929 1.0686 2.0035 1.8092 2.5075 2.3314.1275.5768-.3218.4554-.34-.0486-2.2039-1.6575-.85-.7468-1.9246-1.621h-.1275v.17l.4432.6496 2.3436 3.5214.1214 1.0807-.17.3521-.6071.2125-.6679-.1214-1.3721-1.9246L14.38 17.959l-1.1414-1.9428-.1397.079-.674 7.2552-.3156.3703-.7286.2793-.6071-.4614-.3218-.7468.3218-1.4753.3886-1.9246.3157-1.53.2853-1.9004.17-.6314-.0121-.0425-.1397.0182-1.4328 1.9672-2.1796 2.9446-1.7243 1.8456-.4128.164-.7164-.3704.0667-.6618.4008-.5889 2.386-3.0357 1.4389-1.882.929-1.0868-.0062-.1579h-.0546l-6.3385 4.1164-1.1293.1457-.4857-.4554.0608-.7467.2307-.2429 1.9064-1.3114Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-function OpenAILogo({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path
-        d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.0201 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4926 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1686a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-function GrokLogo({ className }: { className?: string }) {
-  return <XAI aria-hidden="true" className={className} focusable="false" />;
-}
-
-function GeminiLogo({ className }: { className?: string }) {
-  return (
-    <Gemini.Color aria-hidden="true" className={className} focusable="false" />
-  );
-}
-
-export const HERO_MODELS = [
-  { id: "claude", label: "Claude Code", Logo: ClaudeLogo },
-  { id: "openai", label: "OpenAI Codex", Logo: OpenAILogo },
-  { id: "grok", label: "Grok Code", Logo: GrokLogo },
-  { id: "gemini", label: "Google Gemini", Logo: GeminiLogo },
-] as const;
-
-export const HERO_MODEL_PAIRS = [
-  [HERO_MODELS[0], HERO_MODELS[1]],
-  [HERO_MODELS[1], HERO_MODELS[2]],
-  [HERO_MODELS[2], HERO_MODELS[3]],
-  [HERO_MODELS[3], HERO_MODELS[0]],
-] as const;
-
 export const HOME_SECTION_ORDER = [
   "hero",
   "support-benefit",
@@ -290,7 +147,9 @@ function FaqSection() {
   return (
     <section className="section faq-section" data-home-section="faq">
       <div className="wrap narrow">
-        <h2 className="h-sec center">FAQ</h2>
+        <h2 className="h-sec center">
+          <T id="FAQ" />
+        </h2>
         <div className="faq">
           {faq.map((item, index) => {
             const question = localizeText(
@@ -531,7 +390,7 @@ function ModelPricingSection() {
                 className="mp-meta-link"
                 href="https://www.hvoy.ai"
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
               >
                 <ShieldCheck size={14} />
                 <T id="Check authenticity" />
@@ -540,7 +399,7 @@ function ModelPricingSection() {
                 className="mp-meta-link"
                 href="https://check.aitokensflux.com/group/TokenFlux"
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
               >
                 <Activity size={14} />
                 <T id="Service monitor" />
@@ -654,6 +513,7 @@ export function createHomePage({
 }) {
   return function HomePage() {
     const { user } = useContext(AuthContext);
+    const { language } = useContext(LanguageContext);
     const [status, setStatus] = useState<CustomerStatus | null>(null);
     const [plans, setPlans] = useState<SubscriptionPlanRecord[]>([]);
     const [topupInfo, setTopupInfo] = useState<TopupInfo | null>(null);
@@ -661,6 +521,41 @@ export function createHomePage({
     const [plansError, setPlansError] = useState(false);
     const [reloadKey, setReloadKey] = useState(0);
     const [topupDialogOpen, setTopupDialogOpen] = useState(false);
+    const heroRef = useRef<HTMLElement>(null);
+
+    useLayoutEffect(() => {
+      scrollToHash(window.location.hash);
+    }, []);
+
+    useEffect(() => {
+      const hero = heroRef.current;
+      if (!hero || typeof IntersectionObserver === "undefined") return;
+
+      let onscreen = true;
+      const sync = () => {
+        hero.classList.toggle("is-paused", !onscreen || document.hidden);
+      };
+      const observer = new IntersectionObserver(([entry]) => {
+        onscreen = entry.isIntersecting;
+        sync();
+      });
+      observer.observe(hero);
+      document.addEventListener("visibilitychange", sync);
+      return () => {
+        observer.disconnect();
+        document.removeEventListener("visibilitychange", sync);
+      };
+    }, []);
+
+    useEffect(() => {
+      const warm = () => prefetchLikelyNextPages();
+      if (typeof requestIdleCallback === "function") {
+        const idleId = requestIdleCallback(warm);
+        return () => cancelIdleCallback(idleId);
+      }
+      const timeoutId = window.setTimeout(warm, 250);
+      return () => window.clearTimeout(timeoutId);
+    }, []);
 
     useEffect(() => {
       let mounted = true;
@@ -706,13 +601,20 @@ export function createHomePage({
         <FathersDayGiftEntry />
         <MarketingHeader minimal homePage />
         <main className="home-page">
-          <section className="hero-mesh home-hero" data-home-section="hero">
+          <section
+            className="hero-mesh home-hero"
+            data-home-section="hero"
+            ref={heroRef}
+          >
             <div className="wrap hero-inner center">
               <h1 className="sr-only hero-seo-title">
                 <T id={HOME_HERO_COPY.title} />
               </h1>
               <div
-                aria-label="Claude Code, OpenAI Codex, Grok Code, Google Gemini"
+                aria-label={localizeKey(
+                  language,
+                  "Claude Code, OpenAI Codex, Grok Code, Google Gemini",
+                )}
                 className="hero-sub hero-model-switcher"
                 role="group"
               >
@@ -742,14 +644,26 @@ export function createHomePage({
               <p className="hero-tagline">
                 <T id={HOME_HERO_COPY.tagline} />
               </p>
-              <div className="os-icons" aria-label="macOS Windows Linux">
-                <span className="os-icon" aria-label="macOS">
+              <div
+                className="os-icons"
+                aria-label={localizeKey(language, "macOS Windows Linux")}
+              >
+                <span
+                  className="os-icon"
+                  aria-label={localizeKey(language, "macOS")}
+                >
                   <AppleLogo className="os-svg apple" />
                 </span>
-                <span className="os-icon" aria-label="Windows">
+                <span
+                  className="os-icon"
+                  aria-label={localizeKey(language, "Windows")}
+                >
                   <WindowsLogo className="os-svg" />
                 </span>
-                <span className="os-icon" aria-label="Linux">
+                <span
+                  className="os-icon"
+                  aria-label={localizeKey(language, "Linux")}
+                >
                   <LinuxLogo className="os-svg linux" />
                 </span>
               </div>

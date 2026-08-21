@@ -1,7 +1,5 @@
 import {
-  ArrowRight,
   ArrowRightLeft,
-  Check,
   Copy,
   Pencil,
   KeyRound,
@@ -19,6 +17,7 @@ import { Panel } from "../../components/common/ui/Panel";
 import { CustomerShell } from "../../components/layout/CustomerShell";
 import { ConsolePageHeader } from "../../components/layout/ConsolePageHeader";
 import { ApiKeyFormDialog } from "../../components/token/ApiKeyFormDialog";
+import { BaseUrlSwapRow } from "../../components/token/BaseUrlSwapRow";
 import { CCSwitchImportDialog } from "../../components/token/CCSwitchImportDialog";
 import {
   CC_SWITCH_APP_CONFIGS,
@@ -33,14 +32,20 @@ import { ConfirmActionContext } from "../../context/ConfirmAction";
 import { LanguageContext, T } from "../../context/Language";
 import { useToastMessage } from "../../context/Toast";
 import {
+  buildTokenUpdatePayload,
+  formatApiKey,
+  formatTokenGroupLabel,
+  getApiKeyDisplayName,
+  getApiKeyEditForm,
+  getApiKeyExpiryLabel,
+  isApiKeyExpired,
+} from "../../helpers/api-keys";
+import {
   formatQuotaTokens,
-  formatTimestamp,
   getApiKeyExpiryTimestamp,
   getDefaultApiKeyCreateForm,
-  getQuotaPerUnit,
   normalizePageData,
   parseApiKeyQuotaLimit,
-  toDateInputValue,
 } from "../../helpers/format";
 import {
   getConfiguredServerAddress,
@@ -59,7 +64,6 @@ import type {
   ApiKeyCreateForm,
   CustomerStatus,
   CustomerToken,
-  Language,
   PageData,
 } from "../../types";
 
@@ -294,7 +298,7 @@ export function ApiKeysPage() {
       await updateTokenStatus(token, nextStatus);
       return;
     }
-    const tokenName = token.name || "default";
+    const tokenName = getApiKeyDisplayName(token, language);
     requestConfirm({
       title: { id: "Notice" },
       message: {
@@ -420,7 +424,7 @@ export function ApiKeysPage() {
   };
 
   const deleteToken = (token: CustomerToken) => {
-    const tokenName = token.name || "default";
+    const tokenName = getApiKeyDisplayName(token, language);
     requestConfirm({
       title: { id: "Notice" },
       message: {
@@ -536,7 +540,7 @@ export function ApiKeysPage() {
       serverAddress: gatewayOrigin,
       openaiBaseUrl: openaiGatewayUrl,
     });
-    window.open(url, "_blank");
+    window.open(url, "_blank", "noopener,noreferrer");
     setCcSwitchDialog(null);
     setTokenMessage(localizeKey(language, "Opening CC Switch..."));
   };
@@ -646,7 +650,7 @@ export function ApiKeysPage() {
               const isReadingKey = Boolean(readingTokenKeys[token.id]);
               return (
                 <div className="key-row" key={token.id}>
-                  <strong>{token.name || "default"}</strong>
+                  <strong>{getApiKeyDisplayName(token, language)}</strong>
                   <span
                     className={
                       token.status === 1 ? "enabled-badge" : "enabled-badge off"
@@ -712,7 +716,7 @@ export function ApiKeysPage() {
                       onClick={() => void openCcSwitchDialog(token)}
                     >
                       <ArrowRightLeft size={15} />
-                      CC Switch
+                      <T id="CC Switch" />
                     </button>
                     <button
                       className="btn btn-soft btn-sm key-action"
@@ -750,7 +754,11 @@ export function ApiKeysPage() {
           </div>
         )}
         {!loadingTokens && tokenTotal > tokenPageSize ? (
-          <div className="usage-pagination key-pagination">
+          <div
+            className="usage-pagination key-pagination"
+            role="navigation"
+            aria-label={localizeKey(language, "API key pagination")}
+          >
             <span>
               {localizeKey(language, "{{start}}-{{end}} of {{total}}", {
                 start: tokenStartRow,
@@ -767,8 +775,11 @@ export function ApiKeysPage() {
               >
                 <T id="Previous" />
               </button>
-              <b>
-                {tokenPage} / {tokenTotalPages}
+              <b aria-current="page">
+                {localizeKey(language, "Page {{page}} of {{total}}", {
+                  page: tokenPage,
+                  total: tokenTotalPages,
+                })}
               </b>
               <button
                 className="btn btn-ghost btn-sm"
@@ -836,124 +847,5 @@ export function ApiKeysPage() {
         />
       ) : null}
     </CustomerShell>
-  );
-}
-
-function buildTokenUpdatePayload(
-  token: CustomerToken,
-  name: string,
-  group: string,
-  expiredTime: number,
-  remainQuota: number,
-  unlimitedQuota: boolean,
-  crossGroupRetry: boolean,
-) {
-  return {
-    id: token.id,
-    name,
-    expired_time: expiredTime,
-    remain_quota: unlimitedQuota ? 0 : remainQuota,
-    unlimited_quota: unlimitedQuota,
-    model_limits_enabled: Boolean(token.model_limits_enabled),
-    model_limits: token.model_limits || "",
-    allow_ips: token.allow_ips ?? "",
-    group,
-    cross_group_retry: group === "auto" ? crossGroupRetry : false,
-  };
-}
-
-function getApiKeyEditForm(
-  token: CustomerToken,
-  status?: CustomerStatus | null,
-): ApiKeyCreateForm {
-  const expiredTime = Number(token.expired_time ?? -1);
-  return {
-    name: token.name || "",
-    group: token.group || "",
-    expiryMode: expiredTime > 0 ? "custom" : "never",
-    expiryDate:
-      expiredTime > 0
-        ? toDateInputValue(new Date(expiredTime * 1000))
-        : getDefaultApiKeyCreateForm().expiryDate,
-    quotaLimit: getApiKeyQuotaLimitInputValue(token.remain_quota ?? 0, status),
-    unlimitedQuota: Boolean(token.unlimited_quota),
-  };
-}
-
-function getApiKeyQuotaLimitInputValue(
-  quota: number,
-  status?: CustomerStatus | null,
-) {
-  const value =
-    status?.quota_display_type?.toUpperCase() === "TOKENS"
-      ? Number(quota)
-      : Number(quota) / getQuotaPerUnit(status);
-  if (!Number.isFinite(value)) return "0";
-  if (Number.isInteger(value)) return String(value);
-  return value.toFixed(6).replace(/\.?0+$/, "");
-}
-
-function formatTokenGroupLabel(
-  token: CustomerToken,
-  groupOptions: UserGroupSelectOption[],
-  language: Language,
-) {
-  const group = (token.group || "").trim();
-  if (!group) return localizeKey(language, "Select group");
-  const option = groupOptions.find((item) => item.name === group);
-  if (!option) return group;
-  const parts = [group];
-  if (option.ratio) parts.push(option.ratio);
-  return parts.join(" · ");
-}
-
-function formatApiKey(key: string) {
-  if (!key) return "sk-";
-  return key.startsWith("sk-") ? key : `sk-${key}`;
-}
-
-function isApiKeyExpired(expiredTime?: number | null) {
-  return (
-    Number(expiredTime ?? 0) > 0 && Number(expiredTime) <= Date.now() / 1000
-  );
-}
-
-function getApiKeyExpiryLabel(
-  expiredTime: number | null | undefined,
-  language: Language,
-) {
-  if (!expiredTime || expiredTime < 0) {
-    return localizeKey(language, "Expires: Never");
-  }
-  const date = formatTimestamp(expiredTime);
-  if (isApiKeyExpired(expiredTime)) {
-    return localizeKey(language, "Expired: {{date}}", { date });
-  }
-  return localizeKey(language, "Expires: {{date}}", { date });
-}
-
-function BaseUrlSwapRow({
-  copied,
-  label,
-  from,
-  onCopy,
-  to,
-}: {
-  copied: boolean;
-  label: string;
-  from: string;
-  onCopy: () => void;
-  to: string;
-}) {
-  return (
-    <div className="base-url-row">
-      <strong className="mono">{label}</strong>
-      <span className="mono muted-url">{from}</span>
-      <ArrowRight size={16} />
-      <button className="mono base-url-copy" type="button" onClick={onCopy}>
-        <span>{to}</span>
-        {copied ? <Check size={15} /> : <Copy size={15} />}
-      </button>
-    </div>
   );
 }

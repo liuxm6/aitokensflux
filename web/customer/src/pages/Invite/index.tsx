@@ -413,7 +413,11 @@ export function InvitePage() {
           <EmptyState id="No invite records" />
         )}
         {!loading && inviteTotal > invitePageSize ? (
-          <div className="usage-pagination invite-pagination">
+          <div
+            className="usage-pagination invite-pagination"
+            role="navigation"
+            aria-label={localizeKey(language, "Invite pagination")}
+          >
             <span>
               {localizeKey(language, "{{start}}-{{end}} of {{total}}", {
                 start: inviteStartRow,
@@ -430,8 +434,11 @@ export function InvitePage() {
               >
                 <T id="Previous" />
               </button>
-              <b>
-                {boundedInvitePage} / {inviteTotalPages}
+              <b aria-current="page">
+                {localizeKey(language, "Page {{page}} of {{total}}", {
+                  page: boundedInvitePage,
+                  total: inviteTotalPages,
+                })}
               </b>
               <button
                 className="btn btn-ghost btn-sm"

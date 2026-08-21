@@ -132,6 +132,18 @@ test("console hierarchy and subscription polish stay scoped and responsive", asy
     /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.btn:active/,
   );
   expect(styles).toMatch(
+    /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.confirm-dialog-confirm:active/,
+  );
+  expect(styles).toMatch(
+    /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.setup-page-heading/,
+  );
+  expect(styles).toMatch(
+    /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.auth-modal\.auth-mode-in \.auth-form/,
+  );
+  expect(styles).toMatch(
+    /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.auth-overlay\.closing \.auth-modal/,
+  );
+  expect(styles).toMatch(
     /@media \(max-width: 980px\) \{[\s\S]*?\.mobile-topbar[\s\S]*?display: flex/,
   );
 });
@@ -453,6 +465,30 @@ test("homepage and loading motion reserve layout transitions for FAQ disclosure"
     ...keyframeViolations,
   ]).toEqual([]);
   expect(transitionDeclarations).toContain("none");
+});
+
+test("homepage decorative motion pauses offscreen and under overlays", () => {
+  const styles = readFileSync(
+    new URL("../src/styles.css", import.meta.url),
+    "utf8",
+  );
+  const homeSource = readFileSync(
+    new URL("../src/pages/Home/index.tsx", import.meta.url),
+    "utf8",
+  );
+  const navTransition = getCssBlock(styles, "\n.minimal-nav {");
+  const navFadeTransition = getCssBlock(styles, "\n.minimal-nav::after {");
+
+  expect(homeSource).toContain('classList.toggle("is-paused"');
+  expect(homeSource).toContain("IntersectionObserver");
+  expect(styles).toContain(":root:has(.auth-overlay) .home-hero::before");
+  expect(styles).toContain(".home-hero.is-paused .hero-model-pair");
+  expect(styles).toContain("animation-play-state: paused");
+  expect(navTransition).toContain("background-color 0.24s ease");
+  expect(navTransition).not.toMatch(/transition:[\s\S]*backdrop-filter/);
+  expect(navFadeTransition).toContain("background 0.24s ease");
+  expect(navFadeTransition).not.toContain("height 0.24s");
+  expect(navFadeTransition).not.toContain("bottom 0.24s");
 });
 
 test("homepage green actions bind accessible ink to scoped selectors", () => {

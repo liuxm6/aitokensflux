@@ -155,6 +155,7 @@
   line-height: 1;
   letter-spacing: -0.005em;
   white-space: nowrap;
+  touch-action: manipulation;
   transition:
     transform 0.12s ease,
     box-shadow 0.2s ease,
@@ -164,7 +165,7 @@
 }
 
 .btn:active {
-  transform: translateY(1px);
+  transform: translate3d(0, 1px, 0);
 }
 
 .btn-flux {
@@ -316,8 +317,7 @@
   transition:
     background-color 0.24s ease,
     border-color 0.24s ease,
-    box-shadow 0.24s ease,
-    backdrop-filter 0.24s ease;
+    box-shadow 0.24s ease;
 }
 
 .minimal-nav::after {
@@ -329,10 +329,7 @@
   background: linear-gradient(180deg, rgb(251 251 249 / 0%), transparent);
   content: "";
   pointer-events: none;
-  transition:
-    background 0.24s ease,
-    height 0.24s ease,
-    bottom 0.24s ease;
+  transition: background 0.24s ease;
 }
 
 .minimal-nav.nav-scrolled {
@@ -884,6 +881,28 @@
 
 .hero-model-pair:nth-child(4) {
   animation-delay: -3s;
+}
+
+:root:has(.auth-overlay) .home-hero::before,
+:root:has(.auth-overlay) .home-hero::after,
+:root:has(.auth-overlay) .home-hero .hero-model-pair,
+:root:has(.setup-wizard-page.overlay) .home-hero::before,
+:root:has(.setup-wizard-page.overlay) .home-hero::after,
+:root:has(.setup-wizard-page.overlay) .home-hero .hero-model-pair,
+:root:has(.account-dialog) .home-hero::before,
+:root:has(.account-dialog) .home-hero::after,
+:root:has(.account-dialog) .home-hero .hero-model-pair,
+:root:has(.confirm-dialog) .home-hero::before,
+:root:has(.confirm-dialog) .home-hero::after,
+:root:has(.confirm-dialog) .home-hero .hero-model-pair,
+:root:has(.purchase-dialog) .home-hero::before,
+:root:has(.purchase-dialog) .home-hero::after,
+:root:has(.purchase-dialog) .home-hero .hero-model-pair,
+.home-hero.is-paused::before,
+.home-hero.is-paused::after,
+.home-hero.is-paused .hero-model-pair {
+  animation-play-state: paused;
+  will-change: auto;
 }
 
 .hero-model-item {
@@ -2226,12 +2245,6 @@
   color: var(--muted);
   font-size: 14px;
   line-height: 1.6;
-}
-
-.footer-domain {
-  margin-top: 14px;
-  color: var(--muted-2);
-  font-size: 13px;
 }
 
 .footer .copy {
@@ -6821,6 +6834,11 @@
     transform: none;
   }
 
+  .confirm-dialog-cancel:active,
+  .confirm-dialog-confirm:active {
+    transform: none;
+  }
+
   .toast,
   .spin,
   .key-create-actions .btn-flux:disabled svg,
@@ -6831,11 +6849,22 @@
   .auth-dialog-panel,
   .auth-modal .auth-form,
   .auth-modal .auth-switch,
+  .auth-modal.auth-mode-in .auth-form,
+  .auth-modal.auth-mode-in .auth-switch,
+  .auth-modal.auth-mode-out .auth-form,
+  .auth-modal.auth-mode-out .auth-switch,
   .auth-overlay-backdrop,
   .auth-overlay .auth-modal,
+  .auth-overlay.closing .auth-overlay-backdrop,
+  .auth-overlay.closing .auth-modal,
+  .account-dialog.closing .account-dialog-backdrop,
+  .account-dialog.closing .account-dialog-panel,
+  .setup-wizard-page.closing::before,
+  .setup-wizard-page.closing .setup-modal,
   .setup-guide,
   .setup-modal,
   .setup-picker,
+  .setup-page-heading,
   .setup-wizard-page::before,
   .state-skeleton-line,
   .auth-page,
@@ -6851,10 +6880,18 @@
   .auth-dialog-panel,
   .auth-modal .auth-form,
   .auth-modal .auth-switch,
+  .auth-modal.auth-mode-in .auth-form,
+  .auth-modal.auth-mode-in .auth-switch,
+  .auth-modal.auth-mode-out .auth-form,
+  .auth-modal.auth-mode-out .auth-switch,
   .auth-overlay .auth-modal,
+  .auth-overlay.closing .auth-modal,
+  .account-dialog.closing .account-dialog-panel,
+  .setup-wizard-page.closing .setup-modal,
   .setup-guide,
   .setup-modal,
-  .setup-picker {
+  .setup-picker,
+  .setup-page-heading {
     transform: none;
   }
 }

@@ -243,10 +243,12 @@ export function UsagePage() {
                 <b>{formatQuotaMoneyDetailed(stats?.quota ?? 0, status, 4)}</b>
               </span>
               <span>
-                RPM <b>{formatInteger(stats?.rpm ?? 0)}</b>
+                <T id="Requests/min" />
+                <b>{formatInteger(stats?.rpm ?? 0)}</b>
               </span>
               <span>
-                TPM <b>{formatInteger(stats?.tpm ?? 0)}</b>
+                <T id="Tokens/min" />
+                <b>{formatInteger(stats?.tpm ?? 0)}</b>
               </span>
             </div>
           </div>

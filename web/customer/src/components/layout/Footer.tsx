@@ -17,7 +17,6 @@ export function Footer() {
             <p className="footer-copy">
               <T id="The unified AI model gateway that makes every call count." />
             </p>
-            <p className="mono footer-domain">aitokensflux.com</p>
           </div>
           <div>
             <h4>
@@ -40,14 +39,8 @@ export function Footer() {
             <AppLink href="/docs">
               <T id="Setup guide" />
             </AppLink>
-            <AppLink href="/dashboard/usage">
-              <T id="Usage" />
-            </AppLink>
-            <AppLink href="/dashboard/api-key">
-              API <T id="keys" />
-            </AppLink>
             <a href="https://status.aitokensflux.com">
-              <T id="Server status" />
+              <T id="Service status" />
             </a>
             <a href="https://check.aitokensflux.com/group/TokenFlux">
               <T id="Model status" />
@@ -60,7 +53,7 @@ export function Footer() {
             <h4>
               <T id="Company" />
             </h4>
-            <AppLink href="/#features">
+            <AppLink href="/">
               <T id="About" />
             </AppLink>
             <AppLink href="/user-agreement">

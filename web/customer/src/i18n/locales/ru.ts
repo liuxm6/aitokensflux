@@ -17,14 +17,16 @@ const customerRuTranslations = {
   "Check authenticity": "Проверить подлинность",
   "Service monitor": "Мониторинг",
   "Service status": "Статус сервиса",
-  "Server status": "Статус сервера",
   "Model status": "Статус моделей",
-  "Unified Claude Code, Codex and Grok API gateway":
-    "Единый API-шлюз для Claude Code, Codex и Grok",
+  FAQ: "Частые вопросы",
+  "Claude Code, OpenAI Codex, Grok Code, Google Gemini":
+    "Claude Code, OpenAI Codex, Grok Code, Google Gemini",
+  "macOS Windows Linux": "macOS Windows Linux",
+  macOS: "macOS",
+  Windows: "Windows",
+  Linux: "Linux",
   "Unified Claude Code, Codex, Grok and Gemini API gateway":
     "Единый API-шлюз для Claude Code, Codex, Grok и Gemini",
-  "Transparent Claude Code, Codex and Grok API pricing":
-    "Прозрачные цены API Claude Code, Codex и Grok",
   "Transparent Claude Code, Codex, Grok and Gemini API pricing":
     "Прозрачные цены API Claude Code, Codex, Grok и Gemini",
   "Claude Code and Codex API setup guide":
@@ -54,7 +56,6 @@ const customerRuTranslations = {
     "Авторизация ATF Switch синхронизирована. Можно вернуться в настольное приложение.",
   "Could not reach ATF Switch. Keep the desktop app open and click Sync to ATF Switch again.":
     "Не удалось подключиться к ATF Switch. Оставьте настольное приложение открытым и нажмите синхронизацию еще раз.",
-  "Confirm sign in": "Подтвердить вход",
   "Confirming sign in...": "Проверяем вход...",
   "Default model": "Модель по умолчанию",
   "Failed to open ATF Switch": "Не удалось открыть ATF Switch",
@@ -62,14 +63,9 @@ const customerRuTranslations = {
   "Manage API keys": "Управление API-ключами",
   "Open ATF Switch again": "Открыть ATF Switch снова",
   "Opening ATF Switch...": "Открываем ATF Switch...",
-  "Please sign in first": "Сначала войдите",
   "Preparing authorization...": "Подготовка авторизации...",
   "Sign in to Ai Tokens Flux. Existing ATF Switch provider settings will not be changed.":
     "Войдите в Ai Tokens Flux. Настройки поставщика в ATF Switch не будут изменены.",
-  "Signed in. Existing provider authorization was updated without importing a new provider.":
-    "Вход выполнен. Авторизация существующего поставщика обновлена без импорта нового поставщика.",
-  "Signed in. You can return to ATF Switch.":
-    "Вход выполнен. Можно вернуться в ATF Switch.",
   "Sync to ATF Switch": "Синхронизировать с ATF Switch",
   "Synced to ATF Switch": "Синхронизировано с ATF Switch",
   "Target app": "Целевое приложение",
@@ -94,7 +90,6 @@ const customerRuTranslations = {
   Resources: "Ресурсы",
   Features: "Возможности",
   Docs: "Настройка",
-  keys: "ключи",
   Company: "Компания",
   Terms: "Условия",
   "User Agreement and Terms of Service":
@@ -102,7 +97,6 @@ const customerRuTranslations = {
   Privacy: "Конфиденциальность",
   Contact: "Контакты",
   "All rights reserved.": "Все права защищены.",
-  "Get started, effortlessly": "Начните без лишних шагов",
   "A stable AI coding solution": "Стабильное решение для AI-разработки",
   "Open dashboard": "Открыть панель",
   "Start now": "Начать сейчас",
@@ -111,7 +105,6 @@ const customerRuTranslations = {
     "Claude Code · Codex · Windows / macOS / Linux",
   "Follow these steps to install and configure {{tool}} on {{os}}.":
     "Следуйте этим шагам, чтобы установить и настроить {{tool}} на {{os}}.",
-  "Why aitokensflux": "Почему aitokensflux",
   "Keep your workflow. Bill it smarter.":
     "Сохраните привычный процесс. Платите умнее.",
   "One-key switch": "Переключение одной командой",
@@ -143,36 +136,23 @@ const customerRuTranslations = {
     "Достигнут лимит покупок ({{current}}/{{limit}})",
   "Quota ({{unit}})": "Квота ({{unit}})",
   "Submitted quota: {{quota}}": "Отправляемая квота: {{quota}}",
-  "Conversion: {{rate}}": "Конвертация: {{rate}}",
   "Plug in in 5 minutes. Start saving today.":
     "Подключитесь за 5 минут и начните экономить уже сегодня.",
   "Sign up for free trial credits, follow the guide once, and your Claude Code runs on aitokensflux.":
     "Зарегистрируйтесь, получите пробные кредиты, пройдите руководство один раз, и ваш Claude Code будет работать через aitokensflux.",
   "Read docs": "Инструкция",
-  "Will aitokensflux change my existing tools?":
-    "Изменит ли aitokensflux мои текущие инструменты?",
   "Will AI Tokens Flux change my existing tools?":
     "Изменит ли AI Tokens Flux мои текущие инструменты?",
-  "No. It only reroutes at the request layer. Your Claude Code, Codex and VS Code workflows stay intact.":
-    "Нет. Он меняет только маршрутизацию запросов. Ваши процессы Claude Code, Codex и VS Code остаются прежними.",
   "No. It only reroutes requests, so your Claude Code, Codex and VS Code workflows, commands and scripts stay unchanged.":
     "Нет. Сервис только перенаправляет запросы, поэтому ваши процессы, команды и скрипты Claude Code, Codex и VS Code остаются без изменений.",
-  "Do credits expire?": "Сгорают ли кредиты?",
   "Do pay-as-you-go credits expire?": "Сгорают ли кредиты с оплатой по факту?",
-  "Pay-as-you-go credits never expire. Subscription plans reset each billing cycle.":
-    "Кредиты с оплатой по факту не сгорают. В подписках лимит сбрасывается каждый расчетный период.",
   "Pay-as-you-go credits never expire. Subscription plans reset on their billing cycle.":
     "Кредиты с оплатой по факту не сгорают. Лимит подписки сбрасывается в соответствии с ее расчетным периодом.",
   "Which models are supported?": "Какие модели поддерживаются?",
-  "Equivalent APIs for frontier models including Claude Sonnet 4.6, Claude Opus 4.7 and GPT-5.5.":
-    "Совместимые API для передовых моделей, включая Claude Sonnet 4.6, Claude Opus 4.7 и GPT-5.5.",
   "The platform provides compatible APIs for frontier Claude, OpenAI Codex and Grok models. Current availability is listed on the pricing page.":
     "Платформа предоставляет совместимые API для передовых моделей Claude, OpenAI Codex и Grok. Актуальный список доступен на странице цен.",
-  "Is my code and data safe?": "Безопасны ли мой код и данные?",
   "Are my code and request data safe?":
     "Безопасны ли мой код и данные запросов?",
-  "Keys are self-managed and revocable anytime; the gateway retains no request content.":
-    "Вы управляете ключами сами и можете отозвать их в любой момент; шлюз не хранит содержимое запросов.",
   "API keys are user-managed and revocable at any time, and the gateway does not retain request content.":
     "Пользователи самостоятельно управляют API-ключами и могут отозвать их в любой момент; шлюз не хранит содержимое запросов.",
   "Current plan": "Текущий тариф",
@@ -202,8 +182,6 @@ const customerRuTranslations = {
   "After purchasing a plan, quota, validity, and remaining balance will appear here.":
     "После покупки тарифа здесь появятся лимит, срок действия и остаток.",
   "Buy plan": "Купить тариф",
-  Rate: "Курс",
-  "Plan quota": "Квота тарифа",
   "No reset": "Сброс не настроен",
   "Plan used": "Использовано по тарифу",
   "Plan remaining": "Остаток по тарифу",
@@ -242,24 +220,19 @@ const customerRuTranslations = {
   "Loading billing records": "Загрузка истории платежей",
   "Start date cannot be after end date":
     "Дата начала не может быть позже даты окончания",
-  "Start date": "Дата начала",
-  "End date": "Дата окончания",
   "Start time": "Время начала",
   "End time": "Время окончания",
   "Failed to load usage details": "Не удалось загрузить детализацию расходов",
   "Usage details": "Детализация использования",
-  "Only the latest 7 days": "Доступны только последние 7 дней",
   "Loading usage details": "Загрузка детализации использования",
   "No usage details": "Нет данных использования",
   "Requests/min": "Запросов/мин",
   "Tokens/min": "Токенов/мин",
-  Rows: "Строк",
   "Rows per page": "Строк на странице",
   Previous: "Предыдущая",
   Next: "Следующая",
   Search: "Поиск",
   "Total consumed": "Всего использовано",
-  "All types": "Все типы",
   "Actual model: {{model}}": "Фактическая модель: {{model}}",
   "Async task refund": "Возврат за асинхронную задачу",
   Consumption: "Расход",
@@ -271,13 +244,9 @@ const customerRuTranslations = {
   Group: "Группа",
   "Select group": "Выбрать группу",
   Type: "Тип",
-  View: "Просмотр",
   Expand: "Развернуть",
   Collapse: "Свернуть",
   Reset: "Сбросить",
-  "Token name": "Название ключа",
-  "Request ID": "ID запроса",
-  "Upstream request ID": "ID upstream-запроса",
   Time: "Время",
   Token: "Ключ",
   Model: "Модель",
@@ -290,14 +259,12 @@ const customerRuTranslations = {
   "First page": "Первая страница",
   "Last page": "Последняя страница",
   "Page {{page}} of {{total}}": "Страница {{page}} из {{total}}",
-  "Group ratio": "Коэффициент группы",
   "Matched tier": "Подобранный уровень",
   "Stream · {{rate}} t/s": "Поток · {{rate}} т/с",
   "Non-stream": "Без потока",
   "Cache read {{tokens}}": "Кэш↓ {{tokens}}",
   "Cache write {{tokens}}": "Кэш↑ {{tokens}}",
   "No cache": "Без кэша",
-  Tiered: "Многоуровневый",
   "Per request": "За запрос",
   Standard: "Стандарт",
   Subscription: "Подписка",
@@ -305,7 +272,6 @@ const customerRuTranslations = {
   "Subscription used": "Списано по подписке",
   "System prompt override": "Переопределение системного промпта",
   "Violation fee": "Штрафное списание",
-  Wallet: "Кошелек",
   "Edit key": "Изменить ключ",
   "Key updated": "Ключ обновлен",
   "Use the following Base URL instead of official endpoints with your API key":
@@ -313,8 +279,6 @@ const customerRuTranslations = {
   Examples: "Примеры",
   "Click a URL below to copy the matching address.":
     "Нажмите на URL ниже, чтобы скопировать нужный адрес.",
-  Export: "Экспорт",
-  "Copy Base URL": "Скопировать Base URL",
   "Copy email address": "Скопировать email",
   "Copy failed": "Не удалось скопировать",
   "Copy QQ group number": "Скопировать номер группы QQ",
@@ -342,7 +306,6 @@ const customerRuTranslations = {
   "Deleting key...": "Удаление ключа...",
   "Failed to delete key": "Не удалось удалить ключ",
   "Key deleted": "Ключ удален",
-  "Reading key...": "Чтение ключа...",
   "Failed to read key": "Не удалось прочитать ключ",
   "Key copied": "Ключ скопирован",
   "Loading API keys": "Загрузка API-ключей",
@@ -408,9 +371,6 @@ const customerRuTranslations = {
   "Confirm the plan and choose a payment method.":
     "Подтвердите тариф и выберите способ оплаты.",
   "Plan name": "Название тарифа",
-  "Validity period": "Срок действия",
-  "Reset period": "Период сброса",
-  "Upgrade group": "Группа после покупки",
   "Amount due": "К оплате",
   "This plan does not allow balance payment.":
     "Этот тариф не поддерживает оплату балансом.",
@@ -425,7 +385,6 @@ const customerRuTranslations = {
   "Plan purchased successfully.": "Тариф успешно куплен.",
   "Purchase flow failed. Please try again.":
     "Процесс покупки не удался. Попробуйте еще раз.",
-  "Pay for how you use AI": "Платите за то, как используете AI",
   "Pay-as-you-go credits never expire. Subscriptions fit steady builders and teams.":
     "Кредиты с оплатой по факту не сгорают. Подписки подходят активным разработчикам и командам.",
   "CLI / VS Code / desktop app": "CLI / VS Code / приложение",
@@ -447,8 +406,6 @@ const customerRuTranslations = {
   "If you used Claude CLI before, remove old settings first, then set the aitokensflux gateway and API key.":
     "Если вы раньше использовали Claude CLI, сначала удалите старые настройки, затем задайте шлюз aitokensflux и API-ключ.",
   Important: "Важно",
-  "Replace YOUR_API_KEY with the key you created on the API Keys page.":
-    "Замените YOUR_API_KEY ключом, созданным на странице API-ключей.",
   "Clean old config": "Очистить старое",
   "Temporary for current terminal": "Временно в терминале",
   "Persist to user environment": "Сохранить для пользователя",
@@ -571,10 +528,10 @@ const customerRuTranslations = {
   "No code required": "Код не требуется",
   "Invite code (optional)": "Код приглашения (необязательно)",
   "Get code": "Получить код",
+  "{{seconds}}s": "{{seconds}} с",
   "Sign in": "Войти",
   "Sign in with email code": "Войти по коду из email",
   "Sign in with password": "Войти по паролю",
-  "Sign in with Google": "Войти через Google",
   "Forgot password?": "Забыли пароль?",
   "I have read and agree to": "Я прочитал(а) и принимаю",
   and: "и",
@@ -695,14 +652,13 @@ const customerRuTranslations = {
   "Loading groups...": "Загрузка групп...",
   "Loading models...": "Загрузка моделей...",
   "Opening CC Switch...": "Открываем CC Switch...",
-  "Chinese support for top-ups, setup, and account issues":
-    "Поддержка на китайском по пополнениям, настройке и аккаунтам",
+  "CC Switch": "CC Switch",
+  "Import to CC Switch": "Импорт в CC Switch",
+  "Open CC Switch": "Открыть CC Switch",
   "Choose the support channel that works for you.":
     "Выберите удобный канал поддержки.",
   "Community discussion and usage experience":
     "Обсуждения сообщества и опыт использования",
-  "Email support for accounts, orders, and security":
-    "Поддержка по email для аккаунтов, заказов и безопасности",
   "Email address copied": "Email скопирован",
   "User ID copied": "ID пользователя скопирован",
   Gmail: "Gmail",
@@ -710,10 +666,8 @@ const customerRuTranslations = {
   "Product updates and public announcements":
     "Новости продукта и публичные объявления",
   "QQ group number copied": "Номер группы QQ скопирован",
-  "QQ group: 826073513": "Группа QQ: 826073513",
   "QQ support group": "Группа поддержки QQ",
   "ai token flux QQ group": "Группа QQ ai token flux",
-  "ai token flux QQ group: 826073513": "Группа QQ ai token flux: 826073513",
   "Real-time notices and international support":
     "Оперативные уведомления и международная поддержка",
   "Support & community": "Поддержка и сообщество",
@@ -773,24 +727,8 @@ const customerRuTranslations = {
   "Failed to load dashboard data": "Не удалось загрузить данные панели",
   "Usage records": "Записи использования",
   "Loading page": "Загрузка страницы",
-  "One gateway for every coding model.":
-    "Один шлюз для всех моделей программирования.",
-  "Use one balance, see every request, and keep your existing workflow.":
-    "Единый баланс, история каждого запроса и привычный рабочий процесс.",
-  "View setup guide": "Открыть руководство по настройке",
-  "Create account": "Создать аккаунт",
-  "Usage billing": "Оплата по использованию",
-  "Model rates": "Тарифы моделей",
-  "Compare per-model input, output, cache, and request rates before you send traffic.":
-    "Сравните стоимость входных, выходных, кэшированных токенов и запросов для каждой модели.",
-  "Purchase options": "Способы покупки",
-  "Plans and balance": "Тарифы и баланс",
   "Plans add recurring quota; pay-as-you-go balance stays available for flexible usage.":
     "Тарифы дают периодическую квоту, а баланс по использованию остаётся доступным для гибких расходов.",
-  "Choose the model. Keep the workflow.":
-    "Выберите модель. Сохраните рабочий процесс.",
-  "Create one account, follow the setup guide once, and manage every request from the same dashboard.":
-    "Создайте один аккаунт, один раз выполните настройку и управляйте всеми запросами в одной панели.",
   "Account overview": "Обзор аккаунта",
   "Common actions": "Частые действия",
   "Request count": "Количество запросов",
@@ -805,10 +743,16 @@ const customerRuTranslations = {
   "WeChat QR code": "QR-код WeChat",
   "Page {{page}}": "Страница {{page}}",
   "Usage pagination": "Постраничная навигация по расходам",
+  "Invite pagination": "Постраничная навигация по приглашениям",
+  "API key pagination": "Постраничная навигация по ключам",
+  "Billing pagination": "Постраничная навигация по счетам",
+  Stripe: "Stripe",
+  Creem: "Creem",
+  "Waffo Pancake": "Waffo Pancake",
   "Model provider": "Поставщик моделей",
-  "Model pricing by provider": "Тарифы моделей по поставщику",
   "Referral record filter": "Фильтр истории приглашений",
   "Billing record filter": "Фильтр записей оплаты",
+  "Unnamed key": "Безымянный ключ",
   X: "X",
 } satisfies Record<string, string>;
 

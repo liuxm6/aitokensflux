@@ -8,6 +8,7 @@ import { LanguageButton } from "./LanguageButton";
 import { AuthContext } from "../../context/Auth";
 import { LanguageContext, T } from "../../context/Language";
 import { buildSupportMailto, getUserLabel } from "../../helpers/account";
+import { getMarketingNavCurrent } from "../../helpers/navigation";
 import { localizeKey } from "../../i18n/localization";
 import type { AccountDialogMode, CustomerUser } from "../../types";
 
@@ -23,9 +24,12 @@ export function MarketingHeader({
   const [menuOpen, setMenuOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<AccountDialogMode | null>(null);
   const [navScrolled, setNavScrolled] = useState(false);
+  const [pathname, setPathname] = useState(() => window.location.pathname);
+  const [hash, setHash] = useState(() => window.location.hash);
   const userLabel = getUserLabel(user);
   const avatarText = userLabel.trim().slice(0, 1).toUpperCase() || "A";
   const showAccountMenu = Boolean(user && !authChecking);
+  const currentNav = getMarketingNavCurrent(pathname, hash);
 
   useEffect(() => {
     if (!minimal) return;
@@ -48,6 +52,19 @@ export function MarketingHeader({
     setDialogMode(null);
   }, [showAccountMenu]);
 
+  useEffect(() => {
+    const syncLocation = () => {
+      setPathname(window.location.pathname);
+      setHash(window.location.hash);
+    };
+    window.addEventListener("popstate", syncLocation);
+    window.addEventListener("hashchange", syncLocation);
+    return () => {
+      window.removeEventListener("popstate", syncLocation);
+      window.removeEventListener("hashchange", syncLocation);
+    };
+  }, []);
+
   const minimalSentinel = minimal ? (
     <span aria-hidden="true" className="minimal-nav-sentinel" />
   ) : null;
@@ -65,13 +82,22 @@ export function MarketingHeader({
               className="nav-links"
               aria-label={localizeKey(language, "Primary navigation")}
             >
-              <AppLink href="/#features">
+              <AppLink
+                aria-current={currentNav === "features" ? "page" : undefined}
+                href="/#features"
+              >
                 <T id="Features" />
               </AppLink>
-              <AppLink href="/pricing">
+              <AppLink
+                aria-current={currentNav === "pricing" ? "page" : undefined}
+                href="/pricing"
+              >
                 <T id="Pricing" />
               </AppLink>
-              <AppLink href="/docs">
+              <AppLink
+                aria-current={currentNav === "docs" ? "page" : undefined}
+                href="/docs"
+              >
                 <T id="Docs" />
               </AppLink>
             </nav>

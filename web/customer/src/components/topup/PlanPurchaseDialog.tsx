@@ -210,7 +210,7 @@ export function PlanPurchaseDialog({
               <div className="payment-method-grid">
                 {hasStripe ? (
                   <button
-                    aria-label="Stripe"
+                    aria-label={localizeKey(language, "Stripe")}
                     className="payment-method-button stripe"
                     disabled={payButtonDisabled}
                     type="button"
@@ -221,24 +221,26 @@ export function PlanPurchaseDialog({
                 ) : null}
                 {hasCreem ? (
                   <button
+                    aria-label={localizeKey(language, "Creem")}
                     className="payment-method-button"
                     disabled={payButtonDisabled}
                     type="button"
                     onClick={() => void onPay("creem")}
                   >
                     <CircleDollarSign size={16} />
-                    Creem
+                    <T id="Creem" />
                   </button>
                 ) : null}
                 {hasWaffoPancake ? (
                   <button
+                    aria-label={localizeKey(language, "Waffo Pancake")}
                     className="payment-method-button"
                     disabled={payButtonDisabled}
                     type="button"
                     onClick={() => void onPay("waffoPancake")}
                   >
                     <CircleDollarSign size={16} />
-                    Waffo Pancake
+                    <T id="Waffo Pancake" />
                   </button>
                 ) : null}
                 {hasEpay ? (

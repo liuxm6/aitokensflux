@@ -1,4 +1,4 @@
-import { Eye, EyeOff, LoaderCircle, X } from "lucide-react";
+import { Eye, EyeOff, X } from "lucide-react";
 import {
   type FormEvent,
   useCallback,
@@ -9,11 +9,14 @@ import {
   useState,
 } from "react";
 import { AccessibleDialog } from "../common/ui/Dialog";
-import Turnstile from "react-turnstile";
+import { AuthCodeSendButton } from "../auth/AuthCodeSendButton";
 import { AuthInput } from "../auth/AuthInput";
+import { AuthSubmitButton } from "../auth/AuthSubmitButton";
+import { AuthTurnstile } from "../auth/AuthTurnstile";
 import { LanguageContext } from "../../context/Language";
 import { useToastMessage } from "../../context/Toast";
 import { getBoundEmail } from "../../helpers/account";
+import { getCodeSendLabel } from "../../helpers/auth-copy";
 import { isValidEmail } from "../../helpers/auth-form";
 import { getDialogExitDelay } from "../../helpers/motion";
 import { localizeCopy, localizeKey } from "../../i18n/localization";
@@ -125,40 +128,43 @@ export function AccountActionDialog({
     return () => window.clearTimeout(timer);
   }, [cooldown]);
 
-  const copy = localizeCopy(language, {
-    title: isEmailMode ? "Change email" : "Change password",
-    subtitle: isEmailMode
-      ? "After verification, email sign-in uses the new address."
-      : "Enter your current password and set a new one.",
-    currentEmail: "Current email",
-    notBound: "Not bound",
-    currentPassword: "Current password",
-    currentPasswordPlaceholder: "Enter current password",
-    newPassword: "New password",
-    newPasswordPlaceholder: "Enter new password",
-    confirmPassword: "Confirm new password",
-    confirmPasswordPlaceholder: "Enter new password again",
-    newEmail: "New email",
-    newEmailPlaceholder: "Enter new email address",
-    code: "Email verification code",
-    codePlaceholder: "Enter verification code",
-    getCode: cooldown > 0 ? `${cooldown}s` : "Get code",
-    cancel: "Cancel",
-    submit: "Save changes",
-    emailRule: "Enter a valid email, up to 50 characters",
-    sameEmail: "New email must be different from current email",
-    statusLoading: "Loading site security settings. Try again shortly.",
-    turnstileRequired: "Complete the human verification first",
-    codeRequired: "Enter the email verification code",
-    currentRequired: "Enter your current password",
-    passwordRule: "Password must be 8-20 characters",
-    passwordSame: "New password must be different",
-    passwordMismatch: "Passwords do not match",
-    codeSent: "Verification code sent. Check your inbox.",
-    passwordSuccess: "Password changed",
-    emailSuccess: "Email changed",
-    close: "Close",
-  });
+  const copy = {
+    ...localizeCopy(language, {
+      title: isEmailMode ? "Change email" : "Change password",
+      subtitle: isEmailMode
+        ? "After verification, email sign-in uses the new address."
+        : "Enter your current password and set a new one.",
+      currentEmail: "Current email",
+      notBound: "Not bound",
+      currentPassword: "Current password",
+      currentPasswordPlaceholder: "Enter current password",
+      newPassword: "New password",
+      newPasswordPlaceholder: "Enter new password",
+      confirmPassword: "Confirm new password",
+      confirmPasswordPlaceholder: "Enter new password again",
+      newEmail: "New email",
+      newEmailPlaceholder: "Enter new email address",
+      code: "Email verification code",
+      codePlaceholder: "Enter verification code",
+      getCode: "Get code",
+      cancel: "Cancel",
+      submit: "Save changes",
+      emailRule: "Enter a valid email, up to 50 characters",
+      sameEmail: "New email must be different from current email",
+      statusLoading: "Loading site security settings. Try again shortly.",
+      turnstileRequired: "Complete the human verification first",
+      codeRequired: "Enter the email verification code",
+      currentRequired: "Enter your current password",
+      passwordRule: "Password must be 8-20 characters",
+      passwordSame: "New password must be different",
+      passwordMismatch: "Passwords do not match",
+      codeSent: "Verification code sent. Check your inbox.",
+      passwordSuccess: "Password changed",
+      emailSuccess: "Email changed",
+      close: "Close",
+    }),
+    getCode: getCodeSendLabel(language, cooldown),
+  };
 
   const updatePasswordValue = (
     key: keyof typeof passwordForm,
@@ -353,17 +359,13 @@ export function AccountActionDialog({
           />
           <AuthInput
             button={
-              <button
+              <AuthCodeSendButton
+                ariaLabel={localizeKey(language, "Get code")}
                 disabled={codeLoading || cooldown > 0}
-                type="button"
+                label={copy.getCode}
+                loading={codeLoading}
                 onClick={() => void handleSendEmailCode()}
-              >
-                {codeLoading ? (
-                  <LoaderCircle className="spin" size={16} />
-                ) : (
-                  copy.getCode
-                )}
-              </button>
+              />
             }
             autoComplete="one-time-code"
             error={fieldErrors.code}
@@ -373,16 +375,11 @@ export function AccountActionDialog({
             value={emailForm.code}
             onChange={(value) => updateEmailValue("code", value)}
           />
-          {turnstileEnabled && status?.turnstile_site_key ? (
-            <div className="auth-turnstile">
-              <Turnstile
-                sitekey={status.turnstile_site_key}
-                onVerify={setTurnstileToken}
-                onExpire={() => setTurnstileToken("")}
-                onError={() => setTurnstileToken("")}
-              />
-            </div>
-          ) : null}
+          <AuthTurnstile
+            enabled={turnstileEnabled}
+            siteKey={status?.turnstile_site_key}
+            onToken={setTurnstileToken}
+          />
           <div className="account-dialog-actions">
             <button
               className="auth-secondary"
@@ -391,13 +388,12 @@ export function AccountActionDialog({
             >
               {copy.cancel}
             </button>
-            <button className="auth-submit" disabled={loading} type="submit">
-              {loading ? (
-                <LoaderCircle className="spin" size={17} />
-              ) : (
-                copy.submit
-              )}
-            </button>
+            <AuthSubmitButton
+              disabled={loading}
+              label={copy.submit}
+              loading={loading}
+              spinnerSize={17}
+            />
           </div>
         </form>
       ) : (
@@ -476,13 +472,12 @@ export function AccountActionDialog({
             >
               {copy.cancel}
             </button>
-            <button className="auth-submit" disabled={loading} type="submit">
-              {loading ? (
-                <LoaderCircle className="spin" size={17} />
-              ) : (
-                copy.submit
-              )}
-            </button>
+            <AuthSubmitButton
+              disabled={loading}
+              label={copy.submit}
+              loading={loading}
+              spinnerSize={17}
+            />
           </div>
         </form>
       )}

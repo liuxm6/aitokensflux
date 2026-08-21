@@ -44,6 +44,17 @@ export function getPageKey(pathname: string): PageKey {
   return customerRoutes[normalized] ?? "notFound";
 }
 
+export function getMarketingNavCurrent(
+  pathname: string,
+  hash = "",
+): "features" | "pricing" | "docs" | null {
+  const page = getPageKey(pathname);
+  if (page === "subscribe") return "pricing";
+  if (page === "setup") return "docs";
+  if (page === "home" && hash === "#features") return "features";
+  return null;
+}
+
 export function isInternalPath(href: string) {
   try {
     const url = new URL(href, window.location.origin);

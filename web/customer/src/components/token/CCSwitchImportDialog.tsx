@@ -62,7 +62,9 @@ export function CCSwitchImportDialog({
         <X size={20} />
       </button>
       <div className="purchase-head key-create-head">
-        <span className="purchase-kicker">CC Switch</span>
+        <span className="purchase-kicker">
+          <T id="CC Switch" />
+        </span>
         <h2 id={titleId}>
           <T id="Import to CC Switch" />
         </h2>

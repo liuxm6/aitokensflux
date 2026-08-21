@@ -174,7 +174,9 @@ export function SupportChannelGrid({ className = "" }: { className?: string }) {
             className="support-card-link"
             href={link.href}
             target={isExternalWebLink(link.href) ? "_blank" : undefined}
-            rel={isExternalWebLink(link.href) ? "noreferrer" : undefined}
+            rel={
+              isExternalWebLink(link.href) ? "noopener noreferrer" : undefined
+            }
             onClick={(event) => openSupportLink(event, link)}
           >
             <span className="support-logo" aria-hidden="true">

@@ -697,7 +697,11 @@ export function TopupDialog({ onClose }: { onClose: () => void }) {
                       className="billing-link-button"
                       type="button"
                       onClick={() =>
-                        window.open(topupInfo.topup_link, "_blank")
+                        window.open(
+                          topupInfo.topup_link,
+                          "_blank",
+                          "noopener,noreferrer",
+                        )
                       }
                     >
                       <Play size={15} />

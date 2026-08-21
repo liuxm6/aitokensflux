@@ -323,7 +323,11 @@ export function TopupPage() {
           )}
         </TabPanel>
         {!loading && billingTotal > billingPageSize ? (
-          <div className="usage-pagination record-pagination">
+          <div
+            className="usage-pagination record-pagination"
+            role="navigation"
+            aria-label={localizeKey(language, "Billing pagination")}
+          >
             <span>
               {localizeKey(language, "{{start}}-{{end}} of {{total}}", {
                 start: billingStartRow,
@@ -340,8 +344,11 @@ export function TopupPage() {
               >
                 <T id="Previous" />
               </button>
-              <b>
-                {boundedBillingPage} / {billingTotalPages}
+              <b aria-current="page">
+                {localizeKey(language, "Page {{page}} of {{total}}", {
+                  page: boundedBillingPage,
+                  total: billingTotalPages,
+                })}
               </b>
               <button
                 className="btn btn-ghost btn-sm"

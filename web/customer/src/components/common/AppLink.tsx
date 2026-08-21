@@ -2,12 +2,15 @@ import {
   forwardRef,
   useContext,
   type AnchorHTMLAttributes,
+  type FocusEvent,
   type MouseEvent,
+  type PointerEvent,
   type ReactNode,
 } from "react";
 import { LanguageContext } from "../../context/Language";
 import { isInternalPath, shouldPreserveScroll } from "../../helpers/navigation";
-import { scrollElementIntoView, scrollToPosition } from "../../helpers/motion";
+import { scrollToHash, scrollToPosition } from "../../helpers/motion";
+import { prefetchHref } from "../../helpers/prefetch";
 import { localizePublicHref } from "../../seo/metadata";
 
 type AppLinkProps = Omit<
@@ -21,7 +24,16 @@ type AppLinkProps = Omit<
 
 export const AppLink = forwardRef<HTMLAnchorElement, AppLinkProps>(
   function AppLink(
-    { href, className, children, onClick, onNavigate, ...anchorProps },
+    {
+      href,
+      className,
+      children,
+      onClick,
+      onNavigate,
+      onPointerEnter,
+      onFocus,
+      ...anchorProps
+    },
     ref,
   ) {
     const { language } = useContext(LanguageContext);
@@ -49,15 +61,14 @@ export const AppLink = forwardRef<HTMLAnchorElement, AppLinkProps>(
       );
       window.dispatchEvent(new PopStateEvent("popstate"));
       if (url.hash) {
-        window.setTimeout(() => {
-          const target = document.querySelector(url.hash);
-          if (target) scrollElementIntoView(target);
-        });
+        scrollToHash(url.hash);
       } else if (!shouldPreserveScroll(url.pathname)) {
         scrollToPosition(0);
       }
       onNavigate?.();
     };
+
+    const warmDestination = () => prefetchHref(resolvedHref);
 
     return (
       <a
@@ -66,6 +77,14 @@ export const AppLink = forwardRef<HTMLAnchorElement, AppLinkProps>(
         href={resolvedHref}
         ref={ref}
         onClick={handleClick}
+        onPointerEnter={(event: PointerEvent<HTMLAnchorElement>) => {
+          onPointerEnter?.(event);
+          warmDestination();
+        }}
+        onFocus={(event: FocusEvent<HTMLAnchorElement>) => {
+          onFocus?.(event);
+          warmDestination();
+        }}
       >
         {children}
       </a>

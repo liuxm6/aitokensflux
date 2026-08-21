@@ -55,6 +55,12 @@ input {
   font: inherit;
 }
 
+button,
+a,
+summary {
+  touch-action: manipulation;
+}
+
 button {
   cursor: pointer;
 }

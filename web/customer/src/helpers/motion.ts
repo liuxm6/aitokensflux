@@ -27,3 +27,19 @@ export function scrollElementIntoView(element: Element) {
     block: "start",
   });
 }
+
+export function scrollToHash(hash: string, attempts = 12) {
+  if (!hash || hash === "#") return;
+
+  const tryScroll = (left: number) => {
+    const target = document.querySelector(hash);
+    if (target) {
+      scrollElementIntoView(target);
+      return;
+    }
+    if (left <= 0) return;
+    window.requestAnimationFrame(() => tryScroll(left - 1));
+  };
+
+  tryScroll(attempts);
+}

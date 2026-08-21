@@ -67,7 +67,7 @@ export function createLegalPage({
                   <a
                     className="btn btn-flux"
                     href={trimmed}
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     target="_blank"
                   >
                     {localizeKey(language, "Open external link")}

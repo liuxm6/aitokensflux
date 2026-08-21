@@ -1,5 +1,6 @@
-import { Check, Copy, KeyRound, LoaderCircle } from "lucide-react";
+import { Check, Copy, KeyRound } from "lucide-react";
 import { useContext, useState } from "react";
+import { AuthSubmitButton } from "../../components/auth/AuthSubmitButton";
 import { AppLink } from "../../components/common/AppLink";
 import { Brand } from "../../components/common/Brand";
 import { FormField } from "../../components/common/ui/FormField";
@@ -137,21 +138,14 @@ export function ResetPasswordPage() {
               <input readOnly className="mono" value={newPassword} />
             </FormField>
           ) : (
-            <button
-              className="auth-submit"
+            <AuthSubmitButton
               disabled={loading || !isValidResetLink}
+              label={copy.confirm}
+              loading={loading}
+              loadingLabel={copy.resetting}
               type="button"
               onClick={() => void handleSubmit()}
-            >
-              {loading ? (
-                <>
-                  <LoaderCircle className="spin" size={18} />
-                  {copy.resetting}
-                </>
-              ) : (
-                copy.confirm
-              )}
-            </button>
+            />
           )}
 
           <AppLink className="auth-secondary" href="/sign-in">
