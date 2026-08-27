@@ -1,0 +1,7 @@
+FROM scratch
+COPY rootfs/ /
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+ENV TZ=Asia/Shanghai
+EXPOSE 3000
+WORKDIR /data
+ENTRYPOINT ["/new-api"]
