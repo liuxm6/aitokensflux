@@ -599,9 +599,9 @@ cp .superpowers/brainstorm/93984-1787991725/content/openrouter-customer-premium-
 - [ ] **Step 2: 复用 CDP 监控骨架并改为 V6 的 8 个场景**
 
 ```js
-const sessionKey = '1e4c37f37f1fbe5d5f75bf3c0382016cdb978d9d68cb225d4fe0c448cd7c1dd0'
+const sessionKey = '74239a63946439cbb8104f9d2d62024310b3c8c7c54a8f4c12225f186532a226'
 const cdpPort = process.env.CDP_PORT ?? '9444'
-const previewUrl = `http://localhost:57964/files/openrouter-customer-premium-v6-polished-preview.html?key=${sessionKey}#/home`
+const previewUrl = `http://localhost:60086/?key=${sessionKey}#/home`
 const createTargetUrl = `http://127.0.0.1:${cdpPort}/json/new?${encodeURIComponent(previewUrl)}`
 const sourcePath = '/Users/ouyeel/work/code/tokenflux/.superpowers/brainstorm/93984-1787991725/content/openrouter-customer-premium-v6-polished.html'
 const cdpHttpOrigin = `http://127.0.0.1:${cdpPort}`
@@ -630,7 +630,7 @@ Run:
 
 ```bash
 TASK_V6_EDGE_PROFILE=$(mktemp -d /private/tmp/tokenflux-openrouter-v6-edge.XXXXXX)
-'/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge' --remote-debugging-port=9444 --user-data-dir="$TASK_V6_EDGE_PROFILE" --disable-extensions --no-first-run --no-default-browser-check about:blank
+'/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge' --remote-debugging-port=9444 --user-data-dir="$TASK_V6_EDGE_PROFILE" --disable-extensions --disable-component-extensions-with-background-pages --disable-background-networking --no-first-run --no-default-browser-check about:blank
 ```
 
 Expected: `http://127.0.0.1:9444/json/list` 只出现该临时 Profile 的空白页，不出现扩展、用户页面或登录态。
@@ -742,7 +742,7 @@ Expected: 静态守卫通过；源文件与预览 SHA 相同；CDP 8/8 PASS；Gi
 URL:
 
 ```text
-http://localhost:57964/files/openrouter-customer-premium-v6-polished-preview.html?key=1e4c37f37f1fbe5d5f75bf3c0382016cdb978d9d68cb225d4fe0c448cd7c1dd0#/home
+http://localhost:60086/?key=74239a63946439cbb8104f9d2d62024310b3c8c7c54a8f4c12225f186532a226#/home
 ```
 
 不得提交 `.superpowers/` 或 `/private/tmp` 文件。
