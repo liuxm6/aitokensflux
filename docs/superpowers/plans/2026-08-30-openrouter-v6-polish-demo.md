@@ -117,6 +117,7 @@ Expected: FAIL with `polish override marker missing`，证明守卫能区分未�
 ```html
 <style>
   /* V6 POLISH: approved presentation-only overrides. */
+  @media (min-width: 768px) {
   .premium-hero {
     min-height: 600px;
   }
@@ -328,6 +329,7 @@ Expected: FAIL with `polish override marker missing`，证明守卫能区分未�
 
   .quickstart-stage pre {
     line-height: 1.7;
+  }
   }
 </style>
 ```
