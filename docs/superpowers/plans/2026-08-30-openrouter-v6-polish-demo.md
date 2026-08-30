@@ -704,7 +704,106 @@ Expected: 静态守卫通过、8/8 PASS、六视口合同全部通过。
 
 ---
 
-### Task 6: 独立审查、最终同步和交付
+### Task 6: 融合参考图的 Hero 环境光视觉
+
+**Files:**
+- Modify: `.superpowers/brainstorm/93984-1787991725/content/openrouter-customer-premium-v6-polished.html` inside the appended V6 polish `<style>`
+- Sync: `.superpowers/brainstorm/51008-1788097225/content/openrouter-customer-premium-v6-polished-preview.html`
+- Modify: `/private/tmp/openrouter-v6-polish-static.mjs`
+- Modify: `/private/tmp/openrouter-v6-polish-visual.mjs`
+- Refresh: `/private/tmp/openrouter-v6-polish-shots/*.png`
+
+**Interfaces:**
+- Consumes: Task 5 已通过审查的 V6 精修候选，以及用户提供的 AI Tokens Flux Hero 参考图。
+- Produces: 保留现有内容与 Customer 色系、但具有柔和多向环境光和中央聚焦感的 V6 Hero；不新增 DOM、文案、资产或交互。
+
+- [ ] **Step 1: 扩展静态守卫并先验证失败**
+
+守卫新增以下合同：
+
+```text
+.premium-hero::before 必须存在且只位于 V6 POLISH override
+环境光必须使用 radial-gradient + color-mix
+只允许引用 --surface-1 / --info / --warning / --accent 与 transparent
+不得修改 :root token，不得出现新增 Hex/RGB/HSL/OKLCH 色值
+```
+
+Run:
+
+```bash
+node /private/tmp/openrouter-v6-polish-static.mjs
+```
+
+Expected: FAIL，指出 Hero ambient halo 缺失。
+
+- [ ] **Step 2: 在 scoped CSS 中增加静态环境光层**
+
+环境光层使用 `.premium-hero::before`，位于网格/路由轨迹之后、Hero 文案之前：
+
+```css
+.premium-hero {
+  isolation: isolate;
+}
+
+.premium-hero::before {
+  position: absolute;
+  z-index: 0;
+  inset: -12% -8% -8%;
+  background:
+    radial-gradient(circle at 50% 34%, color-mix(in srgb, var(--surface-1) 92%, transparent) 0 20%, transparent 56%),
+    radial-gradient(circle at -4% 46%, color-mix(in srgb, var(--info) 14%, transparent) 0, transparent 48%),
+    radial-gradient(circle at 104% 42%, color-mix(in srgb, var(--warning) 13%, transparent) 0, transparent 50%),
+    radial-gradient(circle at 14% 108%, color-mix(in srgb, var(--accent) 14%, transparent) 0, transparent 46%);
+  content: '';
+  pointer-events: none;
+  opacity: 0.88;
+}
+
+.route-field {
+  z-index: 1;
+}
+
+@media (max-width: 767px) {
+  .premium-hero::before {
+    inset: -8% -28% -4%;
+    opacity: 0.72;
+  }
+}
+```
+
+允许在六视口截图审计中微调位置、混合比例和透明度，但只能使用上述既有 Customer token，且中心文字对比、路由线清晰度和首屏合同优先。
+
+- [ ] **Step 3: 更新视觉合同并重新捕获六视口**
+
+视觉脚本新增：
+
+```text
+六视口 `.premium-hero::before` computed background-image 均包含 4 个 radial-gradient
+环境光伪元素不形成第三个深色面积表面
+固定 Customer token 与代表计算色仍为 0 mismatch
+390×844 标题、说明、双 CTA、route origin、五 Provider 与四项 Signal 仍完整处于首屏
+```
+
+Run:
+
+```bash
+node /private/tmp/openrouter-v6-polish-static.mjs
+cp .superpowers/brainstorm/93984-1787991725/content/openrouter-customer-premium-v6-polished.html .superpowers/brainstorm/51008-1788097225/content/openrouter-customer-premium-v6-polished-preview.html
+CDP_PORT=9444 bun /private/tmp/openrouter-v6-polish-visual.mjs
+CDP_PORT=9444 bun /private/tmp/openrouter-v6-polish-cdp.mjs
+```
+
+Expected: 静态守卫通过；六视口自动合同通过；12 张截图人工确认环境光可见但不压过标题或路由；功能回归 8/8 PASS。
+
+- [ ] **Step 4: 独立审查参考图融合**
+
+Reviewer 必须确认：只吸收环境光与中央聚焦感；没有复制 Claude/Codex 内容、Logo、操作系统图标或售后卡；没有新增色值、DOM、JavaScript、网络能力或深色表面；移动和横屏仍清晰。
+
+Expected: Critical/Important 为零。
+
+---
+
+### Task 7: 独立审查、最终同步和交付
 
 **Files:**
 - Verify: `.superpowers/brainstorm/93984-1787991725/content/openrouter-customer-premium-v6-polished.html`
