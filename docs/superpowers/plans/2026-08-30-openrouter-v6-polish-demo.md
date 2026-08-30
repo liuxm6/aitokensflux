@@ -580,7 +580,7 @@ Expected: `BODY IDENTICAL`.
 ### Task 4: 发布隔离预览并运行完整浏览器回归
 
 **Files:**
-- Create: `.superpowers/brainstorm/91265-1788086901/content/openrouter-customer-premium-v6-polished-preview.html`
+- Create: `.superpowers/brainstorm/51008-1788097225/content/openrouter-customer-premium-v6-polished-preview.html`
 - Create: `/private/tmp/openrouter-v6-polish-cdp.mjs`
 - Modify from copy: `/private/tmp/openrouter-request-anatomy-v8-cdp.mjs`
 
@@ -593,14 +593,15 @@ Expected: `BODY IDENTICAL`.
 Run:
 
 ```bash
-cp .superpowers/brainstorm/93984-1787991725/content/openrouter-customer-premium-v6-polished.html .superpowers/brainstorm/91265-1788086901/content/openrouter-customer-premium-v6-polished-preview.html
+cp .superpowers/brainstorm/93984-1787991725/content/openrouter-customer-premium-v6-polished.html .superpowers/brainstorm/51008-1788097225/content/openrouter-customer-premium-v6-polished-preview.html
 ```
 
 - [ ] **Step 2: 复用 CDP 监控骨架并改为 V6 的 8 个场景**
 
 ```js
+const sessionKey = '1e4c37f37f1fbe5d5f75bf3c0382016cdb978d9d68cb225d4fe0c448cd7c1dd0'
 const cdpPort = process.env.CDP_PORT ?? '9444'
-const previewUrl = `http://localhost:49946/files/openrouter-customer-premium-v6-polished-preview.html?key=${sessionKey}#/home`
+const previewUrl = `http://localhost:57964/files/openrouter-customer-premium-v6-polished-preview.html?key=${sessionKey}#/home`
 const createTargetUrl = `http://127.0.0.1:${cdpPort}/json/new?${encodeURIComponent(previewUrl)}`
 const sourcePath = '/Users/ouyeel/work/code/tokenflux/.superpowers/brainstorm/93984-1787991725/content/openrouter-customer-premium-v6-polished.html'
 const cdpHttpOrigin = `http://127.0.0.1:${cdpPort}`
@@ -652,7 +653,7 @@ Expected: 8/8 PASS；应用异步请求 0、异常 0、Log 错误 0、404 为 0�
 - Create: `/private/tmp/openrouter-v6-polish-visual.mjs`
 - Create: `/private/tmp/openrouter-v6-polish-shots/*.png`
 - Modify if needed: `.superpowers/brainstorm/93984-1787991725/content/openrouter-customer-premium-v6-polished.html`
-- Sync after every fix: `.superpowers/brainstorm/91265-1788086901/content/openrouter-customer-premium-v6-polished-preview.html`
+- Sync after every fix: `.superpowers/brainstorm/51008-1788097225/content/openrouter-customer-premium-v6-polished-preview.html`
 
 **Interfaces:**
 - Consumes: Task 4 的隔离 Edge 和预览 URL。
@@ -695,7 +696,7 @@ Customer 色系不变，Quickstart/代码窗是唯一深色表面
 
 ```bash
 node /private/tmp/openrouter-v6-polish-static.mjs
-cp .superpowers/brainstorm/93984-1787991725/content/openrouter-customer-premium-v6-polished.html .superpowers/brainstorm/91265-1788086901/content/openrouter-customer-premium-v6-polished-preview.html
+cp .superpowers/brainstorm/93984-1787991725/content/openrouter-customer-premium-v6-polished.html .superpowers/brainstorm/51008-1788097225/content/openrouter-customer-premium-v6-polished-preview.html
 CDP_PORT=9444 bun /private/tmp/openrouter-v6-polish-cdp.mjs
 ```
 
@@ -707,7 +708,7 @@ Expected: 静态守卫通过、8/8 PASS、六视口合同全部通过。
 
 **Files:**
 - Verify: `.superpowers/brainstorm/93984-1787991725/content/openrouter-customer-premium-v6-polished.html`
-- Verify: `.superpowers/brainstorm/91265-1788086901/content/openrouter-customer-premium-v6-polished-preview.html`
+- Verify: `.superpowers/brainstorm/51008-1788097225/content/openrouter-customer-premium-v6-polished-preview.html`
 - Verify: `/private/tmp/openrouter-v6-polish-static.mjs`
 - Verify: `/private/tmp/openrouter-v6-polish-cdp.mjs`
 
@@ -729,7 +730,7 @@ Run:
 
 ```bash
 node /private/tmp/openrouter-v6-polish-static.mjs
-shasum -a 256 .superpowers/brainstorm/93984-1787991725/content/openrouter-customer-premium-v6-polished.html .superpowers/brainstorm/91265-1788086901/content/openrouter-customer-premium-v6-polished-preview.html
+shasum -a 256 .superpowers/brainstorm/93984-1787991725/content/openrouter-customer-premium-v6-polished.html .superpowers/brainstorm/51008-1788097225/content/openrouter-customer-premium-v6-polished-preview.html
 CDP_PORT=9444 bun /private/tmp/openrouter-v6-polish-cdp.mjs
 git status --short
 ```
@@ -741,7 +742,7 @@ Expected: 静态守卫通过；源文件与预览 SHA 相同；CDP 8/8 PASS；Gi
 URL:
 
 ```text
-http://localhost:49946/files/openrouter-customer-premium-v6-polished-preview.html?key=713940f9565a195b85b1fe13c0fe326f371291efebfd206bf2165f97127f35e2#/home
+http://localhost:57964/files/openrouter-customer-premium-v6-polished-preview.html?key=1e4c37f37f1fbe5d5f75bf3c0382016cdb978d9d68cb225d4fe0c448cd7c1dd0#/home
 ```
 
 不得提交 `.superpowers/` 或 `/private/tmp` 文件。
