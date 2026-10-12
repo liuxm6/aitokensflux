@@ -472,7 +472,9 @@ func BatchDeleteTokens(ids []int, userId int) (int, error) {
 	if common.RedisEnabled {
 		gopool.Go(func() {
 			for _, t := range tokens {
-				_ = cacheDeleteToken(t.Key)
+				if err := cacheDeleteToken(t.Key); err != nil {
+					common.SysError(fmt.Sprintf("删除已删除令牌的缓存失败，可能残留过期令牌: %s", err.Error()))
+				}
 			}
 		})
 	}
