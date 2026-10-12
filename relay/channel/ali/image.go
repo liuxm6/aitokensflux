@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"mime/multipart"
 	"net/http"
 	"strings"
 	"time"
@@ -13,6 +12,7 @@ import (
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/dto"
 	"github.com/QuantumNous/new-api/logger"
+	"github.com/QuantumNous/new-api/relay/channel"
 	relaycommon "github.com/QuantumNous/new-api/relay/common"
 	"github.com/QuantumNous/new-api/service"
 	"github.com/QuantumNous/new-api/types"
@@ -99,31 +99,9 @@ func getImageBase64sFromForm(c *gin.Context, fieldName string) ([]string, error)
 		mf = c.Request.MultipartForm
 	}
 
-	var imageFiles []*multipart.FileHeader
-	var exists bool
-
-	// First check for standard "image" field
-	if imageFiles, exists = mf.File["image"]; !exists || len(imageFiles) == 0 {
-		// If not found, check for "image[]" field
-		if imageFiles, exists = mf.File["image[]"]; !exists || len(imageFiles) == 0 {
-			// If still not found, iterate through all fields to find any that start with "image["
-			foundArrayImages := false
-			for fieldName, files := range mf.File {
-				if strings.HasPrefix(fieldName, "image[") && len(files) > 0 {
-					foundArrayImages = true
-					imageFiles = append(imageFiles, files...)
-				}
-			}
-
-			// If no image fields found at all
-			if !foundArrayImages && (len(imageFiles) == 0) {
-				return nil, errors.New("image is required")
-			}
-		}
-	}
-
-	if len(imageFiles) == 0 {
-		return nil, errors.New("image is required")
+	imageFiles, err := channel.CollectImageFormFiles(mf)
+	if err != nil {
+		return nil, err
 	}
 
 	//if len(imageFiles) > 1 {
