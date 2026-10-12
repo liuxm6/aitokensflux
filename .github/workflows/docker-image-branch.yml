@@ -1,16 +1,38 @@
-name: Publish Docker image (manual branch)
+name: Publish Docker image (manual main)
 
 on:
   workflow_dispatch:
-    inputs:
-      branch:
-        description: "Branch name to build (e.g. alpha, nightly)"
-        required: true
-        type: string
 
 jobs:
+  validate_main:
+    name: Validate main branch
+    runs-on: ubuntu-latest
+    outputs:
+      source_sha: ${{ steps.validate_source.outputs.source_sha }}
+    permissions:
+      contents: read
+    steps:
+      - name: Check out main
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 1
+          ref: main
+
+      - name: Reject non-main source
+        id: validate_source
+        env:
+          WORKFLOW_REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+          if [ "$WORKFLOW_REF" != "refs/heads/main" ]; then
+            echo "::error::Docker images may only be built from the main branch"
+            exit 1
+          fi
+          echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
   prepare:
     name: Prepare Docker tags
+    needs: [validate_main]
     runs-on: ubuntu-latest
     outputs:
       branch: ${{ steps.version.outputs.branch }}
@@ -20,16 +42,16 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Check out branch
+      - name: Check out validated main commit
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 1
-          ref: ${{ inputs.branch }}
+          ref: ${{ needs.validate_main.outputs.source_sha }}
 
       - name: Resolve Docker tags
         id: version
         env:
-          BRANCH_NAME: ${{ inputs.branch }}
+          BRANCH_NAME: main
         run: |
           TAG_PREFIX=$(printf '%s' "$BRANCH_NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9_.-]+/-/g; s/^[.-]+//; s/[.-]+$//')
           TAG_PREFIX=${TAG_PREFIX:0:105}
@@ -67,7 +89,7 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - name: Check out branch
+      - name: Check out validated main commit
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 1

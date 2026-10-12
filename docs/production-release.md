@@ -5,6 +5,7 @@
 ## 目标
 
 - 在本地完成前端构建、后端编译、Docker 镜像打包。
+- 可发布或推送的 Docker 镜像只能从 `main` 分支历史中的已提交 commit 构建；`docker-compose.dev.yml` 的本地开发镜像不属于发布范围。
 - 只发布已提交的目标 commit，避免把本地未提交改动带进生产。
 - 将轻量运行时镜像上传到生产服务器，由服务器上的发布脚本替换 `new-api` 服务镜像。
 - 发布后完成健康检查，并保留可回滚的 compose 备份。
@@ -28,23 +29,33 @@
 
 ## 发布原则
 
-1. 先确认要发布的 commit 已提交。
-2. 发布构建必须从干净 worktree 执行，推荐使用 `/tmp/tokenflux-prod-worktree`。
-3. 不在生产服务器编译代码。
-4. 不使用仓库根目录的 `docker-compose.yml` 作为生产镜像来源；生产发布使用本 runbook 的本地打包镜像流程。
-5. 生产只重建 `new-api` 服务：`docker compose up -d --no-deps new-api`。
-6. 不在生产执行 `docker compose down`。
-7. 不删除数据库/Redis volume。
-8. 不执行 `docker system prune -a --volumes`。
-9. 发布失败或健康检查失败时，使用服务器 `/root/tokenflux-release/rollback.sh` 回滚。
+1. 可发布或推送的 Docker 镜像构建和生产发布只能使用 `main` 分支历史中的已提交 commit；禁止从其他分支、PR ref 或未合并 commit 构建。
+2. 先确认要发布的 commit 已提交。
+3. 发布构建必须从干净 worktree 执行，推荐使用 `/tmp/tokenflux-prod-worktree`。
+4. 不在生产服务器编译代码。
+5. 不使用仓库根目录的 `docker-compose.yml` 作为生产镜像来源；生产发布使用本 runbook 的本地打包镜像流程。
+6. 生产只重建 `new-api` 服务：`docker compose up -d --no-deps new-api`。
+7. 不在生产执行 `docker compose down`。
+8. 不删除数据库/Redis volume。
+9. 不执行 `docker system prune -a --volumes`。
+10. 发布失败或健康检查失败时，使用服务器 `/root/tokenflux-release/rollback.sh` 回滚。
 
 ## 本地前置检查
 
 在主工作区确认当前状态：
 
 ```bash
+if [ "$(git branch --show-current)" != "main" ]; then
+  echo "ERROR: Docker image builds must start from the main branch"
+  exit 1
+fi
 git status --short
 git log --oneline -5
+git fetch origin main
+if ! git merge-base --is-ancestor HEAD origin/main; then
+  echo "ERROR: target commit is not in the main branch history"
+  exit 1
+fi
 ```
 
 如果主工作区有未提交改动，不要直接在主工作区构建。创建干净 worktree：
@@ -56,6 +67,8 @@ cd /tmp/tokenflux-prod-worktree
 git status --short
 git rev-parse --short HEAD
 ```
+
+`git merge-base --is-ancestor` 必须返回成功；否则目标 commit 不在 `main` 分支历史中，禁止继续构建镜像。
 
 确认本机工具可用：
 
@@ -351,11 +364,21 @@ Rollback file:
 使用干净 worktree 发布：
 
 ```bash
+if [ "$(git branch --show-current)" != "main" ]; then
+  echo "ERROR: Docker image builds must start from the main branch"
+  exit 1
+fi
+git fetch origin main
+if ! git merge-base --is-ancestor HEAD origin/main; then
+  echo "ERROR: target commit is not in the main branch history"
+  exit 1
+fi
 rm -rf /tmp/tokenflux-prod-worktree
 git worktree add --detach /tmp/tokenflux-prod-worktree HEAD
+cd /tmp/tokenflux-prod-worktree
 ```
 
-不要从脏的主工作区直接构建。
+`git merge-base --is-ancestor` 失败时不要构建；目标 commit 必须先合并到 `main`。不要从脏的主工作区直接构建。
 
 ### 服务器没有 tmux 怎么办
 

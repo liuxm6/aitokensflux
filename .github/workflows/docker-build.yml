@@ -8,13 +8,64 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag name to build (e.g., v0.10.8-alpha.3)'
+        description: 'Tag name to build from main (e.g., v0.10.8-alpha.3)'
         required: true
         type: string
 
 jobs:
+  validate_main_source:
+    name: Validate main source
+    runs-on: ubuntu-latest
+    outputs:
+      target_sha: ${{ steps.verify_source.outputs.target_sha }}
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out target ref
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Verify target commit belongs to main
+        id: verify_source
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          WORKFLOW_REF: ${{ github.ref }}
+          TARGET_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$WORKFLOW_REF" != "refs/heads/main" ]; then
+            echo "::error::Manual Docker builds must be dispatched from the main branch"
+            exit 1
+          fi
+
+          git fetch --no-tags origin main:refs/remotes/origin/main
+
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            if ! git rev-parse --verify --quiet "refs/tags/${TARGET_TAG}^{commit}" >/dev/null; then
+              echo "::error::Tag '$TARGET_TAG' does not exist"
+              exit 1
+            fi
+            TARGET_COMMIT="$(git rev-parse --verify "refs/tags/${TARGET_TAG}^{commit}")"
+          else
+            TARGET_COMMIT="$(git rev-parse --verify "${GITHUB_SHA}^{commit}")"
+          fi
+
+          if ! git merge-base --is-ancestor "$TARGET_COMMIT" refs/remotes/origin/main; then
+            echo "::error::Docker images may only be built from commits in the main branch history"
+            echo "Target commit: $TARGET_COMMIT"
+            exit 1
+          fi
+
+          echo "target_sha=$TARGET_COMMIT" >> "$GITHUB_OUTPUT"
+          echo "Validated Docker source commit $TARGET_COMMIT from main"
+
   build_single_arch:
     name: Build & push (${{ matrix.arch }})
+    needs: [validate_main_source]
     strategy:
       fail-fast: false
       matrix:
@@ -38,20 +89,23 @@ jobs:
       - name: Check out
         uses: actions/checkout@v4
         with:
-          fetch-depth: ${{ github.event_name == 'workflow_dispatch' && 0 || 1 }}
-          ref: ${{ github.event.inputs.tag || github.ref }}
+          fetch-depth: 0
+          ref: ${{ needs.validate_main_source.outputs.target_sha }}
 
       - name: Resolve tag & write VERSION
         id: version
+        env:
+          INPUT_TAG: ${{ github.event.inputs.tag }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          if [ -n "${{ github.event.inputs.tag }}" ]; then
-            TAG="${{ github.event.inputs.tag }}"
+          if [ -n "$INPUT_TAG" ]; then
+            TAG="$INPUT_TAG"
             if ! git rev-parse "refs/tags/$TAG" >/dev/null 2>&1; then
               echo "::error::Tag '$TAG' does not exist"
               exit 1
             fi
           else
-            TAG=${GITHUB_REF#refs/tags/}
+            TAG="$REF_NAME"
           fi
           echo "TAG=${TAG}" >> $GITHUB_ENV
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
@@ -151,7 +205,7 @@ jobs:
 
   create_manifests:
     name: Create multi-arch manifests
-    needs: [build_single_arch]
+    needs: [validate_main_source, build_single_arch]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
 

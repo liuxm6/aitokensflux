@@ -60,6 +60,13 @@ Follow `docs/production-release.md` for the standard production release process,
 
 Never commit production SSH hosts, IPs, passwords, private keys, or private handoff notes. Do not compile on the production server. Do not run `docker compose down`, remove database volumes, or run `docker system prune -a --volumes` in production.
 
+### Docker 镜像构建分支规则
+
+- 可发布或推送的项目 Docker 镜像（包括 GitHub Actions 和生产发布）只能从 `main` 分支历史中的已提交 commit 构建。
+- 发布镜像的本地构建前主工作区必须位于 `main` 分支；CI 手动构建必须从 `main` 发起。
+- 构建前必须确认目标 commit 可从 `main` 分支到达；禁止从其他分支、PR ref、未合并 commit 或脏工作区构建并发布镜像。
+- `docker-compose.dev.yml` 生成的本地开发镜像仅用于开发，不得作为发布镜像或推送到镜像仓库。
+
 ## Rules
 
 ### Common Code Quality

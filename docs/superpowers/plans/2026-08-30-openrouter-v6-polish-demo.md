@@ -845,3 +845,123 @@ http://localhost:60086/?key=74239a63946439cbb8104f9d2d62024310b3c8c7c54a8f4c1222
 ```
 
 不得提交 `.superpowers/` 或 `/private/tmp` 文件。
+
+---
+
+### Task 8: 拉开 Hero CTA 与 API 原点间距
+
+**Files:**
+- Modify: `.superpowers/brainstorm/93984-1787991725/content/openrouter-customer-premium-v6-polished.html` inside the appended V6 POLISH `<style>`
+- Sync: `.superpowers/brainstorm/51008-1788097225/content/openrouter-customer-premium-v6-polished-preview.html`
+- Sync: `.superpowers/brainstorm/25630-1788142971/content/openrouter-customer-premium-v6-polished-live.html`
+- Modify: `/private/tmp/openrouter-v6-polish-visual.mjs`
+- Modify: `/private/tmp/openrouter-v6-polish-cdp.mjs` only to target the active Visual Companion URL
+- Refresh: `/private/tmp/openrouter-v6-polish-shots/*.png`
+
+**Interfaces:**
+- Consumes: Task 7 已验收的 V6 精修候选、用户标注的拥挤区域，以及当前 Visual Companion `49946` 预览会话。
+- Produces: 双 CTA 与 API 原点具有明确垂直层级的 Hero；候选 `<body>`、色系、路由、交互和二三级页面保持逐字不变。
+
+- [ ] **Step 1: 给视觉守卫增加 CTA–API 净距合同**
+
+在每个视口的 metrics 中读取主 CTA、次 CTA 与 `.route-origin` 的矩形，并计算：
+
+```js
+const ctaBottom = Math.max(primaryCta.bottom, secondaryCta.bottom)
+const ctaRouteGap = routeOrigin.top - ctaBottom
+```
+
+新增断言：
+
+```text
+desktop-1440x900 >= 36px
+desktop-1180x820 >= 36px
+tablet-768x1024 >= 28px
+mobile-landscape-844x390 >= 28px
+mobile-390x844 >= 24px
+mobile-375x812 >= 24px
+```
+
+同时新增以下回归合同：`1180×820` 的 Signal track 必须完整处于首屏；`844×390` 标题顶边不得高于 before 基线 `216.17px`，API 原点可见高度至少 `31px`，标题→说明与说明→CTA 两段净距各至少 `8px`。
+
+同时把 `/private/tmp/openrouter-v6-polish-visual.mjs` 和 `/private/tmp/openrouter-v6-polish-cdp.mjs` 的预览会话改为：
+
+```text
+http://localhost:49946/?key=713940f9565a195b85b1fe13c0fe326f371291efebfd206bf2165f97127f35e2#/home
+```
+
+- [ ] **Step 2: 运行视觉守卫并确认 RED**
+
+Run:
+
+```bash
+CDP_PORT=9444 bun /private/tmp/openrouter-v6-polish-visual.mjs
+```
+
+Expected: FAIL；当前六视口净距约为 `-11px` 至 `6px`，明确复现用户截图中的拥挤与重叠。
+
+- [ ] **Step 3: 只调整 V6 POLISH scoped CSS**
+
+在现有 override 中使用以下最终值：
+
+```css
+@media (min-width: 1180px) {
+  .premium-hero { min-height: 600px; }
+  .premium-hero-copy { padding-bottom: 124px; }
+}
+
+@media (min-width: 768px) {
+  .route-origin { top: 61.7%; }
+}
+
+@media (min-width: 1180px) {
+  .route-origin { top: 67%; }
+}
+
+@media (min-width: 768px) and (max-width: 1179px) {
+  .premium-hero { min-height: 620px; }
+  .premium-hero-copy { padding-bottom: 176px; }
+}
+
+@media (max-width: 420px) {
+  .route-origin { top: 70.2%; }
+}
+
+@media (max-height: 500px) and (min-width: 700px) and (max-width: 900px) {
+  .premium-hero { min-height: 500px; }
+  .premium-hero-copy { padding-bottom: 181px; }
+  .premium-title { margin-bottom: 8px; font-size: 38px; }
+  .premium-subtitle { font-size: 14px; line-height: 1.1; }
+  .premium-actions { margin-top: 8px; }
+  .premium-actions .button { min-height: 44px; }
+  .route-origin { top: 55.5%; }
+}
+```
+
+经独立审查，原先把桌面 Hero 增至 656px 会把 `1180×820` 的 Signal 下推到首屏外；短横屏仅增加 copy padding 会把标题上移并进一步裁切 API。第二轮审查又证明将文字/CTA 间距压至 4px/0 会把拥挤转移到内容栈。最终值保持桌面 600px Hero，通过 `67%` 原点位置获得净距；短横屏适度缩小标题/说明字号与行高，以 8px/8px 真实净距和 181px copy padding 保持 before 标题位置与 API 至少 31px 可见。不删除旧规则，不改变标题文本、按钮语义、Provider、Signal、颜色、DOM 或 JavaScript。
+
+- [ ] **Step 4: 同步预览并运行 GREEN 验证**
+
+Run:
+
+```bash
+node /private/tmp/openrouter-v6-polish-static.mjs
+cp .superpowers/brainstorm/93984-1787991725/content/openrouter-customer-premium-v6-polished.html .superpowers/brainstorm/51008-1788097225/content/openrouter-customer-premium-v6-polished-preview.html
+cp .superpowers/brainstorm/93984-1787991725/content/openrouter-customer-premium-v6-polished.html .superpowers/brainstorm/25630-1788142971/content/openrouter-customer-premium-v6-polished-live.html
+CDP_PORT=9444 bun /private/tmp/openrouter-v6-polish-visual.mjs
+CDP_PORT=9444 bun /private/tmp/openrouter-v6-polish-cdp.mjs
+```
+
+Expected: 静态守卫通过；六视口净距合同全部通过；12 张截图中 CTA、API 原点与路由分支具有清晰层级；`390×844` 的品牌、标题、说明、双 CTA、API 原点、五 Provider 和四项 Signal 仍完整处于首屏；功能回归 8/8 PASS。
+
+- [ ] **Step 5: 独立审查并打开更新后的预览**
+
+Reviewer 必须确认：用户标注区域不再拥挤；新增留白没有造成标题上浮、Provider/Signal 碰撞或指标异常下沉；候选 `<body>`、Customer 色系、深色表面和全部交互未变化；Critical/Important 为零。
+
+最终预览继续使用：
+
+```text
+http://localhost:49946/?key=713940f9565a195b85b1fe13c0fe326f371291efebfd206bf2165f97127f35e2#/home
+```
+
+不得提交 `.superpowers/` 或 `/private/tmp` 文件。
