@@ -64,6 +64,9 @@ func InitEnv() {
 	if err := InitSessionCookieSettings(); err != nil {
 		log.Fatal(err)
 	}
+	if err := InitSkinOrigins(); err != nil {
+		log.Fatal(err)
+	}
 	if os.Getenv("SQLITE_PATH") != "" {
 		SQLitePath = os.Getenv("SQLITE_PATH")
 	}
