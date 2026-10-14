@@ -1,0 +1,21 @@
+# P0/TC5 overlay: build new-api from this repo so SKIN_ORIGINS (see docs/skin-api-contract.md) works.
+# Upstream calciumion/new-api:latest may not include your checkout yet — use this overlay for Skin login (TC0/TC5).
+#
+# Cross-origin Skin → Platform on :3000:
+#   docker compose -f docker-compose.yml -f docker-compose.tc5.yml up -d --build
+#
+# With Nginx Skin gateway on :3080:
+#   docker compose -f docker-compose.yml -f docker-compose.tc5.yml -f docker-compose.skin.yml up -d --build
+#
+# Rebuild after Go changes:
+#   docker compose -f docker-compose.yml -f docker-compose.tc5.yml up -d --build new-api
+
+services:
+  new-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: new-api-tc5:local
+    environment:
+      # Absolute origins only (no path). Match the URL bar when serving openrouter-theme v6.
+      - SKIN_ORIGINS=http://localhost:3080,http://localhost:5173,http://localhost:8088

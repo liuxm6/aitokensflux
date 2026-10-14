@@ -5,8 +5,8 @@
 #   git clone https://github.com/liuxm6/openrouter-theme.git ../openrouter-theme
 #   cd ../openrouter-theme && git checkout v6   # or the v6 release tag/branch in that repo
 #
-# Usage (from new-api repo root):
-#   docker compose -f docker-compose.yml -f docker-compose.skin.yml up -d
+# Usage (from new-api repo root; include tc5 overlay so SKIN_ORIGINS works when Skin calls :3000):
+#   docker compose -f docker-compose.yml -f docker-compose.tc5.yml -f docker-compose.skin.yml up -d --build
 #
 # Open Skin + API on one origin: http://localhost:3080
 # Platform UI (bundled in image) remains: http://localhost:3000
