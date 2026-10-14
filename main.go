@@ -195,12 +195,20 @@ func main() {
 	middleware.SetUpLogger(server)
 	// Initialize session store
 	store := cookie.NewStore([]byte(common.SessionSecret))
+	sessionSameSite := http.SameSiteStrictMode
+	if len(common.SkinOrigins) > 0 && common.SessionCookieSecure {
+		// Cross-site Skin (separate registrable domain) needs None when cookies are Secure.
+		sessionSameSite = http.SameSiteNoneMode
+	} else if len(common.SkinOrigins) > 0 {
+		// Same-site cross-origin (e.g. skin.example.com → api.example.com) can use Lax.
+		sessionSameSite = http.SameSiteLaxMode
+	}
 	store.Options(sessions.Options{
 		Path:     "/",
 		MaxAge:   2592000, // 30 days
 		HttpOnly: true,
 		Secure:   common.SessionCookieSecure,
-		SameSite: http.SameSiteStrictMode,
+		SameSite: sessionSameSite,
 	})
 	server.Use(sessions.Sessions("session", store))
 

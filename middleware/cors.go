@@ -1,23 +1,37 @@
 package middleware
 
 import (
+	"sync"
+
 	"github.com/QuantumNous/new-api/common"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
-func CORS() gin.HandlerFunc {
+var (
+	corsHandler     gin.HandlerFunc
+	corsHandlerOnce sync.Once
+)
+
+func buildCORSConfig() cors.Config {
 	config := cors.DefaultConfig()
-	config.AllowAllOrigins = true
-	config.AllowCredentials = true
-	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
+	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"}
 	config.AllowHeaders = []string{"*"}
-	return cors.New(config)
+	config.AllowCredentials = true
+	config.ExposeHeaders = []string{"Auth-Version"}
+
+	if len(common.SkinOrigins) > 0 {
+		config.AllowAllOrigins = false
+		config.AllowOrigins = common.SkinOrigins
+	} else {
+		config.AllowAllOrigins = true
+	}
+	return config
 }
 
-func Version() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Header("X-New-Api-Version", common.Version)
-		c.Next()
-	}
+func CORS() gin.HandlerFunc {
+	corsHandlerOnce.Do(func() {
+		corsHandler = cors.New(buildCORSConfig())
+	})
+	return corsHandler
 }
