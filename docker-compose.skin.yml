@@ -1,0 +1,31 @@
+# Optional Skin gateway: serves liuxm6/openrouter-theme static files and proxies
+# /api/ and /v1/ to the new-api service from docker-compose.yml.
+#
+# Prerequisite: clone the theme next to this repo (default path below).
+#   git clone https://github.com/liuxm6/openrouter-theme.git ../openrouter-theme
+#   cd ../openrouter-theme && git checkout v6   # or the v6 release tag/branch in that repo
+#
+# Usage (from new-api repo root; include tc5 overlay so SKIN_ORIGINS works when Skin calls :3000):
+#   docker compose -f docker-compose.yml -f docker-compose.tc5.yml -f docker-compose.skin.yml up -d --build
+#
+# Open Skin + API on one origin: http://localhost:3080
+# Platform UI (bundled in image) remains: http://localhost:3000
+#
+# Override theme path:
+#   OPENROUTER_THEME_PATH=/path/to/openrouter-theme docker compose -f docker-compose.yml -f docker-compose.skin.yml up -d
+
+services:
+  skin:
+    image: nginx:1.27-alpine
+    container_name: openrouter-skin
+    restart: unless-stopped
+    ports:
+      - "3080:80"
+    volumes:
+      - ${OPENROUTER_THEME_PATH:-../openrouter-theme}:/usr/share/nginx/html:ro
+      - ./docker/skin-gateway.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      new-api:
+        condition: service_healthy
+    networks:
+      - new-api-network
