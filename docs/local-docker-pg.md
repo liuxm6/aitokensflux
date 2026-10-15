@@ -111,9 +111,9 @@ SKIN_ORIGINS=http://localhost:3080,http://localhost:5173,http://localhost:8088
    curl -sS http://localhost:3000/api/status | grep -F '"success":true'
    ```
 
-3. **Platform UI**
+3. **Platform admin UI**
 
-   浏览器打开：**http://localhost:3000**（镜像内置 UI）。
+   浏览器打开：**http://localhost:3000/admin/**（镜像内置 default/classic 管理台）。根路径 `/` 不再托管 Skin；用户站见下文 §4。
 
 4. **Skin 能打开并完成 TC0（跨源时带 TC5 叠加）**
 

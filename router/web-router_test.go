@@ -4,7 +4,6 @@ import (
 	"embed"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 
@@ -17,7 +16,7 @@ import (
 //go:embed web
 var webRouterTestBuildFS embed.FS
 
-func TestSetWebRouterPreservesCustomerSEOAndNotFoundContracts(t *testing.T) {
+func TestSetWebRouterServesAdminAndRejectsSkinPaths(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	t.Setenv("ADMIN_WEB_HOSTS", "")
 	originalTheme := common.GetTheme()
@@ -28,20 +27,13 @@ func TestSetWebRouterPreservesCustomerSEOAndNotFoundContracts(t *testing.T) {
 	require.NoError(t, err)
 	classicIndex, err := webRouterTestBuildFS.ReadFile("web/classic/dist/index.html")
 	require.NoError(t, err)
-	customerIndex, err := webRouterTestBuildFS.ReadFile("web/customer/dist/index.html")
-	require.NoError(t, err)
-	customerSEOConfig, err := os.ReadFile("../web/customer/src/seo/pages.json")
-	require.NoError(t, err)
 
 	engine := gin.New()
 	SetWebRouter(engine, ThemeAssets{
-		DefaultBuildFS:    webRouterTestBuildFS,
-		DefaultIndexPage:  defaultIndex,
-		ClassicBuildFS:    webRouterTestBuildFS,
-		ClassicIndexPage:  classicIndex,
-		CustomerBuildFS:   webRouterTestBuildFS,
-		CustomerIndexPage: customerIndex,
-		CustomerSEOConfig: customerSEOConfig,
+		DefaultBuildFS:   webRouterTestBuildFS,
+		DefaultIndexPage: defaultIndex,
+		ClassicBuildFS:   webRouterTestBuildFS,
+		ClassicIndexPage: classicIndex,
 	})
 	request := func(target, host string) *httptest.ResponseRecorder {
 		t.Helper()
@@ -52,42 +44,17 @@ func TestSetWebRouterPreservesCustomerSEOAndNotFoundContracts(t *testing.T) {
 		return recorder
 	}
 
-	subscribe := request("/subscribe", "aitokensflux.com")
-	docs := request("/en/docs", "aitokensflux.com")
-	encodedDocs := request("/%64ocs", "aitokensflux.com")
-	encodedEnglishDocs := request("/en/%64ocs", "aitokensflux.com")
-	encodedTrailingSlashDocs := request("/docs%2F", "aitokensflux.com")
-	encodedLeadingSlashDocs := request("/%2Fdocs", "aitokensflux.com")
-	doubleEncodedDocs := request("/%2564ocs", "aitokensflux.com")
-	doubleEncodedEnglishDocs := request("/en/%2564ocs", "aitokensflux.com")
-	doubleEncodedEnglishTrailingSlashDocs := request("/en/docs%252F", "aitokensflux.com")
-	missing := request("/definitely-missing", "aitokensflux.com")
+	root := request("/", "aitokensflux.com")
+	pricing := request("/pricing", "aitokensflux.com")
+	admin := request("/admin/dashboard/overview", "admin.example.com")
 	relayMissing := request("/v1/definitely-missing", "aitokensflux.com")
 
-	assert.Equal(t, http.StatusMovedPermanently, subscribe.Code)
-	assert.Equal(t, "/pricing", subscribe.Header().Get("Location"))
-	assert.Equal(t, http.StatusOK, docs.Code)
-	assert.Equal(t, http.StatusOK, encodedDocs.Code)
-	assert.Contains(t, encodedDocs.Body.String(), `<link rel="canonical" href="https://aitokensflux.com/docs"`)
-	assert.Equal(t, http.StatusOK, encodedEnglishDocs.Code)
-	assert.Contains(t, encodedEnglishDocs.Body.String(), `<link rel="canonical" href="https://aitokensflux.com/en/docs"`)
-	assert.Equal(t, http.StatusOK, encodedTrailingSlashDocs.Code)
-	assert.Contains(t, encodedTrailingSlashDocs.Body.String(), `<link rel="canonical" href="https://aitokensflux.com/docs"`)
-	assert.Equal(t, http.StatusNotFound, encodedLeadingSlashDocs.Code)
-	assert.NotContains(t, encodedLeadingSlashDocs.Body.String(), `rel="canonical"`)
-	for _, response := range []*httptest.ResponseRecorder{
-		doubleEncodedDocs,
-		doubleEncodedEnglishDocs,
-		doubleEncodedEnglishTrailingSlashDocs,
-	} {
-		assert.Equal(t, http.StatusNotFound, response.Code)
-		assert.NotContains(t, response.Body.String(), `rel="canonical"`)
-	}
-	assert.Equal(t, http.StatusNotFound, missing.Code)
-	assert.Contains(t, missing.Header().Get("Content-Type"), "text/html")
+	assert.Equal(t, http.StatusNotFound, root.Code)
+	assert.Equal(t, http.StatusNotFound, pricing.Code)
+	assert.Equal(t, http.StatusOK, admin.Code)
+	assert.Contains(t, admin.Body.String(), "default fixture")
 	assert.Equal(t, http.StatusNotFound, relayMissing.Code)
 	assert.Contains(t, relayMissing.Header().Get("Content-Type"), "application/json")
-	assert.NotContains(t, relayMissing.Body.String(), "Customer router fixture")
 }
 
 func TestParseAdminWebHosts(t *testing.T) {

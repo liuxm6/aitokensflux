@@ -42,7 +42,7 @@ build-web-customer:
 	@cd ./web && bun install --frozen-lockfile
 	@cd $(FRONTEND_CUSTOMER_DIR) && VITE_REACT_APP_VERSION=$(cat ../../VERSION) bun run build
 
-build-all-web: build-web build-web-classic build-web-customer
+build-all-web: build-web build-web-classic
 
 build-frontend: build-web
 build-frontend-classic: build-web-classic
