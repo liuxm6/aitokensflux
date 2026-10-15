@@ -107,9 +107,6 @@ DISABLE_ESLINT_PLUGIN=true VITE_REACT_APP_VERSION="$APP_VERSION" bun run build
 cd ../classic
 VITE_REACT_APP_VERSION="$APP_VERSION" bun run build
 
-cd ../customer
-VITE_REACT_APP_VERSION="$APP_VERSION" bun run build
-
 cd ../..
 find web -maxdepth 3 -type d -name dist -print
 ```
@@ -119,8 +116,9 @@ find web -maxdepth 3 -type d -name dist -print
 ```text
 web/default/dist
 web/classic/dist
-web/customer/dist
 ```
+
+**Skin（用户站）** 不再打入 Platform 二进制：在 [`liuxm6/openrouter-theme`](https://github.com/liuxm6/openrouter-theme) 单独构建并经由 CDN/Nginx 发布；Platform 通过 `SKIN_ORIGINS` 允许跨源 API（见 [skin-api-contract.md](./skin-api-contract.md)）。
 
 ## 编译后端并准备 rootfs
 

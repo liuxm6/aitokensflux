@@ -15,27 +15,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// ThemeAssets holds the embedded frontend assets for both themes.
+// ThemeAssets holds the embedded frontend assets for admin themes (default + classic).
+// Customer Skin is deployed separately (openrouter-theme); it is not embedded in Platform.
 type ThemeAssets struct {
-	DefaultBuildFS    embed.FS
-	DefaultIndexPage  []byte
-	ClassicBuildFS    embed.FS
-	ClassicIndexPage  []byte
-	CustomerBuildFS   embed.FS
-	CustomerIndexPage []byte
-	CustomerSEOConfig []byte
+	DefaultBuildFS   embed.FS
+	DefaultIndexPage []byte
+	ClassicBuildFS   embed.FS
+	ClassicIndexPage []byte
 }
 
 func SetWebRouter(router *gin.Engine, assets ThemeAssets) {
 	defaultFS := common.EmbedFolder(assets.DefaultBuildFS, "web/default/dist")
 	classicFS := common.EmbedFolder(assets.ClassicBuildFS, "web/classic/dist")
-	customerFS := common.EmbedFolder(assets.CustomerBuildFS, "web/customer/dist")
 	adminFS := common.NewThemeAwareFS(defaultFS, classicFS)
-	customerSEO, err := newCustomerSEOService(assets.CustomerSEOConfig, assets.CustomerIndexPage)
-	if err != nil {
-		common.SysError("initialize customer SEO service: " + err.Error())
-		customerSEO = newSafeCustomerSEOService(assets.CustomerSEOConfig, assets.CustomerIndexPage)
-	}
 
 	router.Use(gzip.Gzip(gzip.DefaultCompression))
 	router.Use(middleware.GlobalWebRateLimit())
@@ -43,13 +35,10 @@ func SetWebRouter(router *gin.Engine, assets ThemeAssets) {
 	router.Use(restrictAdminWebHosts())
 	router.Use(redirectAdminRootToDashboard())
 	router.Use(static.Serve("/admin", adminFS))
-	router.Use(static.Serve("/", customerFS))
-	router.GET("/robots.txt", customerSEO.serveRobots)
-	router.GET("/sitemap.xml", customerSEO.serveSitemap)
-	router.NoRoute(customerWebNoRouteHandler(assets, customerSEO))
+	router.NoRoute(webNoRouteHandler(assets))
 }
 
-func customerWebNoRouteHandler(assets ThemeAssets, customerSEO *customerSEOService) gin.HandlerFunc {
+func webNoRouteHandler(assets ThemeAssets) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set(middleware.RouteTagKey, "web")
 		path := c.Request.URL.Path
@@ -58,17 +47,17 @@ func customerWebNoRouteHandler(assets ThemeAssets, customerSEO *customerSEOServi
 			return
 		}
 		c.Header("Cache-Control", "no-cache")
-		if isAdminWebPath(path) && common.GetTheme() == "classic" {
-			applyEdgeInterfaceLanguage(c)
-			c.Data(http.StatusOK, "text/html; charset=utf-8", assets.ClassicIndexPage)
-			return
-		}
 		if isAdminWebPath(path) {
+			if common.GetTheme() == "classic" {
+				applyEdgeInterfaceLanguage(c)
+				c.Data(http.StatusOK, "text/html; charset=utf-8", assets.ClassicIndexPage)
+				return
+			}
 			applyEdgeInterfaceLanguage(c)
 			c.Data(http.StatusOK, "text/html; charset=utf-8", assets.DefaultIndexPage)
 			return
 		}
-		customerSEO.servePage(c)
+		c.Status(http.StatusNotFound)
 	}
 }
 

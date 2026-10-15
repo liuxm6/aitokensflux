@@ -1,6 +1,6 @@
 # Skin ↔ Platform API contract (P0)
 
-This document describes the minimum HTTP contract between the **Skin** static site (`openrouter-theme` / customer UI) and **Platform** (`aitokensflux` backend). Skin is always a separate origin and must use cross-origin `fetch` with cookies.
+This document describes the minimum HTTP contract between the **Skin** static site ([`liuxm6/openrouter-theme`](https://github.com/liuxm6/openrouter-theme)) and **Platform** (`aitokensflux` backend). Skin is deployed separately (static hosting or Nginx); Platform **does not** embed or serve `web/customer` at `/`. Skin must use cross-origin `fetch` with cookies when the API origin differs from the Skin origin.
 
 ## Base URL
 
@@ -51,7 +51,7 @@ For **same registrable domain** (e.g. `skin.example.com` → `api.example.com`),
 
 ### API keys (dashboard token CRUD)
 
-Authenticated routes under `/api/token/` (session + `New-API-User`). Skin uses the same paths as the embedded customer theme.
+Authenticated routes under `/api/token/` (session + `New-API-User`). Skin uses the same paths as the historical monorepo customer theme (`web/customer` in Platform repo, maintained in parallel in openrouter-theme).
 
 ### Model catalog & pricing
 
@@ -71,7 +71,13 @@ Authenticated routes under `/api/token/` (session + `New-API-User`). Skin uses t
 - `web/customer/src/services/api.ts` — `credentials: "include"`, `New-API-User`, Turnstile header helper.
 - `web/customer/src/components/Auth/index.tsx` — login/register flows and uid persistence.
 
+## Platform static assets
+
+| Path | Served by Platform |
+|------|-------------------|
+| `/admin/*` | Embedded **default** or **classic** admin dashboard (`web/default`, `web/classic`) |
+| `/`, `/pricing`, marketing routes | **Not** served by Platform; use Skin deploy (openrouter-theme). `robots.txt` / `sitemap.xml` for the public site live with Skin, not on the API host. |
+
 ## Out of scope (this contract)
 
-- Embedding `web/customer` in Platform static assets (being removed in favor of separate Skin deploy).
 - Admin/default theme same-origin dashboard (unchanged).
